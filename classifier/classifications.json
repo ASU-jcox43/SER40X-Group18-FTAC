@@ -1,0 +1,17 @@
+[
+  {
+    "filename": "phoenix_mobile_vending_and_mobile_food_vending_brochure.pdf",
+    "category": "Permit Documents",
+    "confidence": 0.73
+  },
+  {
+    "filename": "Test document for food truck permit.txt",
+    "category": "Permit Documents",
+    "confidence": 0.8
+  },
+  {
+    "filename": "Test document for legal stuff.txt",
+    "category": "Legal Documents",
+    "confidence": 0.75
+  }
+]
