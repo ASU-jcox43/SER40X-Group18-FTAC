@@ -9,6 +9,7 @@ import os
 
 
 # Get all PDF files in a folder
+# Function that retrieves and stores PDF files to a list
 def get_pdf_files(folder_path):
     # Folder where PDFs are stored
     pdf_folder = "bylawDocuments/"
@@ -21,17 +22,21 @@ def get_pdf_files(folder_path):
         return []
 
 # Check if PDF is scanned or text-based
+# Function to check if pdf is scanned (image based)
 def is_scanned_pdf(file_path):
     try:
         doc = fitz.open(file_path)
         text = "".join([page.get_text() for page in doc])
+        print(f"{file_path} is image based (scanned)")
         return text.strip() == ""  # True if scanned
     except Exception as e: 
         print(f"Error checking PDF {file_path}: {e}")
         return True
 
 # Run OCR on scanned PDF
-def run_ocr_by_sections(file_path, dpi=300):
+# Separates OCR extracted data into sections to organize relevant data from PDF
+# organizes the data for JSON format
+def run_ocr(file_path, dpi=300):
     try:
         pages = convert_from_path(file_path, dpi=dpi)
     except Exception as e:
@@ -67,8 +72,49 @@ def run_ocr_by_sections(file_path, dpi=300):
 
     return ocr_output
 
+def extract_text(file_path):
+    try:
+        doc = fitz.open(file_path)
+        # Regex matches headings like "Section 1", "SECTION I", "Article 2", etc.
+        section_pattern = re.compile(r"^(Section|SECTION|Article|ARTICLE|§)\s*[\w\d\.\-]+", re.IGNORECASE)
+        
+        output = {"file_name": os.path.basename(file_path), "sections": []}
+        current_section = {"title": "Introduction", "text": ""}
+
+        for page in doc:
+            text = page.get_text()
+            for line in text.splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                # Detect section heading
+                if section_pattern.match(line):
+                    if current_section["text"]:
+                        # Strip trailing newline
+                        current_section["text"] = current_section["text"].rstrip("\n")
+                        output["sections"].append(current_section)
+                    current_section = {"title": line, "text": ""}
+                else:
+                    # Preserve line breaks for readability
+                    if current_section["text"]:
+                        current_section["text"] += "\n" + line
+                    else:
+                        current_section["text"] = line
+
+        if current_section["text"]:
+            current_section["text"] = current_section["text"].rstrip("\n")
+            output["sections"].append(current_section)
+
+        return output
+
+    except Exception as e:
+        print(f"Error extracting text from {file_path}: {e}")
+        return {"file_name": os.path.basename(file_path), "sections": []}
+
+
 
 # Save JSON output
+# Function saves JSON output to JSON Path with proper encoding and formatting
 def save_json(data, output_path):
     try:
         with open(output_path, "w", encoding="utf-8") as f:
@@ -79,6 +125,8 @@ def save_json(data, output_path):
 
 
 # Main processing function
+# Function process pdf image files or text based pdfs
+# Utilizes other functions for OCR processing, saving JSON 
 def process_pdfs(folder_path):
     pdf_files = get_pdf_files(folder_path)
     if not pdf_files:
@@ -91,14 +139,19 @@ def process_pdfs(folder_path):
             if is_scanned_pdf(file_path):
                 print(f"{file_path}: Scanned PDF → running OCR")
                 ocr_data = run_ocr(file_path)
-                json_file = os.path.join(folder_path, os.path.basename(file_path).replace(".pdf", "_ocr.json"))
+                # Saves JSON file with same name as original file name
+                json_file = os.path.join(
+                    folder_path, 
+                    os.path.basename(file_path).replace(".pdf", "_ocr.json")
+                    )
                 save_json(ocr_data, json_file)
             else:
                 print(f"{file_path}: Text-based PDF → extracting text")
-                doc = fitz.open(file_path)
-                text = "".join([page.get_text() for page in doc])
-                text_data = {"file_name": os.path.basename(file_path), "text": text}
-                json_file = os.path.join(folder_path, os.path.basename(file_path).replace(".pdf", "_text.json"))
+                text_data = extract_text(file_path)
+                json_file = os.path.join(
+                    folder_path, 
+                    os.path.basename(file_path).replace(".pdf", "_text.json")
+                    )
                 save_json(text_data, json_file)
         except Exception as e:
             print(f"Error processing {file_path} {e}")
