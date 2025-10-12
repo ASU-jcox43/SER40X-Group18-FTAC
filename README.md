@@ -1,7 +1,5 @@
 1. Clone the Repository
 First, clone this repository to your local machine:
-git clone https://github.com/yourusername/yourrepo.git
-cd yourrepo
 
 2. Set Up a Python Virtual Environment
 To isolate the dependencies for this project, create and activate a Python virtual environment:
