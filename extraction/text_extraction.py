@@ -43,21 +43,33 @@ def extractTXT(filename):
         json.dump(txtJSON, saveFile, indent=2)
 
 
-# TODO: Fix PDF Version of text extraction
-def pdfTest():
-    pdfPath = os.path.join(
-        FILEPATH,
-        "phoenix_mobile_vending_and_mobile_food_vending_brochure.pdf",
-    )
-
-    # Read and clean text
+# TODO: Fix PDF Version of text extraction to find key words better
+def extractPDF(filename):
+    pdfPath = os.path.join(FILEPATH, filename)
     pdfRaw = accessDocuments(pdfPath)
-
     if not pdfRaw:
         exit()
+
     pdfCleaned = cleanText(pdfRaw)
+
+    pdfResults = {}
+    for category, terms in KEYWORDS.items():
+        pdfResults[category] = extractKeywords(pdfCleaned, terms)
+
+    pdfJSON = {
+        "file": os.path.basename(filename),
+        "cleaned_preview": pdfCleaned[:300] + "...",
+        "keyword_contexts": pdfResults,
+    }
+
+    print(json.dumps(pdfJSON, indent=4))
+
+    os.makedirs(SAVEPATH, exist_ok=True)
+    saveFile = os.path.join(SAVEPATH, filename.replace(".pdf", ".json"))
+    with open(saveFile, "w", encoding="utf-8") as saveFile:
+        json.dump(pdfJSON, saveFile, indent=2)
 
 
 if __name__ == "__main__":
     extractTXT("Test document for legal stuff.txt")
-#    pdfTest()
+    extractPDF("phoenix_mobile_vending_and_mobile_food_vending_brochure.pdf")

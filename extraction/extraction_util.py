@@ -1,19 +1,35 @@
 import os
 import re
 from collections import defaultdict
+from collections import defaultdict
+from PyPDF2 import PdfReader
 
 
 def accessDocuments(file_path):
+    ext = os.path.splitext(file_path)[1].lower()
     try:
-        with open(file_path, "r", encoding="utf-8") as file:
-            content = file.read()
-            print(content)
-            return content
+        if ext == ".pdf":
+            # Read PDF
+            reader = PdfReader(file_path)
+            content = ""
+            for page in reader.pages:
+                # Extract text safely
+                page_text = page.extract_text()
+                if page_text:
+                    content += page_text + "\n"
+            print("PDF text extracted successfully")
+        else:
+            # Read plain text
+            with open(file_path, "r", encoding="utf-8") as file:
+                content = file.read()
+            print("Text file read successfully")
+
+        return content
 
     except FileNotFoundError:
         print(f"Error: File not found at {os.path.abspath(file_path)}")
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred while reading {file_path}: {e}")
 
 
 def cleanText(text):
