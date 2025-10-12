@@ -13,5 +13,10 @@
     "filename": "Test document for legal stuff.txt",
     "category": "Legal Documents",
     "confidence": 0.75
+  },
+  {
+    "filename": "Test document for no category.txt",
+    "category": "N/A",
+    "confidence": 0.0
   }
 ]

@@ -1,9 +1,30 @@
+"""
+Utility file for the document classifier.
+
+This module supports text extraction for plain text, .docx (Microsoft Word) files, and PDF files
+using the "extract text" function.
+
+    Usage example:
+
+    file_path = "test documents/example.docx"
+    extract_text(file_path)
+"""
+
 from pathlib import Path
 import PyPDF2
 import docx
 
 
 def extract_text(file_path: Path) -> str:
+    """
+    Extracts text from either a .txt, .pdf, or .docx file.
+
+    Args:
+       file_path: The path to the document.
+
+    Returns:
+         str: The extracted text from the document.
+    """
     text = ""
 
     # Here we get either pdf, docx, or txt files and read them in accordingly,
