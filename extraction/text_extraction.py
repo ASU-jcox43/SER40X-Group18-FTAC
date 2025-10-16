@@ -12,8 +12,8 @@ KEYWORDS = {
 }
 
 # TODO: Change to path where documents can be analyzed
-FILEPATH = os.path.join("..", "SER40X-Group18-FTAC", "classifier", "test documents")
-SAVEPATH = os.path.join("..", "SER40X-Group18-FTAC", "extraction", "analysis_ready")
+FILEPATH = os.path.join("..", "test documents")
+SAVEPATH = os.path.join("..", "analysis_ready")
 
 
 def extractTXT(filename):
