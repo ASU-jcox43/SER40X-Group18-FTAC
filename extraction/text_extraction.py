@@ -13,7 +13,14 @@ KEYWORDS = {
 }
 
 # TODO: Change to path where documents can be analyzed
-FILEPATH = os.path.join("..", "test documents")
+# Get the directory of the current file (extraction/)
+BASEDIR = os.path.dirname(os.path.abspath(__file__))
+
+# Go one level up (the project parent directory)
+PARENTDIR = os.path.dirname(BASEDIR)
+
+# Define file paths relative to that
+FILEPATH = os.path.join(PARENTDIR, "test documents")
 SAVEPATH = os.path.join("..", "analysis_ready")
 
 
@@ -47,7 +54,6 @@ def extractTXT(filename):
 
 # TODO: Fix PDF Version of text extraction to find key words better
 def extractPDF():
-
     pdfPath = os.path.join(
         FILEPATH,
         "phoenix_mobile_vending_and_mobile_food_vending_brochure.pdf",
@@ -94,4 +100,4 @@ def extractPDF():
 
 if __name__ == "__main__":
     extractTXT("Test document for legal stuff.txt")
-    extractPDF("phoenix_mobile_vending_and_mobile_food_vending_brochure.pdf")
+    # extractPDF("phoenix_mobile_vending_and_mobile_food_vending_brochure.pdf")
