@@ -1,0 +1,15 @@
+{
+  "file": "Test document for legal stuff.txt",
+  "keyword_contexts": {
+    "Permit Documents": {},
+    "Financial Documents": {},
+    "Legal Documents": {
+      "contract": [
+        "klsdfsldjfk design skdfsdfslkdfjskdlfsd agreement contract sdkflsdfkjsdfljkds terms of service sdkfslkdfjd l"
+      ],
+      "regulation": [
+        "ervice sdkfslkdfjd law indicates sdljkfsdkflsdkjf regulation: ja;fljl;kfdjaljdfl bylaw sdlkfsjdkf agreement"
+      ]
+    }
+  }
+}

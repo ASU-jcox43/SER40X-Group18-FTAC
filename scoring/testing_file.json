@@ -1,0 +1,159 @@
+{
+  "file": "testing_file.json",
+  "keyword_contexts": {
+    "webpage": {
+      "example.gov": [
+        "For more information, visit https://example.gov/business-licensing.",
+        "The official municipal portal is available at www.example.gov."
+      ]
+    },
+    "checklist": {
+      "requirements": [
+        "Applicants should complete all steps outlined in the startup checklist before submitting.",
+        "Ensure your checklist includes proof of insurance, photos, and valid identification."
+      ]
+    },
+    "guide to license": {
+      "license guide": [
+        "Refer to the provincial guide to license your business, which includes timelines and fees.",
+        "This guide provides instructions on how to apply for operational licenses online."
+      ]
+    },
+    "bylaws": {
+      "regulations": [
+        "All vendors must adhere to local bylaws regarding hours of operation and public conduct."
+      ]
+    },
+    "penalties": {
+      "fine": [
+        "Failure to comply with the licensing conditions may result in a fine of up to $5,000.",
+        "Repeat violations are subject to increased penalties."
+      ]
+    },
+    "provincial business license": {
+      "provincial license": [
+        "A valid provincial business license must be obtained before operations commence."
+      ]
+    },
+    "provincial food business license": {
+      "food license": [
+        "Provincial food business licenses are issued by the Department of Health and Safety."
+      ]
+    },
+    "municipal business license": {
+      "municipal license": [
+        "Municipal business licenses are required in addition to provincial registration."
+      ]
+    },
+    "municipal food business license": {
+      "food vendor permit": [
+        "Vendors must obtain a municipal food business license from the local authority."
+      ]
+    },
+    "retail license for CPG": {
+      "retail permit": [
+        "Retailers selling consumer packaged goods must hold a retail license for CPG sales."
+      ]
+    },
+    "curbside vending": {
+      "street vending": [
+        "Curbside vending is only permitted in designated municipal zones."
+      ]
+    },
+    "parking fees": {
+      "fees": [
+        "Vendors operating in downtown areas are subject to daily parking fees."
+      ]
+    },
+    "noise bylaws": {
+      "noise restriction": [
+        "All operators must comply with noise bylaws restricting amplified sound after 10 PM."
+      ]
+    },
+    "traffic bylaws": {
+      "traffic control": [
+        "Traffic bylaws require food trucks to park at least 10 meters from intersections."
+      ]
+    },
+    "operation hours": {
+      "hours": [
+        "Permitted operation hours for vendors are between 7 AM and 9 PM."
+      ]
+    },
+    "branded consumer goods": {
+      "branding": [
+        "Vendors may sell branded consumer goods if they are pre-packaged and labeled correctly."
+      ]
+    },
+    "private property operation": {
+      "private property": [
+        "Operation on private property requires written permission from the property owner."
+      ]
+    },
+    "proximity regulations": {
+      "distance rule": [
+        "Vendors must comply with proximity regulations set by municipal zoning authorities."
+      ]
+    },
+    "min distance to restaurant": {
+      "restaurant distance": [
+        "A minimum distance of 25 meters must be maintained from any existing restaurant."
+      ]
+    },
+    "min distance to food truck": {
+      "truck distance": [
+        "Each food truck must be located at least 50 meters from another food truck."
+      ]
+    },
+    "non-food service proximity restrictions": {
+      "non-food proximity": [
+        "Proximity restrictions apply to non-food services like retail carts or kiosks."
+      ]
+    },
+    "min distance proximity from other business": {
+      "business distance": [
+        "A distance of at least 15 meters is required from other operating businesses."
+      ]
+    },
+    "num food trucks allowed in geographic area": {
+      "limit": [
+        "The number of food trucks allowed in each designated area is capped at ten."
+      ]
+    },
+    "parking locations": {
+      "location": [
+        "Designated parking locations are marked on the municipal map for vendors."
+      ]
+    },
+    "additional private restrictions": {
+      "restrictions": [
+        "Private landlords may impose additional restrictions beyond city bylaws."
+      ]
+    },
+    "name of local authority": {
+      "authority": [
+        "The local authority responsible is the City of Riverview Licensing Office."
+      ]
+    },
+    "direct link to authority": {
+      "link": [
+        "Contact or apply directly at https://riverview.gov/licensing."
+      ]
+    },
+    "insurance requirements": {
+      "insurance": [
+        "All operators must maintain liability insurance with a minimum coverage of $2 million."
+      ]
+    },
+    "physical requirements for trucks": {
+      "truck specifications": [
+        "Trucks must have a minimum hand washing station and waste disposal unit."
+      ]
+    },
+    "exterior appearance guidelines": {
+      "appearance": [
+        "Exterior appearance guidelines require a clean, professional look with no offensive graphics."
+      ]
+    }
+  }
+}
