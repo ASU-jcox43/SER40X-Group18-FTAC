@@ -6,6 +6,20 @@ The output is organized into structured **JSON** files, separating text by secti
 
 ---
 
+## Features
+
+- Detects if a PDF is scanned or text-based.
+- Uses Tesseract OCR for scanned PDFs.
+- Extracts text directly from text-based PDFs.
+- Structures extracted text into JSON, preserving:
+  - Headings
+  - Paragraphs
+  - Lists
+- Outputs a clean, hierarchical JSON file per PDF.
+- Handles multi-page PDFs.
+
+---
+
 ## ⚙️ Setup Instructions
 
 To run `OCRProcessor.py`, you'll need to install a few dependencies.  
