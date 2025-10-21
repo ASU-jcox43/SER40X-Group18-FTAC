@@ -6,6 +6,23 @@ import pytesseract
 from PIL import Image
 import glob
 import os
+from unstructured.partition.text import partition_text
+from unstructured.partition.pdf import partition_pdf    
+
+import nltk
+
+required_nltk = [
+    "punkt",
+    "punkt_tab",
+    "averaged_perceptron_tagger",
+    "averaged_perceptron_tagger_eng"
+]
+
+for pkg in required_nltk:
+    try:
+        nltk.data.find(f"tokenizers/{pkg}")
+    except LookupError:
+        nltk.download(pkg)
 
 
 # Get all PDF files in a folder
@@ -134,30 +151,67 @@ def process_pdfs(folder_path):
         return
 
     for file_path in pdf_files:
-        print(f"Processing: {file_path}")
-        try: 
+        print(f"\nProcessing: {file_path}")
+        try:
             if is_scanned_pdf(file_path):
-                print(f"{file_path}: Scanned PDF → running OCR")
-                ocr_data = run_ocr(file_path)
-                # Saves JSON file with same name as original file name
-                json_file = os.path.join(
-                    folder_path, 
-                    os.path.basename(file_path).replace(".pdf", "_ocr.json")
-                    )
-                save_json(ocr_data, json_file)
+                print("Detected scanned PDF → running OCR")
+                extracted = run_ocr(file_path)
             else:
-                print(f"{file_path}: Text-based PDF → extracting text")
-                text_data = extract_text(file_path)
-                json_file = os.path.join(
-                    folder_path, 
-                    os.path.basename(file_path).replace(".pdf", "_text.json")
-                    )
-                save_json(text_data, json_file)
+                print("Detected text-based PDF → extracting text")
+                extracted = extract_text(file_path)
+
+            # Pass through Unstructured for cleanup/organization
+            structured_data = structure_with_unstructured(extracted, file_path)
+
+            # Save JSON
+            json_file = os.path.join(
+                folder_path,
+                os.path.basename(file_path).replace(".pdf", "_structured.json"),
+            )
+            save_json(structured_data, json_file)
+
         except Exception as e:
-            print(f"Error processing {file_path} {e}")
+            print(f"Error processing {file_path}: {e}")
+
+
+def structure_with_unstructured(input_data, file_path):
+    """
+    Takes extracted text or OCR data and uses Unstructured to organize it into structured JSON.
+    """
+    try:
+        # Join all text sections into one long text string for Unstructured
+        text_content = ""
+        if "sections" in input_data:
+            text_content = "\n\n".join(
+                f"{sec['title']}\n{sec['text']}" for sec in input_data["sections"]
+            )
+        elif "text" in input_data:
+            text_content = input_data["text"]
+        else:
+            text_content = str(input_data)
+
+        if not text_content.strip():
+            print(f"No text found in {file_path}, skipping structuring.")
+            return input_data
+
+        # Use Unstructured to detect layout elements (headings, paragraphs, lists, tables)
+        elements = partition_pdf(filename=file_path) if file_path.lower().endswith(".pdf") else partition_text(text=text_content)
+
+        structured = {
+            "file_name": input_data["file_name"],
+            "elements": [e.to_dict() for e in elements]
+        }
+        return structured
+
+    except Exception as e:
+        print(f"Error structuring file {file_path}: {e}")
+        return input_data
 
 
 # Run the pipeline
 if __name__ == "__main__":
     pdf_folder = "bylawDocuments/"
-    process_pdfs(pdf_folder)
+    process_pdfs(pdf_folder) # Generates _ocr.json or _text.json files
+
+    json_file = os.path.join(pdf_folder, "bylawDocumnets/*json")
+
