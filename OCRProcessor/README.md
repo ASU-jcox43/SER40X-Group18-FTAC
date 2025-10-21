@@ -17,18 +17,11 @@ Because these are in an **externally managed environment**, it’s recommended t
 
 ```bash
 python3 -m venv venv
+source venv/bin/activate   # macOS/Linux
+venv\Scripts\activate      # Windows
 ```
 
-### 2. Create a virtual environment 
-```bash
-python3 -m venv venv
-```
-
-### 3. Activate the virtual environment
-MacOS/Linux: ```bash source venv/bin/activate```
-Windows: ```bash venv\Scripts\activate```
-
-### 4. Install all dependencies from requirements text
+### 2. Install all dependencies from requirements text
 ```bash
 pip install -r requirements.txt
 ```
