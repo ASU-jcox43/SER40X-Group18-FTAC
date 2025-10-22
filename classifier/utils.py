@@ -13,6 +13,8 @@ using the "extract text" function.
 from pathlib import Path
 import PyPDF2
 import docx
+import json
+import re
 
 
 def extract_text(file_path: Path) -> str:
@@ -40,6 +42,16 @@ def extract_text(file_path: Path) -> str:
 
     elif file_path.suffix.lower() == ".txt":
         text = file_path.read_text(encoding="utf-8", errors="ignore")
+
+    elif file_path.suffix.lower() == ".json":
+        with open(file_path, "r") as f:
+            data = json.load(f)
+        combined_text = []
+        for terms in data.get("keyword_contexts", {}).values():
+            for contexts in terms.values():
+                combined_text.extend(contexts)
+
+        text = " ".join(combined_text)
 
     else:
         text = ""
