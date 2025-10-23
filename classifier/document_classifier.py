@@ -117,4 +117,4 @@ def classify_files(folder_path):
 
 
 if __name__ == "__main__":
-    classify_files("test documents")
+    classify_files("../analysis_ready")
