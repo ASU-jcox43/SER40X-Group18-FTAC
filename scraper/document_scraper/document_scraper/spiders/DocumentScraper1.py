@@ -15,14 +15,13 @@ class Documentscraper1Spider(scrapy.Spider):
 
     def parse_step(self, response: Response):
         layer = int(response.meta['layer'])
-        # Check the URL and yield it if it is a PDF. You will know when you are visiting a PDF when one of the following conditions are met:
-        #   1. the URL of the current page ends with ".pdf"
-        #   2. there is "Content-Type: application/pdf" in the response header
-        if response.url.lower().endswith(".pdf") or ("Content-Type" in response.headers and response.headers["Content-Type"] == b"application/pdf"):
+        # Check the URL and yield it if it is a PDF.
+        # You will know when you are visiting a PDF when you get a response body that starts with '%PDF-' 
+        if response.body.startswith(b'%PDF-'):
             self.pdf_count = self.pdf_count + 1
             yield {self.pdf_count: response.url}
         elif layer > 0:
-            link_extractor = LinkExtractor(allow_domains=allowed_domains)
+            link_extractor = LinkExtractor(allow_domains=self.allowed_domains)
             links = link_extractor.extract_links(response)
             for link in links:
                 yield response.follow(link, callback=self.parse_step, meta={'layer': layer - 1})
