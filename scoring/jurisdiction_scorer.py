@@ -32,7 +32,7 @@ REGEX_PATTERNS = {
     "private property operation": r"private property",
     "proximity regulations": r"proximity regulation",
     "min distance to restaurant": r"distance.*restaurant(s)?|restaurant(s)?.*distance",
-    "min distance to food truck": r"food truck.*located.*from.*food truck",
+    "min distance to food truck": r"food truck.*|located.*from.*food truck",
     "non-food service proximity restrictions": r"proximity regulation(s)?.*non-food|non-food.*proximity regulation(s)?",
     "min distance proximity from other business": r"distance.*business|business.*distance",
     "num food trucks allowed in geographic area": r"number of food trucks allowed",

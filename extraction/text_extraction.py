@@ -7,9 +7,35 @@ from extraction_util import cleanText, extractKeywords
 # Define your keyword categories and terms
 # Category: Terms []
 KEYWORDS = {
-    "Permit Documents": ["permit", "authorization", "inspection"],
-    "Financial Documents": ["invoice", "payment", "tax"],
-    "Legal Documents": ["contract", "regulation", "compliance"],
+    "webpage": [".gov"],
+    "checklist": ["checklist"],
+    "guide to license": ["guide"],
+    "bylaws": ["bylaw"],
+    "penalties": ["fine", "fee"],
+    "provincial business license": ["provincial business license"],
+    "provincial food business license": ["provincial food business license"],
+    "municipal business license": ["municipal business license"],
+    "municipal food business license": ["municipal food business license"],
+    "retail license for CPG": ["consumer packaged good", "CPG"],
+    "curbside vending": ["curbside vending"],
+    "parking fees": ["parking fee"],
+    "noise bylaws": ["noise", "noise bylaw", "sound"],
+    "traffic bylaws": ["traffic bylaw"],
+    "operation hours": ["operation hours", "hours"],
+    "branded consumer goods": ["branding", "branded consumer goods"],
+    "private property operation": ["private property"],
+    "proximity regulations": ["proximity regulation"],
+    "min distance to restaurant": ["distance to restaurants"],
+    "min distance to food truck": ["food truck", "from food truck"],
+    "non-food service proximity restrictions": ["proximity regulation", "non-food service proximity"],
+    "min distance proximity from other business": ["proximity to other business"],
+    "num food trucks allowed in geographic area": ["number of food trucks allowed", "food trucks can be in"],
+    "parking locations": ["designated parking", "allowed parking", "parking allowed"],
+    "additional private restrictions": ["private restrictions"],
+    "name of local authority": ["local authority"],
+    "insurance requirements": ["insurance"],
+    "physical requirements for trucks": ["trucks must have"],
+    "exterior appearance guidelines": ["appearance", "exterior look"],
 }
 
 FILEPATH = os.path.join("..", "test documents")
@@ -85,5 +111,8 @@ def extractPDF(filename):
 
 
 if __name__ == "__main__":
-    extractTXT("Test document for legal stuff.txt")
-    extractPDF("phoenix_mobile_vending_and_mobile_food_vending_brochure.pdf")
+    for file_name in os.listdir(FILEPATH):
+        if file_name.lower().endswith(".txt"):
+            extractTXT(file_name)
+        elif file_name.lower().endswith(".pdf"):
+            extractPDF(file_name)

@@ -1,15 +1,38 @@
 {
   "file": "Test document for legal stuff.txt",
   "keyword_contexts": {
-    "Permit Documents": {},
-    "Financial Documents": {},
-    "Legal Documents": {
-      "contract": [
-        "klsdfsldjfk design skdfsdfslkdfjskdlfsd agreement contract sdkflsdfkjsdfljkds terms of service sdkfslkdfjd l"
-      ],
-      "regulation": [
-        "ervice sdkfslkdfjd law indicates sdljkfsdkflsdkjf regulation: ja;fljl;kfdjaljdfl bylaw sdlkfsjdkf agreement"
+    "webpage": {},
+    "checklist": {},
+    "guide to license": {},
+    "bylaws": {
+      "bylaw": [
+        "bylaw"
       ]
-    }
+    },
+    "penalties": {},
+    "provincial business license": {},
+    "provincial food business license": {},
+    "municipal business license": {},
+    "municipal food business license": {},
+    "retail license for CPG": {},
+    "curbside vending": {},
+    "parking fees": {},
+    "noise bylaws": {},
+    "traffic bylaws": {},
+    "operation hours": {},
+    "branded consumer goods": {},
+    "private property operation": {},
+    "proximity regulations": {},
+    "min distance to restaurant": {},
+    "min distance to food truck": {},
+    "non-food service proximity restrictions": {},
+    "min distance proximity from other business": {},
+    "num food trucks allowed in geographic area": {},
+    "parking locations": {},
+    "additional private restrictions": {},
+    "name of local authority": {},
+    "insurance requirements": {},
+    "physical requirements for trucks": {},
+    "exterior appearance guidelines": {}
   }
 }
