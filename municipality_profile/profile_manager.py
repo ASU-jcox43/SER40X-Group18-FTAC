@@ -33,6 +33,9 @@ def createGeographic(cityName, province, region, location, landArea, boundaries)
 
 def createContactInfo(department, address, phone, email, website):
     # Multiple contact information can be created 
+    # Contact information could include: Licensing, permit office, 
+    # parking/bylaw office, public health/food safety office, fire deparment office, etc
+
     return {
         "Department": department,
         "Address": address,
@@ -46,6 +49,7 @@ def createMunicipalityProfile(name, province, population, age, income, community
         "Name": name,
         "Province": province,
         "Demographic": createDemographic(population, age, income, community),
-
+        #"Geographic": createGeographic(),
+        #"Contact Information": createContactInfo()
     }
     return profile
