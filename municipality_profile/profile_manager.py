@@ -1,6 +1,5 @@
 import json
 
-
 def createDemographic(population, age, income, community):
     return {
         "Population": population,
@@ -8,16 +7,6 @@ def createDemographic(population, age, income, community):
         "income": income,
         "community": community,
     }
-
-
-def createProfile(name, province, population, age, income, community):
-    profile = {
-        "Name": name,
-        "Province": province,
-        "Demographic": createDemographic(population, age, income, community),
-    }
-    return profile
-
 
 def createGeographic(cityName, province, region, location, landArea, boundaries):
     # Example geographic profile section  
@@ -42,4 +31,20 @@ def createGeographic(cityName, province, region, location, landArea, boundaries)
         "Boundaries": boundaries
     }
 
-    
+def createContactInfo(department, address, phone, email, website):
+    # Multiple contact information can be created 
+    return {
+        "Department": department,
+        "Address": address,
+        "Phone": phone,
+        "Email": email,
+        "Website": website
+    }
+
+def createProfile(name, province, population, age, income, community):
+    profile = {
+        "Name": name,
+        "Province": province,
+        "Demographic": createDemographic(population, age, income, community),
+    }
+    return profile
