@@ -1,0 +1,12 @@
+[
+    {
+        "Name": "Jacob",
+        "Province": "Ontario",
+        "Demographic": {
+            "Population": 2800000,
+            "Age": 35,
+            "income": 600000,
+            "community": "community"
+        }
+    }
+]

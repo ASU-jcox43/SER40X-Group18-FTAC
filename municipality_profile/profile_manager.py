@@ -1,5 +1,3 @@
-import json
-
 def createDemographic(population, age, income, community):
     return {
         "Population": population,
@@ -8,8 +6,9 @@ def createDemographic(population, age, income, community):
         "community": community,
     }
 
+
 def createGeographic(cityName, province, region, location, landArea, boundaries):
-    # Example geographic profile section  
+    # Example geographic profile section
     # City Name: City of Makrham
     # Province: Ontario
     # Region: York Region (Greater Toronto Area)
@@ -28,12 +27,13 @@ def createGeographic(cityName, province, region, location, landArea, boundaries)
         "Region": region,
         "Location": location,
         "Area": landArea,
-        "Boundaries": boundaries
+        "Boundaries": boundaries,
     }
 
+
 def createContactInfo(department, address, phone, email, website):
-    # Multiple contact information can be created 
-    # Contact information could include: Licensing, permit office, 
+    # Multiple contact information can be created
+    # Contact information could include: Licensing, permit office,
     # parking/bylaw office, public health/food safety office, fire deparment office, etc
 
     return {
@@ -41,15 +41,16 @@ def createContactInfo(department, address, phone, email, website):
         "Address": address,
         "Phone": phone,
         "Email": email,
-        "Website": website
+        "Website": website,
     }
+
 
 def createMunicipalityProfile(name, province, population, age, income, community):
     profile = {
         "Name": name,
         "Province": province,
         "Demographic": createDemographic(population, age, income, community),
-        #"Geographic": createGeographic(),
-        #"Contact Information": createContactInfo()
+        # "Geographic": createGeographic(),
+        # "Contact Information": createContactInfo()
     }
     return profile
