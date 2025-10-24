@@ -4,7 +4,7 @@ from profile_manager import createProfile
 SAVEPATH = os.path.join("..", "municipality_profile", "profiles.json")
 
 
-def addProfile(name, province, population, age, income, community):
+def createMunicipalityProfile(name, province, population, age, income, community):
     # Add logic to ask for profile information
     profile = createProfile(name, province, population, age, income, community)
 
@@ -17,4 +17,4 @@ income = 60,0000
 community = "community"
 
 if __name__ == "__main__":
-    addProfile(name, province, population, age, income, community)
+    createMunicipalityProfile(name, province, population, age, income, community)

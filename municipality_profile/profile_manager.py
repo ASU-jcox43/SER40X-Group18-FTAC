@@ -41,10 +41,11 @@ def createContactInfo(department, address, phone, email, website):
         "Website": website
     }
 
-def createProfile(name, province, population, age, income, community):
+def createMunicipalityProfile(name, province, population, age, income, community):
     profile = {
         "Name": name,
         "Province": province,
         "Demographic": createDemographic(population, age, income, community),
+
     }
     return profile
