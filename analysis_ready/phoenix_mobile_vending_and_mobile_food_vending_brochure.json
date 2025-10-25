@@ -2,13 +2,56 @@
   "file": "phoenix_mobile_vending_and_mobile_food_vending_brochure.pdf",
   "keyword_contexts": {
     "webpage": {
+      "city of": [
+        "(2) City Clerk means the City Clerk of the City of Phoenix or her designee.",
+        "(22) Structure means as defined in Section 202 of the City of Phoe nix Zoning Ordinance.",
+        "Every licensee shall have a designated agent, wh o shall be an individual who resides in the City of  Phoenix on",
+        "enforcement officer of this State, City of Phoenix license inspector or inspector of the City Neighbor hood",
+        "Any violation of the provisions of this article or the City of Phoenix Zoning Ordinance regulating mobile",
+        "of other City officials to enforce the provisions o f any other chapter of this Code.",
+        "Municipal Court of the City of Phoenix.",
+        "The Municipal Court of the City of Phoenix shall  have jurisdiction to issue orders permitting the C ity to abate",
+        "City ordinance or as provided in the Local Rules of  Practice and Procedure, City Court, City of Phoeni x.",
+        "CITY OF PHOENIX"
+      ],
       ".gov": [
         "Website: www.phoenix.gov/licenseservices"
       ]
     },
     "checklist": {},
     "guide to license": {},
-    "bylaws": {},
+    "bylaws": {
+      "ordinance": [
+        "(Ordinance G-2197, 5/19/81)",
+        "this ordinance on behalf of the applicant or licens ee.",
+        "(22) Structure means as defined in Section 202 of the City of Phoe nix Zoning Ordinance.",
+        "All notices or citations to the applicant for a  violation of the Zoning Ordinance for the previous  five years.",
+        "A plot plan showing compliance with all Zoning Ordinance requirements for mobile vendors, and with  any",
+        "is a violation of this ordinance.",
+        "Any violation of the provisions of this article or the City of Phoenix Zoning Ordinance regulating mobile",
+        "requirements of the Zoning Ordinance regulating mob ile vending operations.",
+        "of Phoenix Zoning Ordinance regulating mobile vendi ng operations.",
+        "Ordinance relating to mobile vendors.",
+        "Is regulated as a Farmers Market or Community Garden  pursuant to the Phoenix Zoning Ordinance; or",
+        "City ordinance or as provided in the Local Rules of  Practice and Procedure, City Court, City of Phoeni x.",
+        "PHOENIX ZONING ORDINANCE",
+        "(***Skipped portions of the Zoning Ordinance that a re not relevant to Mobile Vendors.)",
+        "Ordinance.",
+        "this ordinance for the operation of any other use o n the site.",
+        "contained in Section 705 of the Zoning Ordinance.",
+        "of Section 624.E.4.d of the Zoning Ordinance shall not apply.",
+        "624.E.4.d of the Zoning Ordinance shall not apply.",
+        "of the Zoning Ordinance; or (4) regu lated pursuant to Section 637.A.4 (Promotional even ts at",
+        "Any person who intends to establish any use whic h under the provisions of this ordinance is require d to",
+        "under the provisions of this ordinance is required to maintain the minimum separation from the registe red use may be"
+      ],
+      "regulation": [
+        "The use of signs by mobile vendors and mobile fo od vendors shall be governed by the sign regulation s",
+        "subject to all of the district regulations relating  to users, except that the perimeter landscaping re quirements",
+        "all of the regulations for a use in the district, e xcept that the perimeter landscaping requirements o f Section",
+        "sign regulation charge."
+      ]
+    },
     "penalties": {
       "fee": [
         "License  Application Fee  Permit Fee",
@@ -37,6 +80,25 @@
       ],
       "fine": [
         "(22) Structure means as defined in Section 202 of the City of Phoe nix Zoning Ordinance."
+      ],
+      "violation": [
+        "All notices or citations to the applicant for a  violation of this article for the previous five ye ars.",
+        "All notices or citations to the applicant for a  violation of the Zoning Ordinance for the previous  five years.",
+        "is a violation of this ordinance.",
+        "Any violation of the provisions of this article or the City of Phoenix Zoning Ordinance regulating mobile",
+        "vendors within one year prior to the date of applic ation; or any violation of any of the spacing or la nd use",
+        "be applicable: nature and timing of prior warnings given; date(s) of violation; previous violations; d uration of",
+        "licensure; investment in business; circumstances of  the violation or conviction, including their relat ion to the",
+        "regulatory purpose of the licensing scheme; punishm ent imposed for previous violations or convictions;",
+        "article; and other aggravating or mitigating circum stances directly relating to the violation or convi ction.",
+        "provided that the only issue in an appeal authorize d by this subsection shall be whether a violation o f the",
+        "If the Board determines that a violation of the con sent",
+        "A violation of a consent agreement shall be cons idered a violation of this article.",
+        "not be cause for a violation of this paragraph.",
+        "Violations and penalties.",
+        "any violation of any provision of this article, or who fails to perform any act or duty required by th is article, is",
+        "Each day any violation of any provision of this article, or the failure to perform any act or duty required by this",
+        "conditions that constitute a violation of the provi sions of this article."
       ]
     },
     "provincial business license": {},
@@ -44,22 +106,72 @@
     "municipal business license": {},
     "municipal food business license": {},
     "retail license for CPG": {},
-    "curbside vending": {},
-    "parking fees": {},
-    "noise bylaws": {
-      "sound": [
-        "by a sound level meter."
+    "curbside vending": {
+      "mobile vending": [
+        "1 Mobile Vending &",
+        "Mobile Vending $350.00 $30.00 $30.00 Police & NSD",
+        "MOBILE VENDING",
+        "(8) Licensee means an applicant who has obtained a license pursu ant to this article to conduct a mobile vending",
+        "(9) Manager means the individual, who may be the licensee, who is principally in charge of the mobile vending",
+        "License Services Section     2 (12) Mobile vending operation means peddling, vending, selling, serving, displayi ng, offering for sale or giving away",
+        "(13) Mobile vending unit means any motorized or non-motorized vehicle, trail er, kiosk, pushcart, stand, display,",
+        "wares, or merchandise from a mobile vending unit wh ich is parked or located on a parcel of private pro perty.",
+        "This term does not include a mobile vending unit th at visits multiple private property sites on a dail y basis for no",
+        "(16) Operate means all of the functions set forth in the definit ion of mobile vending operation.",
+        "land where the mobile vending unit or mobile food v ending unit will be located, which is required to b e",
+        "Mobile vending on private property; mo bile vendor license required; manager for each site",
+        "No person shall engage in a mobile vending opera tion, or employ or hire another to engage in a mobi le vending",
+        "Every mobile vending operation shall be managed by a manager.",
+        "manage no more than one mobile vending operation.",
+        "The privilege license tax number of the mobile v endor must be affixed to the mobile vending unit or  mobile food",
+        "The property address or Maricopa County parcel number of the site where the mobile vending unit wi ll be",
+        "for a mobile vending operation if food items are to  be sold.",
+        "showing that the applicant has been given permissio n to occupy the site for a mobile vending",
+        "The former owner of the mobile vending operatio n, if any.",
+        "A description of all vehicles to be used in the  mobile vending operation, including the Arizona li cense plate",
+        "on the mobile vending unit or mobile food vending u nit and shall be produced upon request of any law",
+        "fitness of applicants for a mobile vending license.",
+        "It shall be unlawful for any person to operate a  mobile vending operation that has been licensed un der this",
+        "article while the license for that mobile vending o peration is suspended.",
+        "Mobile vending operations on private p roperty; restrictions.",
+        "Mobile vending operations on private property ar e subject to the following restrictions relating to  the site:",
+        "which the mobile vending operation is located, and shall provide, and update as necessary, written",
+        "Connection of a mobile vending unit or a mobile food vending unit to a source of electricity, water , or",
+        "sewer at a mobile vending operation site is prohibi ted unless a permit has been obtained from the",
+        "utility and for each separate mobile vending operat ion site shall be maintained in the mobile vending unit",
+        "The use of portable or vehicle-mounted generator s to supply electricity for a mobile vending operat ion is",
+        "Mobile vending units and mobile food vending uni ts shall not be placed or located within the vision",
+        "No mobile vending unit or mobile food vending un it shall be larger than twenty-four feet long by te n feet",
+        "The area surrounding the mobile vending unit sha ll be permanently marked on all sides at a distance  of",
+        "ten feet from the mobile vending unit.",
+        "No mobile vending unit shall operate at any loca tion other than that established on the plot plan s ubmitted",
+        "Mobile vending and mobile food vending on privat e property shall be subject to the following operat ional",
+        "Any mobile vending unit or mobile food vending u nit shall be removed from the site during the hours  of",
+        "Any semi-permanent structure used an d/or associated with the mobile vending or mobile",
+        "that any mobile vending unit shall be removed from the site no later than 10:30 p.m.",
+        "The mobile vending unit or mobile food",
+        "straight line from the lot line of the parcel on wh ich the mobile vending unit is located to the lot l ine of the",
+        "The area within which a mobile vending unit or m obile food vending unit is operating shall at all t imes be",
+        "mobile vending operation.",
+        "Any licensee, manager, or other person having co ntrol over any mobile vending operation, or control  over any",
+        "parcel of land on which a mobile vending operation is located, who causes, permits, facilitates, or ai ds or abets",
+        "Mobile vending site:  \u201cmobile vending site\u201d  or \u201c site \u201d (as used in subsection 10-166 (B)(1) of the Phoen ix City Code)",
+        "means the property address or Maricopa County parce l number of the land where the mobile vending unit or mobile",
+        "Mobile vending unit:   Any motorized or nonmotorized vehicle, trailer, k iosk, pushcart, stand, display, blanket, ground",
+        "merchandise, or food from a mobile vending unit whi ch is parked or located on a parcel of private prop erty.",
+        "does not include a mobile vending unit that visits multiple private property sites on a daily basis fo r no more than thirty",
+        "Mobile vendors or mobile food vendors shall not locate a mobile vending unit or mobile food vending  unit less",
+        "from a line drawn around the mobile vending unit or  mobile food vending unit with the line being at al l points",
+        "Notwithstanding the provisions of the Subsection  below (Subsection I), a mobile vending unit or mob ile food",
+        "No mobile vending unit or mobile food vending un it shall:"
       ]
     },
+    "parking fees": {},
+    "noise bylaws": {},
     "traffic bylaws": {},
     "operation hours": {
-      "hours": [
-        "Any mobile vending unit or mobile food vending u nit shall be removed from the site during the hours  of",
-        "food vending operation shall also be removed from t he site during hours of non-operation.",
-        "shall not operate between the hours of 2:00 a.m.",
-        "parcel on which the school is located, shall not op erate between the hours of 6:00 a.m.",
-        "A mobile food vendor shall not operate between t he hours of 2:00 a.m.",
-        "(5) During periods of inactivity exceeding forty-ei ght hours such vehicle/equipment are not so parked or placed"
+      "time limit": [
+        "submitted after the time limit shall not be heard."
       ]
     },
     "branded consumer goods": {},
@@ -84,9 +196,79 @@
     "num food trucks allowed in geographic area": {},
     "parking locations": {},
     "additional private restrictions": {},
-    "name of local authority": {},
+    "name of local authority": {
+      "city clerk": [
+        "(2) City Clerk means the City Clerk of the City of Phoenix or her designee.",
+        "City Clerk Department",
+        "submitted to the City Clerk pursuant to subsection 10-163(11).",
+        "No licensee shall operate under a name that has not been provided to the City Clerk on a form presc ribed by",
+        "the City Clerk for that information.",
+        "In addition to the fee required by subsection A,  the applicant shall pay the City Clerk the fee est ablished by the",
+        "An applicant for a license shall file in person at the office of the City Clerk an application form  as prescribed and",
+        "provided by the City Clerk.",
+        "The license issued to the mobile vendor or mobil e food vendor by the City Clerk shall be prominentl y displayed",
+        "shall submit such information as the City Clerk sha ll require on a form provided by the Clerk prior to  the change",
+        "to the City Clerk, on a form provided by the City C lerk for that purpose, within ten calendar days of the change.",
+        "The City Clerk is authorized to receive criminal  history record information for the purpose of eval uating the",
+        "the City Clerk indicating that the individual\u2019s pre sence in the United States is authorized under Fede ral Law:",
+        "Applications for licenses issued pursuant to thi s article shall be denied by the City Clerk for any  of the following",
+        "Any license issued pursuant to this article shal l be revoked by the City Clerk, or suspended for a period not to",
+        "In determining the appropriate administrative sa nction, the City Clerk shall consider the following  factors as may",
+        "If the City Clerk determines that an application  should be denied or that a license should be revok ed or",
+        "mailing address as reflected in the records of the City Clerk and by certified mail to the designated agent at the",
+        "designated agent's most recent residence address in  the records of the City Clerk; or by personal serv ice on",
+        "a written notice of appeal with the City Clerk with in ten City working days after service of the notic e of denial,",
+        "The City Clerk may, either before or after the i ssuance of a notice of suspension or revocation, pr ovide for",
+        "The license of any person violating any of the t erms of a consent agreement shall be revoked by the  City Clerk",
+        "evidence to the City Clerk of that authorization or  permission.",
+        "The authority of the City Clerk to enforce the prov isions of this article is independent of and in add ition to the authority",
+        "food vending unit will be located, which is require d to be submitted to the City Clerk pursuant to sub section 10-163 (11)",
+        "CITY CLERK DEPARTMENT",
+        "This publication can be provided in an alternate fo rmat by contacting the City Clerk Department,"
+      ]
+    },
+    "direct link to authority": {
+      "call": [
+        "Call  (602)",
+        "goods, wares or merchandise, provided that those se rvices specifically required to serve food shall be",
+        "the public such items as fresh produce, seasonal fr uits, fresh flowers, locally produced arts and craf ts items (but not to"
+      ],
+      "office": [
+        "An applicant for a license shall file in person at the office of the City Clerk an application form  as prescribed and",
+        "enforcement officer of this State, City of Phoenix license inspector or inspector of the City Neighbor hood",
+        "officer."
+      ],
+      "phone": [
+        "Current residence and telephone number.",
+        "The full true name, residence address, home tele phone number, and driver's license number, if any, of the",
+        "The full true name, residence address, home tel ephone number, and driver's license number, if any,  of the",
+        "and telephone number.",
+        "A mobile vendor shall not use bells, chimes, mic rophones, loudspeakers or amplified music as a part  of its",
+        "Phone: (602) 262-4638"
+      ],
+      "contact": [
+        "This publication can be provided in an alternate fo rmat by contacting the City Clerk Department,"
+      ]
+    },
     "insurance requirements": {},
-    "physical requirements for trucks": {},
-    "exterior appearance guidelines": {}
+    "physical requirements for trucks": {
+      "license number": [
+        "Driver's license number, if any.",
+        "The full true name, residence address, home tele phone number, and driver's license number, if any, of the",
+        "The full true name, residence address, home tel ephone number, and driver's license number, if any,  of the",
+        "The mobile vendor license number issued pursuant  to this article shall be affixed to the mobile ven ding unit or"
+      ]
+    },
+    "exterior appearance guidelines": {
+      "color": [
+        "Height, weight, and color of hair and eyes."
+      ],
+      "paint": [
+        "(2) Such signs are magnetic, decals, or painted upo n an integral part of the vehicle or equipment as o riginally"
+      ],
+      "painted": [
+        "(2) Such signs are magnetic, decals, or painted upo n an integral part of the vehicle or equipment as o riginally"
+      ]
+    }
   }
 }

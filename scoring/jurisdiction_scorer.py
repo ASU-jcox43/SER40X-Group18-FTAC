@@ -13,36 +13,36 @@ from pathlib import Path
 # These are really rough around the edges but hopefully can be tweaked later.
 # Re is not easy...
 REGEX_PATTERNS = {
-    "webpage": r"\.gov",
-    "checklist": r"checklist",
-    "guide to license": r"guide",
-    "bylaws": r"bylaw",
-    "penalties": r"fine|fee",
-    "provincial business license": r"provincial business license",
-    "provincial food business license": r"provincial food business licence",
-    "municipal business license": r"municipal business license",
-    "municipal food business license": r"municipal food business license",
-    "retail license for CPG": r"consumer packaged good|CPG",
-    "curbside vending": r"curbside vending",
-    "parking fees": r"parking fee",
-    "noise bylaws": r"noise|noise bylaws|sound",
-    "traffic bylaws": r"traffic bylaw",
-    "operation hours": r"operation hours",
-    "branded consumer goods": r"branded consumer goods",
-    "private property operation": r"private property",
-    "proximity regulations": r"proximity regulation",
-    "min distance to restaurant": r"distance.*restaurant(s)?|restaurant(s)?.*distance",
-    "min distance to food truck": r"food truck.*|located.*from.*food truck",
-    "non-food service proximity restrictions": r"proximity regulation(s)?.*non-food|non-food.*proximity regulation(s)?",
-    "min distance proximity from other business": r"distance.*business|business.*distance",
-    "num food trucks allowed in geographic area": r"number of food trucks allowed",
-    "parking locations": r"designated parking",
-    "additional private restrictions": r"private.*additional restriction(s)?",
-    "name of local authority": r"local authority",
-    "direct link to authority": r"contact.*at",
-    "insurance requirements": r"insurance",
-    "physical requirements for trucks": r"truck(s)?.*must have",
-    "exterior appearance guidelines": r"exterior appearance"
+    "webpage": r"\.(gov|ca|org|com)\b",
+    "checklist": r"\b(checklist|required\s+documents?|supporting\s+documents?)\b",
+    "guide to license": r"\b(guide|how\s+to\s+apply|application\s+instructions?)\b",
+    "bylaws": r"\b(by[-]?law(s)?|regulation(s)?|municipal\s+code|chapter\s+\d+)\b",
+    "penalties": r"\b(fine(s)?|fee(s)?|charge(s)?|penalt(y|ies))\b",
+    "provincial business license": r"\b(provincial\s+(business|vendor|operator)\s+licen[cs]e)\b",
+    "provincial food business license": r"\b(provincial\s+(food|restaurant|mobile|refreshment)\s+licen[cs]e)\b",
+    "municipal business license": r"\b(municipal\s+(business|vendor|operator)\s+licen[cs]e)\b",
+    "municipal food business license": r"\b(municipal\s+(food|restaurant|mobile|refreshment)\s+licen[cs]e)\b",
+    "retail license for CPG": r"\b(consumer\s+packaged\s+good(s)?|CPG|retail\s+product)\b",
+    "curbside vending": r"\b(curbside|street|mobile)\s+vending\b",
+    "parking fees": r"\b(parking\s+(fee|rate|permit|payment|meter|zone|ticket))\b",
+    "noise bylaws": r"\b(noise|sound|amplified\s+music|noise\s+by[-]?law)\b",
+    "traffic bylaws": r"\b(traffic\s+by[- ]?law|act|road\s+closure|vehicle\s+restriction)\b",
+    "operation hours": r"\b((operation|operating|business|service)\s+hour(s)?|hour(s)?\s+of\s+("r"operation|operations?|business|service))\b",
+    "branded consumer goods": r"\b(brand(ed)?|logo|branded\s+consumer\s+good(s)?)\b",
+    "private property operation": r"\b(private\s+(property|lot|land|premises))\b",
+    "proximity regulations": r"\b(proximity\s+(regulation|rule|restriction|limit))\b",
+    "min distance to restaurant": r"\b(proximity|distance|restriction)\b.*\b(non[-]?food|retail|service)\b|\b(from.*restaurant)\b",
+    "min distance to food truck": r"\b(distance|proximity|buffer)\b.*\b(food\s+truck(s)?)\b|\b(food\s+truck(s)?)\b.*\b(distance|proximity|buffer)\b",
+    "non-food service proximity restrictions": r"\b(proximity|distance|restriction)\b.*\b(non[-]?food|retail|service)\b",
+    "min distance proximity from other business": r"\b(distance|proximity|buffer)\b.*\b(business(es)?|vendor(s)?)\b",
+    "num food trucks allowed in geographic area": r"\b(number|limit|maximum|quota)\b.*\b(food\s+truck(s)?)\b|\b(food truck(s)? per.*)\b",
+    "parking locations": r"\b((parking\s+(location(s)?|spot(s)?|zone(s)?|area(s)?|designation(s)?|space(s)?|lot(s)?|place(s)?|area(s)?\s+allowed))|((location(s)?|spot(s)?|zone(s)?|area(s)?|space(s)?|lot(s)?|place(s)?|designation(s)?)\s+(for|where|allowed\s+for)\s+parking))\b",
+    "additional private restrictions": r"\b(private|property)\b.*\b(restriction(s)?|rule(s)?|limitation(s)?)\b",
+    "name of local authority": r"\b(local\s+(authority|municipality|council|city|town|region|office))\b",
+    "direct link to authority": r"\b(contact|email|phone|reach|connect|website|office)\b.*\b(@|toronto\.ca|\.gov|\.ca|call)\b",
+    "insurance requirements": r"\b(insurance|liability|coverage|policy|insured|certificate\s+of\s+insurance)\b",
+    "physical requirements for trucks": r"\b(truck(s)?|vehicle(s)?)\b.*\b(requirement(s)?|must\s+have|equipment|dimension(s)?)\b",
+    "exterior appearance guidelines": r"\b(exterior|appearance|design|look|paint|finish|signage|decoration)\b"
 }
 
 
@@ -83,19 +83,17 @@ def score_json_file(path):
         data = json.load(f)
 
     score = 0
+
     for category, terms, in data.get("keyword_contexts", {}).items():
-        found = False
         for term, sentences in terms.items():
             for sentence in sentences:
                 if score_categories(category, sentence):
                     score += 1
-                    found = True
                     break
-            if found:
-                    break
-
-    score /= 30
-    score *= 100
+                else:
+                    continue
+                break
+    score = (score / len(REGEX_PATTERNS)) * 100
     return round(score, 2)
 
 
