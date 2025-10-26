@@ -4,4 +4,4 @@
 .vscode
 **/analysis_ready
 **/visualizeTest
-profiles.json
+municipality_profile/profiles.json
