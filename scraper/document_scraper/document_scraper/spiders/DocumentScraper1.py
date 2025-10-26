@@ -1,28 +1,34 @@
 import scrapy
 from scrapy.http.response import Response
 from scrapy.linkextractors import LinkExtractor
+import re
 
 class Documentscraper1Spider(scrapy.Spider):
     name = "DocumentScraper1"
-    allowed_domains: list[str] = ["mississauga.ca"]
-    start_urls: list[str] = ["https://www.mississauga.ca/council/by-laws/"]
-    pdf_count: int = 0
+    allowed_domains: list[str] = ["antigonishcounty.ca", "calgary.ca", "mississauga.ca", "ottawa.ca", "york.ca"]
+    start_urls: list[str] = ["https://www.york.ca/york-region/bylaws"]
+    doc_count: int = 0
     #number of clicks that you need to get from the start url to any bylaw PDF
-    layers: int = 2
+    layers: str = 1
+    #enable if the bylaw text is not within PDFs
+    no_pdf: bool = True
+    #Links must contain a match using this regular expression in order to be traversed after the start url.
+    #An empty string value will match everything.
+    rex = r"\/bylaws\/"
 
     def parse(self, response: Response):
-        response.follow(response, callback=self.parse_step, meta={'layer': str(self.layers)})
+        if self.rex != r"":
+            self.rex = re.compile(self.rex)
+        yield scrapy.Request(response.url, callback=self.parse_step, cb_kwargs=dict(layer=self.layers))
 
-    def parse_step(self, response: Response):
-        layer = int(response.meta['layer'])
+    def parse_step(self, response: Response, layer: int):
         # Check the URL and yield it if it is a PDF.
         # You will know when you are visiting a PDF when you get a response body that starts with '%PDF-' 
-        if response.body.startswith(b'%PDF-'):
-            self.pdf_count = self.pdf_count + 1
-            yield {self.pdf_count: response.url}
+        if response.body.startswith(b'%PDF-') or (layer == 0 and self.no_pdf):
+            self.doc_count = self.doc_count + 1
+            yield {self.doc_count: response.url}
         elif layer > 0:
-            link_extractor = LinkExtractor(allow_domains=self.allowed_domains)
-            links = link_extractor.extract_links(response)
+            links = response.xpath('//@href').getall()
             for link in links:
-                yield response.follow(link, callback=self.parse_step, meta={'layer': layer - 1})
-        #All PDFs will be added by check() to pdfs[] and any other pages will be ignored
+                if not (self.rex != r"" and self.rex.search(link) == None):
+                    yield scrapy.Request(response.urljoin(link), callback=self.parse_step, cb_kwargs=dict(layer=layer - 1))
