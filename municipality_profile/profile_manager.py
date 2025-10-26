@@ -51,6 +51,8 @@ def createScore():
     # Operations & Restrictions score (out of 30)
     # Equity & Fairness PLACEHOLDER
 
+    friendliness_index = scoreBreakdown()
+
     return {
         "Foundational Score": 0,
         "Licensing Requirements": 0,
@@ -60,13 +62,31 @@ def createScore():
 
 def scoreBreakdown():
     # Detailed breakdown of scores for each section
-    list []
-    return {
-        "Foundational Score Breakdown": {},
-        "Licensing Requirements Breakdown": {},
-        "Operations & Restrictions Breakdown": {},
-        "Friendliness index Breakdown": {}
+    # Scoring rubric topics are proprietary information and cannot be shared
+    
+    # example response structure below
+    friendlinessBreakdown = {
+        "Foundational": {
+            "Points Awarded": 0,
+            "Points Available": 10,
+            "Percentage": 0,
+            "Friendliness Index": "Very friendly"
+        },
+        "Licensing Requirements": {
+            "Points Awarded": 0,
+            "Points Available": 10,
+            "Percentage": 0,
+            "Friendliness Index": "Very friendly"
+        },
+        "Operations & Restrictions": {
+            "Points Awarded": 0,
+            "Points Available": 30,
+            "Percentage": 0,
+            "Friendliness Index": "Very friendly"
+        }
     }
+    return friendlinessBreakdown
+    
 
 def createMunicipalityProfile(name, province, population, age, income, community):
     profile = {
