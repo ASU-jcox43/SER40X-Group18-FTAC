@@ -44,6 +44,30 @@ def createContactInfo(department, address, phone, email, website):
         "Website": website
     }
 
+def createScore():
+    # Create scoring system based on municipality profile and rubric
+    # Foundational score (out of 10)
+    # Licensing Requirements score (out of 10)
+    # Operations & Restrictions score (out of 30)
+    # Equity & Fairness PLACEHOLDER
+
+    return {
+        "Foundational Score": 0,
+        "Licensing Requirements": 0,
+        "Operations & Restrictions": 0,
+        "Friendliness index": 0
+    }
+
+def scoreBreakdown():
+    # Detailed breakdown of scores for each section
+    list []
+    return {
+        "Foundational Score Breakdown": {},
+        "Licensing Requirements Breakdown": {},
+        "Operations & Restrictions Breakdown": {},
+        "Friendliness index Breakdown": {}
+    }
+
 def createMunicipalityProfile(name, province, population, age, income, community):
     profile = {
         "Name": name,
@@ -53,3 +77,4 @@ def createMunicipalityProfile(name, province, population, age, income, community
         #"Contact Information": createContactInfo()
     }
     return profile
+
