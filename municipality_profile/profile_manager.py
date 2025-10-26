@@ -1,15 +1,13 @@
-import json
-
-def createDemographic(population, age, income, community):
+def createDemographic(population, age, community):
     return {
         "Population": population,
         "Age": age,
-        "income": income,
         "community": community,
     }
 
+
 def createGeographic(cityName, province, region, location, landArea, boundaries):
-    # Example geographic profile section  
+    # Example geographic profile section
     # City Name: City of Makrham
     # Province: Ontario
     # Region: York Region (Greater Toronto Area)
@@ -28,12 +26,13 @@ def createGeographic(cityName, province, region, location, landArea, boundaries)
         "Region": region,
         "Location": location,
         "Area": landArea,
-        "Boundaries": boundaries
+        "Boundaries": boundaries,
     }
 
+
 def createContactInfo(department, address, phone, email, website):
-    # Multiple contact information can be created 
-    # Contact information could include: Licensing, permit office, 
+    # Multiple contact information can be created
+    # Contact information could include: Licensing, permit office,
     # parking/bylaw office, public health/food safety office, fire deparment office, etc
 
     return {
@@ -41,7 +40,7 @@ def createContactInfo(department, address, phone, email, website):
         "Address": address,
         "Phone": phone,
         "Email": email,
-        "Website": website
+        "Website": website,
     }
 
 def createScore():
@@ -88,13 +87,26 @@ def scoreBreakdown():
     return friendlinessBreakdown
     
 
-def createMunicipalityProfile(name, province, population, age, income, community):
+
+# TODO: Add more aspects if needed
+def createEconomy(income, minWage, commTaxRates):
+    return {
+        "Income Level": income,
+        "Minimum Wage": minWage,
+        "Commercial Tax Rates": commTaxRates,
+    }
+
+
+def createMunicipalityProfile(
+    name, province, population, age, community, income, minWage, commTaxRates
+):
     profile = {
         "Name": name,
         "Province": province,
-        "Demographic": createDemographic(population, age, income, community),
-        #"Geographic": createGeographic(),
-        #"Contact Information": createContactInfo()
+        "Demographic": createDemographic(population, age, community),
+        "Economy": createEconomy(income, minWage, commTaxRates),
+        # "Geographic": createGeographic(),
+        # "Contact Information": createContactInfo()
     }
     return profile
 
