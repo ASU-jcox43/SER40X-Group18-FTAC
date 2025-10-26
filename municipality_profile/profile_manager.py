@@ -1,8 +1,7 @@
-def createDemographic(population, age, income, community):
+def createDemographic(population, age, community):
     return {
         "Population": population,
         "Age": age,
-        "income": income,
         "community": community,
     }
 
@@ -45,11 +44,23 @@ def createContactInfo(department, address, phone, email, website):
     }
 
 
-def createMunicipalityProfile(name, province, population, age, income, community):
+# TODO: Add more aspects if needed
+def createEconomy(income, minWage, commTaxRates):
+    return {
+        "Income Level": income,
+        "Minimum Wage": minWage,
+        "Commercial Tax Rates": commTaxRates,
+    }
+
+
+def createMunicipalityProfile(
+    name, province, population, age, community, income, minWage, commTaxRates
+):
     profile = {
         "Name": name,
         "Province": province,
-        "Demographic": createDemographic(population, age, income, community),
+        "Demographic": createDemographic(population, age, community),
+        "Economy": createEconomy(income, minWage, commTaxRates),
         # "Geographic": createGeographic(),
         # "Contact Information": createContactInfo()
     }

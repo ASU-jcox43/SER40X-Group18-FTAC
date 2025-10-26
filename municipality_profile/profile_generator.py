@@ -5,10 +5,12 @@ from profile_manager import createMunicipalityProfile
 SAVEPATH = os.path.join("..", "municipality_profile", "profiles.json")
 
 
-def addProfile(name, province, population, age, income, community):
+def addProfile(
+    name, province, population, age, community, income, minWage, commTaxRates
+):
     # Add logic to ask for profile information
     profile = createMunicipalityProfile(
-        name, province, population, age, income, community
+        name, province, population, age, community, income, minWage, commTaxRates
     )
 
     # Check if the file exists
@@ -38,6 +40,11 @@ if __name__ == "__main__":
     province = "Ontario"
     population = 2800000
     age = 35
-    income = 600000
     community = "community"
-    addProfile(name, province, population, age, income, community)
+    income = 600000
+    minWage = 17.00
+    commTaxRates = 0.20
+
+    addProfile(
+        name, province, population, age, community, income, minWage, commTaxRates
+    )
