@@ -6,15 +6,15 @@ import re
 class Documentscraper1Spider(scrapy.Spider):
     name = "DocumentScraper1"
     allowed_domains: list[str] = ["antigonishcounty.ca", "calgary.ca", "mississauga.ca", "ottawa.ca", "york.ca"]
-    start_urls: list[str] = ["https://www.york.ca/york-region/bylaws"]
+    start_urls: list[str] = ["https://www.calgary.ca/bylaws/city-bylaw-library.html"]
     doc_count: int = 0
     #number of clicks that you need to get from the start url to any bylaw PDF
     layers: str = 1
     #enable if the bylaw text is not within PDFs
-    no_pdf: bool = True
+    no_pdf: bool = False
     #Links must contain a match using this regular expression in order to be traversed after the start url.
     #An empty string value will match everything.
-    rex = r"\/bylaws\/"
+    rex = r"Download"
 
     def parse(self, response: Response):
         if self.rex != r"":
