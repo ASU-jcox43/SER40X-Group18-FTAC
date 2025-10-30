@@ -96,7 +96,5 @@ def import_model(path):
     return json.load(open(path, "r"))
 
 if __name__ == "__main__":
-    scoring_model = import_model("scoring models/foodtruck.json")
-    for key in scoring_model.keys():
-        print(scoring_model[key])
+    scoring_model = import_model("scoring_models/foodtruck.json")
     score_jurisdictions("../analysis_ready", scoring_model)
