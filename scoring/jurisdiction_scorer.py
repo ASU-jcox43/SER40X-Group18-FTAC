@@ -11,8 +11,10 @@ import os
 import re
 import sys
 from pathlib import Path
+from typing import Iterable
 
-def score_categories(text, category, model:dict):
+
+def score_categories(text, category:str, model:dict[str, str]):
     """
         Checks if a category has a match with the regular expression.
 
@@ -26,13 +28,13 @@ def score_categories(text, category, model:dict):
         Returns:
             True or False depending on if a match was found.
         """
+    print(f"MODEL {model} MODEL")
     pattern = model.get(category)
     if not pattern:
         return False
     return bool(re.search(pattern, text, re.IGNORECASE))
 
-
-def score_json_file(path, model:dict):
+def score_json_file(path, models:dict[str, dict[str, str]]):
     """
         Calculates the friendliness score for a single JSON file.
 
@@ -41,7 +43,7 @@ def score_json_file(path, model:dict):
 
         Args:
             path: The file path to the folder of JSON files.
-            model: The scoring model that will be used.
+            models: The scoring models that will be used.
 
         Returns:
             The score rounded to two decimal points.
@@ -50,22 +52,21 @@ def score_json_file(path, model:dict):
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    score = 0
+    scores = {model: 0 for model in models}
 
     for category, terms, in data.get("keyword_contexts", {}).items():
         for term, sentences in terms.items():
             for sentence in sentences:
-                if score_categories(sentence, category, model):
-                    score += 1
-                    break
-                else:
-                    continue
-                break
-    score = (score / len(model)) * 100
-    return round(score, 2)
+                for model in models.keys():
+                    if score_categories(sentence, category, models[model]):
+                        scores[model] += 1
+                        break
+                    else:
+                        continue
+    print(scores.items())
+    return {model:round((score/len(models[model].keys()))*100, 2) for (model, score) in scores.items()}
 
-
-def score_jurisdictions(path, model:dict):
+def score_jurisdictions(path, models:dict[str, dict[str, str]]):
     """
         Iterates through all JSON files in a folder.
 
@@ -73,14 +74,15 @@ def score_jurisdictions(path, model:dict):
 
         Args:
             path: The file path to the folder of JSON files.
-            model: The scoring model that will be used.
+            models: The scoring models that will be used.
     """
     results = {}
     folder = Path(path)
 
     for file_path in folder.glob("*.json"):
+        score = score_json_file(file_path, models)
         try:
-            score = score_json_file(file_path, model)
+            score = score_json_file(file_path, models)
             results[file_path.name] = score
             print(f"{file_path.name} has a friendliness score of: {score}%")
         except Exception as e:
@@ -92,9 +94,17 @@ def score_jurisdictions(path, model:dict):
 
     print(json.dumps(results, indent=2))
 
-def import_model(path):
+def import_model(path) -> dict:
+    """
+    Used to import a scoring model
+    :param path: Path to a scoring model in json format. Each key is a scoring category and the values are regular expressions that are used to calculate the score. Example input: ``{"score_category1": "regex1", "score_category2": "regex2"}``
+    :return: A scoring model dictionary
+    """
     return json.load(open(path, "r"))
 
 if __name__ == "__main__":
-    scoring_model = import_model("scoring_models/foodtruck.json")
-    score_jurisdictions("../analysis_ready", scoring_model)
+    scoring_models = {}
+    scoring_models_dir = Path("scoring_models")
+    for scoring_model_file in scoring_models_dir.glob("*.json"):
+        scoring_models[str(scoring_model_file)[len(scoring_models_dir.name)+1:-5]] = import_model(scoring_model_file)
+    score_jurisdictions("../analysis_ready", scoring_models)

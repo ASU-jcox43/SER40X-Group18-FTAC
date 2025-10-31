@@ -1,0 +1,12 @@
+{
+  "doc1.json": {
+    "business type 1": 20,
+    "business type 2": 30,
+    "business type 3": 77
+  },
+  "doc2.json": {
+    "business type 1": 72,
+    "business type 2": 10,
+    "business type 3": 80
+  }
+}
