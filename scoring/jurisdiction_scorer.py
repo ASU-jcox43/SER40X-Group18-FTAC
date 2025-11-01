@@ -7,11 +7,12 @@ adding points to determine a final score.
 """
 
 import json
-import os
+import operator
 import re
-import sys
+from operator import concat
 from pathlib import Path
-from typing import Iterable
+import flatdict
+from functools import reduce
 
 
 def score_categories(text, category:str, model:dict[str, str]):
@@ -28,13 +29,12 @@ def score_categories(text, category:str, model:dict[str, str]):
         Returns:
             True or False depending on if a match was found.
         """
-    print(f"MODEL {model} MODEL")
     pattern = model.get(category)
     if not pattern:
         return False
     return bool(re.search(pattern, text, re.IGNORECASE))
 
-def score_json_file(path, models:dict[str, dict[str, str]]):
+def score_json_file(path, model:dict[str, str]):
     """
         Calculates the friendliness score for a single JSON file.
 
@@ -43,28 +43,24 @@ def score_json_file(path, models:dict[str, dict[str, str]]):
 
         Args:
             path: The file path to the folder of JSON files.
-            models: The scoring models that will be used.
+            model: The scoring model that will be used.
 
         Returns:
             The score rounded to two decimal points.
     """
-
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    scores = {model: 0 for model in models}
+    keyword_sentences = flatdict.FlatDict(data.get("keyword_contexts"), delimiter='/')
+    matched_keywords = []
+    for sentence_list in keyword_sentences.keys():
+        keyword = sentence_list.split('/')[0]
+        if keyword not in matched_keywords and isinstance(keyword_sentences[sentence_list], list):
+            paragraph = reduce(lambda x, y: f"{x} {y}", keyword_sentences[sentence_list])
+            if score_categories(paragraph, keyword, model):
+                matched_keywords.append(keyword)
 
-    for category, terms, in data.get("keyword_contexts", {}).items():
-        for term, sentences in terms.items():
-            for sentence in sentences:
-                for model in models.keys():
-                    if score_categories(sentence, category, models[model]):
-                        scores[model] += 1
-                        break
-                    else:
-                        continue
-    print(scores.items())
-    return {model:round((score/len(models[model].keys()))*100, 2) for (model, score) in scores.items()}
+    return round((len(matched_keywords)/len(model.keys()))*100, 2)
 
 def score_jurisdictions(path, models:dict[str, dict[str, str]]):
     """
@@ -80,11 +76,11 @@ def score_jurisdictions(path, models:dict[str, dict[str, str]]):
     folder = Path(path)
 
     for file_path in folder.glob("*.json"):
-        score = score_json_file(file_path, models)
+        results[file_path.name] = {}
         try:
-            score = score_json_file(file_path, models)
-            results[file_path.name] = score
-            print(f"{file_path.name} has a friendliness score of: {score}%")
+            for model in models.keys():
+                score = score_json_file(file_path, models[model])
+                results[file_path.name][model] = score
         except Exception as e:
             print(f"Error reading {file_path.name}: {e}")
 
@@ -92,19 +88,17 @@ def score_jurisdictions(path, models:dict[str, dict[str, str]]):
     with open(filename, "w") as f:
         json.dump(results, f, indent=2)
 
-    print(json.dumps(results, indent=2))
-
-def import_model(path) -> dict:
+def import_models(path:str):
     """
-    Used to import a scoring model
-    :param path: Path to a scoring model in json format. Each key is a scoring category and the values are regular expressions that are used to calculate the score. Example input: ``{"score_category1": "regex1", "score_category2": "regex2"}``
-    :return: A scoring model dictionary
+    Imports all models from the file path.
+    :param path: Directory containing the scoring models. Scoring models are in json, each key is a scoring category and the values are regular expressions that are used to calculate the score. Example input: ``{"score_category1": "regex1", "score_category2": "regex2"}``
+    :return: A dictionary of scoring model dictionaries. The keys are the file names without ".json"
     """
-    return json.load(open(path, "r"))
+    scoring_models = {}
+    scoring_models_dir = Path(path)
+    for scoring_model_file in scoring_models_dir.glob("*.json"):
+        scoring_models[str(scoring_model_file)[len(scoring_models_dir.name)+1:-5]] = json.load(open(scoring_model_file, 'r'))
+    return scoring_models
 
 if __name__ == "__main__":
-    scoring_models = {}
-    scoring_models_dir = Path("scoring_models")
-    for scoring_model_file in scoring_models_dir.glob("*.json"):
-        scoring_models[str(scoring_model_file)[len(scoring_models_dir.name)+1:-5]] = import_model(scoring_model_file)
-    score_jurisdictions("../analysis_ready", scoring_models)
+    score_jurisdictions("../analysis_ready", import_models("scoring_models"))
