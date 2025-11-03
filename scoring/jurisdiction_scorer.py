@@ -12,37 +12,37 @@ from pathlib import Path
 
 # These are really rough around the edges but hopefully can be tweaked later.
 # Re is not easy...
-REGEX_PATTERNS = {
-    "webpage": r"\.(gov|ca|org|com)\b",
-    "checklist": r"\b(checklist|required\s+documents?|supporting\s+documents?)\b",
-    "guide to license": r"\b(guide|how\s+to\s+apply|application\s+instructions?)\b",
-    "bylaws": r"\b(by[-]?law(s)?|regulation(s)?|municipal\s+code|chapter\s+\d+)\b",
-    "penalties": r"\b(fine(s)?|fee(s)?|charge(s)?|penalt(y|ies))\b",
-    "provincial business license": r"\b(provincial\s+(business|vendor|operator)\s+licen[cs]e)\b",
-    "provincial food business license": r"\b(provincial\s+(food|restaurant|mobile|refreshment)\s+licen[cs]e)\b",
-    "municipal business license": r"\b(municipal\s+(business|vendor|operator)\s+licen[cs]e)\b",
-    "municipal food business license": r"\b(municipal\s+(food|restaurant|mobile|refreshment)\s+licen[cs]e)\b",
-    "retail license for CPG": r"\b(consumer\s+packaged\s+good(s)?|CPG|retail\s+product)\b",
-    "curbside vending": r"\b(curbside|street|mobile)\s+vending\b",
-    "parking fees": r"\b(parking\s+(fee|rate|permit|payment|meter|zone|ticket))\b",
-    "noise bylaws": r"\b(noise|sound|amplified\s+music|noise\s+by[-]?law)\b",
-    "traffic bylaws": r"\b(traffic\s+by[- ]?law|act|road\s+closure|vehicle\s+restriction)\b",
-    "operation hours": r"\b((operation|operating|business|service)\s+hour(s)?|hour(s)?\s+of\s+("r"operation|operations?|business|service))\b",
-    "branded consumer goods": r"\b(brand(ed)?|logo|branded\s+consumer\s+good(s)?)\b",
-    "private property operation": r"\b(private\s+(property|lot|land|premises))\b",
-    "proximity regulations": r"\b(proximity\s+(regulation|rule|restriction|limit))\b",
-    "min distance to restaurant": r"\b(proximity|distance|restriction)\b.*\b(non[-]?food|retail|service)\b|\b(from.*restaurant)\b",
-    "min distance to food truck": r"\b(distance|proximity|buffer)\b.*\b(food\s+truck(s)?)\b|\b(food\s+truck(s)?)\b.*\b(distance|proximity|buffer)\b",
-    "non-food service proximity restrictions": r"\b(proximity|distance|restriction)\b.*\b(non[-]?food|retail|service)\b",
-    "min distance proximity from other business": r"\b(distance|proximity|buffer)\b.*\b(business(es)?|vendor(s)?)\b",
-    "num food trucks allowed in geographic area": r"\b(number|limit|maximum|quota)\b.*\b(food\s+truck(s)?)\b|\b(food truck(s)? per.*)\b",
-    "parking locations": r"\b((parking\s+(location(s)?|spot(s)?|zone(s)?|area(s)?|designation(s)?|space(s)?|lot(s)?|place(s)?|area(s)?\s+allowed))|((location(s)?|spot(s)?|zone(s)?|area(s)?|space(s)?|lot(s)?|place(s)?|designation(s)?)\s+(for|where|allowed\s+for)\s+parking))\b",
-    "additional private restrictions": r"\b(private|property)\b.*\b(restriction(s)?|rule(s)?|limitation(s)?)\b",
-    "name of local authority": r"\b(local\s+(authority|municipality|council|city|town|region|office))\b",
-    "direct link to authority": r"\b(contact|email|phone|reach|connect|website|office)\b.*\b(@|toronto\.ca|\.gov|\.ca|call)\b",
-    "insurance requirements": r"\b(insurance|liability|coverage|policy|insured|certificate\s+of\s+insurance)\b",
-    "physical requirements for trucks": r"\b(truck(s)?|vehicle(s)?)\b.*\b(requirement(s)?|must\s+have|equipment|dimension(s)?)\b",
-    "exterior appearance guidelines": r"\b(exterior|appearance|design|look|paint|finish|signage|decoration)\b"
+KEYWORDS = {
+  "webpage": [".gov", ".ca", "municipality", "city of", "regional district"],
+  "checklist": ["checklist", "requirements list", "required documents"],
+  "guide to license": ["guide", "how to apply", "licensing process", "application process"],
+  "bylaws": ["bylaw", "regulation", "municipal code", "ordinance"],
+  "penalties": ["fine", "fee", "penalty", "violation", "infraction"],
+  "provincial business license": ["provincial business license", "provincial permit", "provincial approval", "provincial business name certificate"],
+  "provincial food business license": ["provincial food business license", "food establishment permit", "provincial food vendor license"],
+  "municipal business license": ["municipal business license", "local business permit", "city business license"],
+  "municipal food business license": ["municipal food business license", "mobile food vendor license", "street food vendor license"],
+  "retail license for CPG": ["consumer packaged good", "CPG", "retail goods", "branded retail products"],
+  "curbside vending": ["curbside vending", "street vending", "mobile vending", "sidewalk vending"],
+  "parking fees": ["parking fee", "metered parking", "vending zone", "designated vending area"],
+  "noise bylaws": ["noise", "noise bylaw", "sound regulation", "amplified sound"],
+  "traffic bylaws": ["traffic bylaw", "traffic regulation", "vehicle restriction", "road use", "traffic act"],
+  "operation hours": ["operating hours", "business hours", "hours of operation", "time limit", "maximum duration", "hours at any one time"],
+  "branded consumer goods": ["branding", "branded products", "product labeling", "consumer goods"],
+  "private property operation": ["private property", "private lot", "owner permission", "property consent"],
+  "proximity regulations": ["proximity regulation", "distance restriction", "buffer zone", "proximity limit"],
+  "min distance to restaurant": ["distance to restaurant", "separation from restaurant", "nearby restaurant restriction", "from an open and operating restaurant"],
+  "min distance to food truck": ["distance to other food trucks", "food truck spacing", "vendor proximity"],
+  "non-food service proximity restrictions": ["proximity restriction", "non-food vendor proximity", "distance from other vendors"],
+  "min distance proximity from other business": ["proximity to other business", "distance between vendors"],
+  "num food trucks allowed in geographic area": ["number of food trucks allowed", "maximum food trucks per area", "vendor density limit", "food trucks per block"],
+  "parking locations": ["designated parking", "allowed parking", "approved vending location", "vending area", "public road vending"],
+  "additional private restrictions": ["private restrictions", "additional property rules", "landowner conditions"],
+  "name of local authority": ["local authority", "licensing department", "municipal licensing office", "city clerk", "regulatory agency"],
+  "direct link to authority": ["reach out", "contact", "reach", "office", "call", "email", "phone"],
+  "insurance requirements": ["insurance", "liability coverage", "certificate of insurance", "proof of insurance"],
+  "physical requirements for trucks": ["vehicle requirements", "truck must have", "equipment standards", "vehicle condition", "inspection requirements", "plate number", "license number", "business name", "client's name"],
+  "exterior appearance guidelines": ["paint", "painted", "appearance", "vehicle signage", "branding on truck", "exterior look", "color", "color contrast", "colour", "colour contrast", "identification markings"]
 }
 
 
@@ -59,10 +59,14 @@ def score_categories(category, text):
         Returns:
             True or False depending on if a match was found.
         """
-    pattern = REGEX_PATTERNS.get(category)
+    pattern = KEYWORDS.get(category)
     if not pattern:
         return False
-    return bool(re.search(pattern, text, re.IGNORECASE))
+    for term in pattern:
+        if term in text:
+            return True
+    return False
+
 
 
 def score_json_file(path):
@@ -92,8 +96,8 @@ def score_json_file(path):
                     break
                 else:
                     continue
-                break
-    score = (score / len(REGEX_PATTERNS)) * 100
+            break
+    score = (score / len(KEYWORDS)) * 100
     return round(score, 2)
 
 

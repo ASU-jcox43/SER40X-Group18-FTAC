@@ -4,3 +4,5 @@
 .vscode
 **/analysis_ready
 **/visualizeTest
+
+config.json
