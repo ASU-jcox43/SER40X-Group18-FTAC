@@ -4,10 +4,10 @@ from pprint import pprint
 def createDemographic(population, avgAge, ethnicity, houseSize, educationLevel):
 
     return {
-        "Population": population,
         "Average Age": avgAge,
         "ethnicity": ethnicity,
-        "House Hold Size": houseSize,
+        "Population": population,
+        "Average House Hold Size": houseSize,
         "Education Level": educationLevel,
     }
 
