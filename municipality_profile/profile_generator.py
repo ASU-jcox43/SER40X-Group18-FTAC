@@ -2,9 +2,6 @@ import os
 import json
 from profile_manager import createMunicipalityProfile
 
-SAVEPATH = os.path.join("..", "municipality_profile", "profiles.json")
-
-
 def addProfile(
     name, city, province, population, age, community, income, minWage, commTaxRates
 ):
@@ -13,12 +10,22 @@ def addProfile(
         name, city, province, population, age, community, income, minWage, commTaxRates
     )
 
+    # folder path for profiles
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    folder_path = os.path.join(base_dir, "profiles")
+    os.makedirs(folder_path, exist_ok=True)
+
+     # Use city name as filename
+    save_path = os.path.join(folder_path, f"{city.lower().replace(' ', '_')}_profile.json")
+
     # Check if the file exists
-    if os.path.exists(SAVEPATH):
+    if os.path.exists(save_path):
         # Read existing data
-        with open(SAVEPATH, "r") as file:
+        with open(save_path, "r") as file:
             try:
                 profileJSON = json.load(file)
+                if not isinstance(profileJSON, list):
+                    profileJSON = []
             except json.JSONDecodeError:
                 # If file is empty or invalid JSON
                 profileJSON = []
@@ -30,9 +37,10 @@ def addProfile(
     profileJSON.append(profile)
 
     # Write updated data back to file
-    with open(SAVEPATH, "w") as file:
+    with open(save_path, "w") as file:
         json.dump(profileJSON, file, indent=4)
 
+    print(f"Profile for {city}, {province} saved to {save_path} successfully!")
 
 if __name__ == "__main__":
     # example values for testing
