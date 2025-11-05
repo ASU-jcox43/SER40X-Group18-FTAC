@@ -1,4 +1,8 @@
+from pprint import pprint
+
+
 def createDemographic(population, avgAge, ethnicity, houseSize, educationLevel):
+
     return {
         "Population": population,
         "Average Age": avgAge,
@@ -32,7 +36,7 @@ def createGeographic(cityName, province, region, location, landArea, boundaries)
     }
 
 
-def createContactInfo(department, address, phone, email, website):
+def createContactInfo(department, address, fax, phoneNumber, email, website, hours):
     # Multiple contact information can be created
     # Contact information could include: Licensing, permit office,
     # parking/bylaw office, public health/food safety office, fire deparment office, etc
@@ -40,9 +44,11 @@ def createContactInfo(department, address, phone, email, website):
     return {
         "Department": department,
         "Address": address,
-        "Phone": phone,
+        "Fax": fax,
+        "Phone": phoneNumber,
         "Email": email,
         "Website": website,
+        "Hours": hours,
     }
 
 
@@ -101,14 +107,70 @@ def createEconomy(income, minWage, commTaxRates):
 
 
 def createMunicipalityProfile(
-    name, province, population, age, community, income, minWage, commTaxRates
+    name, city, province, population, age, community, income, minWage, commTaxRates
 ):
+    # --- Toronto Food Business Contacts ---
+
+    contacts = [
+        createContactInfo(
+            department="City of Toronto License & Permit Issuing Office",
+            address="East York Civic Centre, 850 Coxwell Ave, Toronto, ON M4C 5R1",
+            fax="n/a",
+            phoneNumber="311 (within Toronto) or 416-392-2489 (outside Toronto)",
+            email="MLSBusinessLicense@toronto.ca",
+            website="https://www.toronto.ca/services-payments/permits-licences-bylaws/food-trucks-food-carts-ice-cream-trucks/food-trucks/",
+            hours="Monday to Friday, 8:30 AM to 4:30 PM (Closed 12:30 p.m. to 1:30 p.m. and on statutory holidays)",
+        ),
+        createContactInfo(
+            department="Road Allowance Permit Office",
+            address="East York Civic Centre, 850 Coxwell Avenue, Toronto, ON M4C 5R1",
+            fax="n/a",
+            phoneNumber="311 (within Toronto) or 416-392-2489 (outside Toronto)",
+            email="MLSRoadAllowance@toronto.ca",
+            website="https://www.toronto.ca/services-payments/permits-licences-bylaws/road-allowance-permits/",
+            hours="Monday to Friday: 8:30 a.m. to 4:00 p.m.",
+        ),
+        createContactInfo(
+            department="Toronto Public Health Food Safety & Inspections",
+            address="277 Victoria Street, Toronto, ON M5B 1W2",
+            fax="n/a",
+            phoneNumber="416-338-7600",
+            email="publichealth@toronto.ca",
+            website="https://www.toronto.ca/community-people/health-wellness-care/health-programs-advice/food-safety/",
+            hours="Monday to Friday: 8:30 a.m. to 4:30 p.m.",
+        ),
+        createContactInfo(
+            department="Green P Parking Permits (Food Truck Parking)",
+            address="33 Queen Street East, Toronto, ON M5C 1R5",
+            fax="n/a",
+            phoneNumber="416-393-7275",
+            email="events@greenpmobility.com",
+            website="https://www.greenp.com/",
+            hours="Monday to Friday: 8:30 a.m. to  4:30 p.m.",
+        ),
+        createContactInfo(
+            department="Technical Standards & Safety Authority (TSSA)",
+            address="345 Carlingview Drive, Toronto, ON M9W 6N9",
+            fax="n/a",
+            phoneNumber="1-877-682-8772",
+            email="customerservices@tssa.org",
+            website="https://www.tssa.org/",
+            hours="Monday to Friday: 8:00 a.m. to 5:00 p.m.",
+        ),
+    ]
+
     profile = {
         "Name": name,
+        "City": city,
         "Province": province,
         "Demographic": createDemographic(population, age, community),
         "Economy": createEconomy(income, minWage, commTaxRates),
         # "Geographic": createGeographic(),
-        # "Contact Information": createContactInfo()
+        "Contact Information": contacts,
     }
+
+    # Example: pprint all contacts
+    for contact in contacts:
+        pprint(contact)
+
     return profile
