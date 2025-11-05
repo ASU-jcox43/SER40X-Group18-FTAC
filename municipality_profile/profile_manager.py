@@ -1,8 +1,10 @@
-def createDemographic(population, age, community):
+def createDemographic(population, avgAge, ethnicity, houseSize, educationLevel):
     return {
         "Population": population,
-        "Age": age,
-        "community": community,
+        "Average Age": avgAge,
+        "ethnicity": ethnicity,
+        "House Hold Size": houseSize,
+        "Education Level": educationLevel,
     }
 
 
@@ -43,6 +45,7 @@ def createContactInfo(department, address, phone, email, website):
         "Website": website,
     }
 
+
 def createScore():
     # Create scoring system based on municipality profile and rubric
     # Foundational score (out of 10)
@@ -56,36 +59,36 @@ def createScore():
         "Foundational Score": 0,
         "Licensing Requirements": 0,
         "Operations & Restrictions": 0,
-        "Friendliness index": 0
+        "Friendliness index": 0,
     }
+
 
 def scoreBreakdown():
     # Detailed breakdown of scores for each section
     # Scoring rubric topics are proprietary information and cannot be shared
-    
+
     # example response structure below
     friendlinessBreakdown = {
         "Foundational": {
             "Points Awarded": 0,
             "Points Available": 10,
             "Percentage": 0,
-            "Friendliness Index": "Very friendly"
+            "Friendliness Index": "Very friendly",
         },
         "Licensing Requirements": {
             "Points Awarded": 0,
             "Points Available": 10,
             "Percentage": 0,
-            "Friendliness Index": "Very friendly"
+            "Friendliness Index": "Very friendly",
         },
         "Operations & Restrictions": {
             "Points Awarded": 0,
             "Points Available": 30,
             "Percentage": 0,
-            "Friendliness Index": "Very friendly"
-        }
+            "Friendliness Index": "Very friendly",
+        },
     }
     return friendlinessBreakdown
-    
 
 
 # TODO: Add more aspects if needed
@@ -109,4 +112,3 @@ def createMunicipalityProfile(
         # "Contact Information": createContactInfo()
     }
     return profile
-
