@@ -1,13 +1,20 @@
 import os
 import json
+from datetime import datetime
 from profile_manager import createMunicipalityProfile
 
 def addProfile(
-    name, fb_type, city, province, population, age, community, income, min_wage, comm_tax_rates
+    name, fb_type, city, province, 
+        population, age, community, income, 
+        min_wage, comm_tax_rates,
+        last_updated
 ):
     # Add logic to ask for profile information
     profile = createMunicipalityProfile(
-        name, fb_type, city, province, population, age, community, income, min_wage, comm_tax_rates
+        name, fb_type, city, province, 
+        population, age, community, income, 
+        min_wage, comm_tax_rates,
+        last_updated
     )
 
     # folder path for profiles
@@ -59,7 +66,11 @@ if __name__ == "__main__":
     income = 600000
     min_wage = 17.00
     comm_tax_rates = 0.20
+    last_updated = datetime.now().isoformat()
 
     addProfile(
-        name, fb_type, city, province, population, age, community, income, min_wage, comm_tax_rates
+        name, fb_type, city, province, 
+        population, age, community, income, 
+        min_wage, comm_tax_rates,
+        last_updated
     )
