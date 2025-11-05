@@ -1,3 +1,5 @@
+from pprint import pprint
+
 def createDemographic(population, age, community):
     return {
         "Population": population,
@@ -160,6 +162,7 @@ def createMunicipalityProfile(
 
     # Example: print all contacts
     for contact in contacts:
-        print(contact)
+        pprint(contact)
+
     return profile
 
