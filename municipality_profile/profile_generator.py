@@ -6,11 +6,11 @@ SAVEPATH = os.path.join("..", "municipality_profile", "profiles.json")
 
 
 def addProfile(
-    name, province, population, age, community, income, minWage, commTaxRates
+    name, city, province, population, age, community, income, minWage, commTaxRates
 ):
     # Add logic to ask for profile information
     profile = createMunicipalityProfile(
-        name, province, population, age, community, income, minWage, commTaxRates
+        name, city, province, population, age, community, income, minWage, commTaxRates
     )
 
     # Check if the file exists
@@ -37,6 +37,7 @@ def addProfile(
 if __name__ == "__main__":
     # example values for testing
     name = "Jacob"
+    city = "Toronto"
     province = "Ontario"
     population = 2800000
     age = 35
@@ -46,5 +47,5 @@ if __name__ == "__main__":
     commTaxRates = 0.20
 
     addProfile(
-        name, province, population, age, community, income, minWage, commTaxRates
+        name, city, province, population, age, community, income, minWage, commTaxRates
     )
