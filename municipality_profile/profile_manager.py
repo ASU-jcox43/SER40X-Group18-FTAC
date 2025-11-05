@@ -1,6 +1,7 @@
 from pprint import pprint
 
 
+# Most information can be accessed by data sources
 def createDemographic(population, avgAge, ethnicity, houseSize, educationLevel):
 
     return {
@@ -12,27 +13,19 @@ def createDemographic(population, avgAge, ethnicity, houseSize, educationLevel):
     }
 
 
-def createGeographic(cityName, province, region, location, landArea, boundaries):
-    # Example geographic profile section
-    # City Name: City of Makrham
-    # Province: Ontario
-    # Region: York Region (Greater Toronto Area)
-    # Location: East of Toronto
-    # land Area: 212 sq km
-    # Boundaries: {
-    #        'North':'Whitechurch-Stouffville',
-    #        'South': 'Toronto',
-    #        'East': 'Pickering',
-    #        'West': 'Vaughan'
-    #   }
+def createGeographic(
+    city, province, region, popSqMile, areaSqMiles, lat, long, adjMunicipalities
+):
 
     return {
-        "City Name": cityName,
+        "City": city,
         "Province": province,
         "Region": region,
-        "Location": location,
-        "Area": landArea,
-        "Boundaries": boundaries,
+        "Population Density Per Sq Mile": popSqMile,
+        "Area": areaSqMiles,
+        "Latitude": lat,
+        "Longitude": long,
+        "Adjacent Municipalities": adjMunicipalities,
     }
 
 
@@ -97,7 +90,6 @@ def scoreBreakdown():
     return friendlinessBreakdown
 
 
-# TODO: Add more aspects if needed
 def createEconomy(income, min_wage, comm_tax_rates):
     return {
         "Income Level": income,
@@ -107,10 +99,25 @@ def createEconomy(income, min_wage, comm_tax_rates):
 
 
 def createMunicipalityProfile(
-    name, fb_type, city, province, 
-        population, age, community, income, 
-        min_wage, comm_tax_rates,
-        last_updated
+    name,
+    fb_type,
+    city,
+    province,
+    population,
+    avgAge,
+    ethnicity,
+    houseSize,
+    educationLevel,  # list of education levels
+    income,
+    min_wage,
+    comm_tax_rates,
+    last_updated,
+    region,
+    popSqMile,
+    areaSqMiles,
+    lat,
+    long,
+    adjMunicipalities,  # list of neighboring municipalities
 ):
     # --- Toronto Food Business Contacts ---
 
@@ -167,11 +174,15 @@ def createMunicipalityProfile(
         "fb_type": fb_type,
         "City": city,
         "Province": province,
-        "Demographic": createDemographic(population, age, community),
+        "Demographic": createDemographic(
+            population, avgAge, ethnicity, houseSize, educationLevel
+        ),
         "Economy": createEconomy(income, min_wage, comm_tax_rates),
-        # "Geographic": createGeographic(),
+        "Geographic": createGeographic(
+            city, province, region, popSqMile, areaSqMiles, lat, long, adjMunicipalities
+        ),
         "Contact Information": contacts,
-        "last Updated": last_updated
+        "last Updated": last_updated,
     }
 
     # Example: pprint all contacts
