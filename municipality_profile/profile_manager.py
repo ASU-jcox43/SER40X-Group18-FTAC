@@ -102,7 +102,7 @@ def createEconomy(income, minWage, commTaxRates):
 
 
 def createMunicipalityProfile(
-    name, city, province, population, age, community, income, minWage, commTaxRates
+    name, fb_type, city, province, population, age, community, income, minWage, commTaxRates
 ):
     # --- Toronto Food Business Contacts ---
 
@@ -158,6 +158,7 @@ def createMunicipalityProfile(
 
     profile = {
         "Name": name,
+        "fb_type": fb_type,
         "City": city,
         "Province": province,
         "Demographic": createDemographic(population, age, community),
