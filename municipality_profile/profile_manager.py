@@ -98,16 +98,19 @@ def scoreBreakdown():
 
 
 # TODO: Add more aspects if needed
-def createEconomy(income, minWage, commTaxRates):
+def createEconomy(income, min_wage, comm_tax_rates):
     return {
         "Income Level": income,
-        "Minimum Wage": minWage,
-        "Commercial Tax Rates": commTaxRates,
+        "Minimum Wage": min_wage,
+        "Commercial Tax Rates": comm_tax_rates,
     }
 
 
 def createMunicipalityProfile(
-    name, city, province, population, age, community, income, minWage, commTaxRates
+    name, fb_type, city, province, 
+        population, age, community, income, 
+        min_wage, comm_tax_rates,
+        last_updated
 ):
     # --- Toronto Food Business Contacts ---
 
@@ -161,12 +164,14 @@ def createMunicipalityProfile(
 
     profile = {
         "Name": name,
+        "fb_type": fb_type,
         "City": city,
         "Province": province,
         "Demographic": createDemographic(population, age, community),
-        "Economy": createEconomy(income, minWage, commTaxRates),
+        "Economy": createEconomy(income, min_wage, comm_tax_rates),
         # "Geographic": createGeographic(),
         "Contact Information": contacts,
+        "last Updated": last_updated
     }
 
     # Example: pprint all contacts
