@@ -73,7 +73,7 @@ def addProfile(
                         print("Existing JSON is resetting.")
         except json.JSONDecodeError:
             # If file is empty or invalid JSON
-            print("JSON decode error — resetting existing profile:")
+            print("JSON decode error, resetting existing profile:")
 
     # Update changed values
     for key, value in profile.items():
@@ -90,7 +90,7 @@ def addProfile(
 
 if __name__ == "__main__":
     # example values for testing
-    name = "Jacob"
+    name = "Food Truck Co"
     fb_type = "food truck"
     city = "Toronto"
     province = "Ontario"
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     areaSqMiles = 40.2
     lat = 33.4
     long = -111.5
-    adjMunicipalities = {"Phoenix", "Scottsdale", "Mesa"}
+    adjMunicipalities = ["Phoenix", "Scottsdale", "Mesa"]
 
     addProfile(
         name,

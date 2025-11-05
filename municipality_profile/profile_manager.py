@@ -2,11 +2,13 @@ from pprint import pprint
 
 
 # Most information can be accessed by data sources
-def createDemographic(population, avgAge, ethnicity, houseSize, educationLevel):
+def createDemographic(
+    population, avgAge, ethnicityCompisition, houseSize, educationLevel
+):
 
     return {
         "Average Age": avgAge,
-        "ethnicity": ethnicity,
+        "Ethnicity Compisition": ethnicityCompisition,
         "Population": population,
         "Average House Hold Size": houseSize,
         "Education Level": educationLevel,
@@ -105,7 +107,7 @@ def createMunicipalityProfile(
     province,
     population,
     avgAge,
-    ethnicity,
+    ethnicityCompisition,
     houseSize,
     educationLevel,  # list of education levels
     income,
@@ -172,10 +174,9 @@ def createMunicipalityProfile(
     profile = {
         "Name": name,
         "fb_type": fb_type,
-        "City": city,
         "Province": province,
         "Demographic": createDemographic(
-            population, avgAge, ethnicity, houseSize, educationLevel
+            population, avgAge, ethnicityCompisition, houseSize, educationLevel
         ),
         "Economy": createEconomy(income, min_wage, comm_tax_rates),
         "Geographic": createGeographic(
