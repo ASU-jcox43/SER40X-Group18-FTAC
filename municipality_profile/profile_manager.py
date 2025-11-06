@@ -1,30 +1,33 @@
 from pprint import pprint
 
 
-# Most information can be accessed by data sources
 def createDemographic(
-    population, avgAge, ethnicityCompisition, houseSize, educationLevel
+    population, avgAge, ethnicityCompisition, houseSize, educationLevels
 ):
-
+    # Create demographic information
+    # Ethnicity composition includes percentage for each ethinicity in the municipality
+    # Education levels include percentage of people with certain education levels
     return {
         "Average Age": avgAge,
         "Ethnicity Compisition": ethnicityCompisition,
         "Population": population,
         "Average House Hold Size": houseSize,
-        "Education Level": educationLevel,
+        "Education Levels": educationLevels,
     }
 
 
 def createGeographic(
     city, province, region, popSqMile, areaSqMiles, lat, long, adjMunicipalities
 ):
-
+    # Create geographic information
+    # The longitude and Latitude is the city center
+    # Adjacent municipalities includes list of municipalities neighboring the profile
     return {
         "City": city,
         "Province": province,
         "Region": region,
         "Population Density Per Sq Mile": popSqMile,
-        "Area": areaSqMiles,
+        "Area Sq Miles": areaSqMiles,
         "Latitude": lat,
         "Longitude": long,
         "Adjacent Municipalities": adjMunicipalities,
