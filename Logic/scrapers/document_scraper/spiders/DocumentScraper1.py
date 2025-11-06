@@ -10,8 +10,8 @@ class Documentscraper1Spider(scrapy.Spider):
     doc_count: int = 0
     #number of clicks that you need to get from the start url to any bylaw PDF
     layers: str = 1
-    #enable if the bylaw text is not within PDFs
-    no_pdf: bool = False
+    #disable if the bylaw text is not within PDFs
+    get_pdfs: bool = False
     #Links must contain a match using this regular expression in order to be traversed after the start url.
     #An empty string value will match everything.
     rex = r"Download"
@@ -24,7 +24,7 @@ class Documentscraper1Spider(scrapy.Spider):
     def parse_step(self, response: Response, layer: int):
         # Check the URL and yield it if it is a PDF.
         # You will know when you are visiting a PDF when you get a response body that starts with '%PDF-' 
-        if response.body.startswith(b'%PDF-') or (layer == 0 and self.no_pdf):
+        if response.body.startswith(b'%PDF-') or (layer == 0 and not self.get_pdfs):
             self.doc_count = self.doc_count + 1
             yield {self.doc_count: response.url}
         elif layer > 0:
