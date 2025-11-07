@@ -1,28 +1,25 @@
+# Don't use .venv
+
 from typing import Union
 from fastapi import FastAPI
 from pydantic import BaseModel
-
+import asyncio
+from ..Logic.scrapers.document_scraper.spiders.DocumentScraper import run_document_scraper
 app = FastAPI()
 
 class IngestDocsPut(BaseModel):
     start_url: str
     layers: int
     get_pdfs: bool
-    regex: str
+    regex: str | None = None
 
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
 
 @app.post("/ingest-docs")
-async def update_item(layers:int, start_url:str, get_pdfs:bool, regex:str|None):
+async def update_item(req:IngestDocsPut):
     """
-    :param layers:
-    :param start_url:
-    :param get_pdfs:
-    :param regex:
-    :return:
+    :return: path to the extracted links Service/Links/municipality_items.json
     """
-    # run DocumentScraper1
-    # return all the links
-    return {"output": f"i will extract {layers} layers from {start_url} and {"get pdfs" if get_pdfs else "get html text"} filtering with {regex}"}
+    return await run_document_scraper(req.start_url, layers=req.layers, get_pdfs=req.get_pdfs, rex=req.regex)
