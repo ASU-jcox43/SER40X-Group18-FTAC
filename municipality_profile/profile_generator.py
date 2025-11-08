@@ -4,17 +4,17 @@ from datetime import datetime
 from profile_manager import createMunicipalityProfile
 
 def addProfile(
-    name, fb_type, city, province, 
-        population, age, community, income, 
-        min_wage, comm_tax_rates,
-        last_updated
+    name, fbType, city, province, 
+        population, avgAge, community, income, 
+        minWage, commTaxRates,
+        lastUpdated
 ):
     # Add logic to ask for profile information
     profile = createMunicipalityProfile(
-        name, fb_type, city, province, 
-        population, age, community, income, 
-        min_wage, comm_tax_rates,
-        last_updated
+        name, fbType, city, province, 
+        population, avgAge, community, income, 
+        minWage, commTaxRates,
+        lastUpdated
     )
 
     # folder path for profiles
@@ -57,20 +57,20 @@ def addProfile(
 if __name__ == "__main__":
     # example values for testing
     name = "Jacob"
-    fb_type = "food truck"
+    fbType = "food truck"
     city = "Toronto"
     province = "Ontario"
     population = 2800000
-    age = 35
+    avgAge = 35
     community = "community"
     income = 600000
-    min_wage = 17.00
-    comm_tax_rates = 0.20
-    last_updated = datetime.now().isoformat()
+    minWage = 17.00
+    commTaxRates = 0.20
+    lastUpdated = datetime.now().isoformat()
 
     addProfile(
-        name, fb_type, city, province, 
-        population, age, community, income, 
-        min_wage, comm_tax_rates,
-        last_updated
+        name, fbType, city, province, 
+        population, avgAge, community, income, 
+        minWage, commTaxRates,
+        lastUpdated
     )
