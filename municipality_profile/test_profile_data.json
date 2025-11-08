@@ -5,7 +5,7 @@
     "province": "Ontario",
     "population": 2800000,
     "avgAge": 39.0,
-    "ethnicity": {
+    "ethnicityComposition": {
         "White": 48.0,
         "South Asian": 13.0,
         "Chinese": 11.0,
@@ -28,5 +28,52 @@
     "areaSqMiles": 243.3,
     "lat": 43.6532,
     "long": -79.3832,
-    "adjMunicipalities": ["Mississauga", "Vaughan", "Markham", "Brampton", "Pickering"]
+    "adjMunicipalities": ["Mississauga", "Vaughan", "Markham", "Brampton", "Pickering"],
+    "contacts": [
+        {
+            "Department": "City of Toronto License & Permit Issuing Office",
+            "Address": "East York Civic Centre, 850 Coxwell Ave, Toronto, ON M4C 5R1",
+            "Fax": "n/a",
+            "Phone": "311 (within Toronto) or 416-392-2489 (outside Toronto)",
+            "Email": "MLSBusinessLicense@toronto.ca",
+            "Website": "https://www.toronto.ca/services-payments/permits-licences-bylaws/food-trucks-food-carts-ice-cream-trucks/food-trucks/",
+            "Hours": "Monday to Friday, 8:30 AM to 4:30 PM (Closed 12:30 p.m. to 1:30 p.m. and on statutory holidays)"
+        },
+        {
+            "Department": "Road Allowance Permit Office",
+            "Address": "East York Civic Centre, 850 Coxwell Avenue, Toronto, ON M4C 5R1",
+            "Fax": "n/a",
+            "Phone": "311 (within Toronto) or 416-392-2489 (outside Toronto)",
+            "Email": "MLSRoadAllowance@toronto.ca",
+            "Website": "https://www.toronto.ca/services-payments/permits-licences-bylaws/road-allowance-permits/",
+            "Hours": "Monday to Friday: 8:30 a.m. to 4:00 p.m."
+        },
+        {
+            "Department": "Toronto Public Health Food Safety & Inspections",
+            "Address": "277 Victoria Street, Toronto, ON M5B 1W2",
+            "Fax": "n/a",
+            "Phone": "416-338-7600",
+            "Email": "publichealth@toronto.ca",
+            "Website": "https://www.toronto.ca/community-people/health-wellness-care/health-programs-advice/food-safety/",
+            "Hours": "Monday to Friday: 8:30 a.m. to 4:30 p.m."
+        },
+        {
+            "Department": "Green P Parking Permits (Food Truck Parking)",
+            "Address": "33 Queen Street East, Toronto, ON M5C 1R5",
+            "Fax": "n/a",
+            "Phone": "416-393-7275",
+            "Email": "events@greenpmobility.com",
+            "Website": "https://www.greenp.com/",
+            "Hours": "Monday to Friday: 8:30 a.m. to 4:30 p.m."
+        },
+        {
+            "Department": "Technical Standards & Safety Authority (TSSA)",
+            "Address": "345 Carlingview Drive, Toronto, ON M9W 6N9",
+            "Fax": "n/a",
+            "Phone": "1-877-682-8772",
+            "Email": "customerservices@tssa.org",
+            "Website": "https://www.tssa.org/",
+            "Hours": "Monday to Friday: 8:00 a.m. to 5:00 p.m."
+        }
+    ]
 }

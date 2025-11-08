@@ -1,27 +1,46 @@
 {
     "Name": "Food Truck Co",
     "fb_type": "food truck",
-    "City": "Toronto",
     "Province": "Ontario",
     "Demographic": {
-        "Average Age": 36.8,
+        "Average Age": 39.0,
         "Ethnicity Compisition": {
-            "White": 65.0,
-            "Hispanic": 10.0,
-            "Filipino": 10.0,
-            "Asian": 15.0
+            "White": 48.0,
+            "South Asian": 13.0,
+            "Chinese": 11.0,
+            "Black": 9.0,
+            "Filipino": 5.0,
+            "Latin American": 3.0,
+            "Arab": 2.0,
+            "Other": 9.0
         },
         "Population": 2800000,
-        "Average House Hold Size": 2.8,
+        "Average House Hold Size": 2.4,
         "Education Levels": {
-            "High School": 90.0,
-            "College": 48.5
+            "High School": 91.0,
+            "College": 44.0
         }
     },
     "Economy": {
-        "Income Level": 600000,
-        "Minimum Wage": 17.0,
-        "Commercial Tax Rates": 0.2
+        "Income Level": 87000,
+        "Minimum Wage": 16.55,
+        "Commercial Tax Rates": 0.0278
+    },
+    "Geographic": {
+        "City": "Toronto",
+        "Province": "Ontario",
+        "Region": "Central Canada",
+        "Population Density Per Sq Mile": 11650,
+        "Area Sq Miles": 243.3,
+        "Latitude": 43.6532,
+        "Longitude": -79.3832,
+        "Adjacent Municipalities": [
+            "Mississauga",
+            "Vaughan",
+            "Markham",
+            "Brampton",
+            "Pickering"
+        ]
     },
     "Contact Information": [
         {
@@ -58,7 +77,7 @@
             "Phone": "416-393-7275",
             "Email": "events@greenpmobility.com",
             "Website": "https://www.greenp.com/",
-            "Hours": "Monday to Friday: 8:30 a.m. to  4:30 p.m."
+            "Hours": "Monday to Friday: 8:30 a.m. to 4:30 p.m."
         },
         {
             "Department": "Technical Standards & Safety Authority (TSSA)",
@@ -70,19 +89,5 @@
             "Hours": "Monday to Friday: 8:00 a.m. to 5:00 p.m."
         }
     ],
-    "last Updated": "2025-11-07T19:02:41.080020",
-    "Geographic": {
-        "City": "Toronto",
-        "Province": "Ontario",
-        "Region": "Central Canada",
-        "Population Density Per Sq Mile": 4750,
-        "Area Sq Miles": 40.2,
-        "Latitude": 33.4,
-        "Longitude": -111.5,
-        "Adjacent Municipalities": [
-            "Phoenix",
-            "Scottsdale",
-            "Mesa"
-        ]
-    }
+    "last Updated": "2025-11-07T19:51:39.175090"
 }
