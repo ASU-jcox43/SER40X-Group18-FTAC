@@ -3,18 +3,49 @@ import json
 from datetime import datetime
 from profile_manager import createMunicipalityProfile
 
+
 def addProfile(
-    name, fbType, city, province, 
-        population, avgAge, community, income, 
-        minWage, commTaxRates,
-        lastUpdated
+    name,
+    fb_type,
+    city,
+    province,
+    population,
+    avgAge,
+    ethnicity,
+    houseSize,
+    educationLevel,  # list of education levels
+    income,
+    min_wage,
+    comm_tax_rates,
+    last_updated,
+    region,
+    popSqMile,
+    areaSqMiles,
+    lat,
+    long,
+    adjMunicipalities,  # list of neighboring municipalities
 ):
     # Add logic to ask for profile information
     profile = createMunicipalityProfile(
-        name, fbType, city, province, 
-        population, avgAge, community, income, 
-        minWage, commTaxRates,
-        lastUpdated
+        name,
+        fb_type,
+        city,
+        province,
+        population,
+        avgAge,
+        ethnicity,
+        houseSize,
+        educationLevel,  # list of education levels
+        income,
+        min_wage,
+        comm_tax_rates,
+        last_updated,
+        region,
+        popSqMile,
+        areaSqMiles,
+        lat,
+        long,
+        adjMunicipalities,  # list of neighboring municipalities
     )
 
     # folder path for profiles
@@ -22,8 +53,10 @@ def addProfile(
     folder_path = os.path.join(base_dir, "profiles")
     os.makedirs(folder_path, exist_ok=True)
 
-     # Use city name as filename
-    save_path = os.path.join(folder_path, f"{city.lower().replace(' ', '_')}_profile.json")
+    # Use city name as filename
+    save_path = os.path.join(
+        folder_path, f"{city.lower().replace(' ', '_')}_profile.json"
+    )
 
     existing_profile = {}
     # Check if the file exists and load existing profile
@@ -40,7 +73,7 @@ def addProfile(
                         print("Existing JSON is resetting.")
         except json.JSONDecodeError:
             # If file is empty or invalid JSON
-             print("JSON decode error — resetting existing profile:", e)
+            print("JSON decode error, resetting existing profile:")
 
     # Update changed values
     for key, value in profile.items():
@@ -54,23 +87,55 @@ def addProfile(
 
     print(f"Profile for {city}, {province} saved to {save_path} successfully!")
 
+
 if __name__ == "__main__":
     # example values for testing
-    name = "Jacob"
-    fbType = "food truck"
+    name = "Food Truck Co"
+    fb_type = "food truck"
     city = "Toronto"
     province = "Ontario"
     population = 2800000
-    avgAge = 35
-    community = "community"
+    avgAge = 36.8
+    ethnicityComposition = {
+        "White": 65.0,
+        "Hispanic": 10.0,
+        "Filipino": 10.0,
+        "Asian": 15.0,
+    }
+    houseSize = 2.8
+    educationLevel = {
+        "High School": 90.0,
+        "College": 48.5,
+    }
     income = 600000
-    minWage = 17.00
-    commTaxRates = 0.20
-    lastUpdated = datetime.now().isoformat()
+    min_wage = 17.00
+    comm_tax_rates = 0.20
+    last_updated = datetime.now().isoformat()
+    region = "Central Canada"
+    popSqMile = 4750
+    areaSqMiles = 40.2
+    lat = 33.4
+    long = -111.5
+    adjMunicipalities = ["Mississauga", "Vaughan", "Markham", "Brampton", "Pickering"]
 
     addProfile(
-        name, fbType, city, province, 
-        population, avgAge, community, income, 
-        minWage, commTaxRates,
-        lastUpdated
+        name,
+        fb_type,
+        city,
+        province,
+        population,
+        avgAge,
+        ethnicityComposition,
+        houseSize,
+        educationLevel,
+        income,
+        min_wage,
+        comm_tax_rates,
+        last_updated,
+        region,
+        popSqMile,
+        areaSqMiles,
+        lat,
+        long,
+        adjMunicipalities
     )

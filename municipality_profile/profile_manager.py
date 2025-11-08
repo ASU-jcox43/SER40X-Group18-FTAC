@@ -1,38 +1,36 @@
 from pprint import pprint
 
 
-def createDemographic(population, avgAge, ethnicity, houseSize, educationLevel):
-
+def createDemographic(
+    population, avgAge, ethnicityCompisition, houseSize, educationLevels
+):
+    # Create demographic information
+    # Ethnicity composition includes percentage for each ethinicity in the municipality
+    # Education levels include percentage of people with certain education levels
     return {
-        "Population": population,
         "Average Age": avgAge,
-        "ethnicity": ethnicity,
-        "House Hold Size": houseSize,
-        "Education Level": educationLevel,
+        "Ethnicity Compisition": ethnicityCompisition,
+        "Population": population,
+        "Average House Hold Size": houseSize,
+        "Education Levels": educationLevels,
     }
 
 
-def createGeographic(cityName, province, region, location, landArea, boundaries):
-    # Example geographic profile section
-    # City Name: City of Makrham
-    # Province: Ontario
-    # Region: York Region (Greater Toronto Area)
-    # Location: East of Toronto
-    # land Area: 212 sq km
-    # Boundaries: {
-    #        'North':'Whitechurch-Stouffville',
-    #        'South': 'Toronto',
-    #        'East': 'Pickering',
-    #        'West': 'Vaughan'
-    #   }
-
+def createGeographic(
+    city, province, region, popSqMile, areaSqMiles, lat, long, adjMunicipalities
+):
+    # Create geographic information
+    # The longitude and Latitude is the city center
+    # Adjacent municipalities includes list of municipalities neighboring the profile
     return {
-        "City Name": cityName,
+        "City": city,
         "Province": province,
         "Region": region,
-        "Location": location,
-        "Area": landArea,
-        "Boundaries": boundaries,
+        "Population Density Per Sq Mile": popSqMile,
+        "Area Sq Miles": areaSqMiles,
+        "Latitude": lat,
+        "Longitude": long,
+        "Adjacent Municipalities": adjMunicipalities,
     }
 
 
@@ -96,21 +94,34 @@ def scoreBreakdown():
     }
     return friendlinessBreakdown
 
-
-# TODO: Add more aspects if needed
-def createEconomy(income, minWage, commTaxRates):
+def createEconomy(income, min_wage, comm_tax_rates):
     return {
         "Income Level": income,
-        "Minimum Wage": minWage,
-        "Commercial Tax Rates": commTaxRates,
+        "Minimum Wage": min_wage,
+        "Commercial Tax Rates": comm_tax_rates,
     }
 
 
 def createMunicipalityProfile(
-    name, fbType, city, province, 
-        population, avgAge, community, income, 
-        minWage, commTaxRates,
-        last_updated
+    name,
+    fb_type,
+    city,
+    province,
+    population,
+    avgAge,
+    ethnicityCompisition,
+    houseSize,
+    educationLevel,  # list of education levels
+    income,
+    min_wage,
+    comm_tax_rates,
+    last_updated,
+    region,
+    popSqMile,
+    areaSqMiles,
+    lat,
+    long,
+    adjMunicipalities,  # list of neighboring municipalities
 ):
     
     # Example Contact information for Toronto
@@ -167,14 +178,18 @@ def createMunicipalityProfile(
 
     profile = {
         "Name": name,
-        "fb_type": fbType,
-        "City": city,
+        "fb_type": fb_type,
         "Province": province,
-        #"Demographic": createDemographic(population, avg_age, ethnicity, houseSize, educationLevel),
-        "Economy": createEconomy(income, minWage, commTaxRates),
-        # "Geographic": createGeographic(),
+        "Demographic": createDemographic(
+            population, avgAge, ethnicityCompisition, houseSize, educationLevel
+            ),
+        "Economy": createEconomy(income, min_wage, comm_tax_rates),
+        "Geographic": createGeographic(
+            city, province, region, popSqMile, 
+            areaSqMiles, lat, long, adjMunicipalities
+            ),
         "Contact Information": contacts,
-        "last Updated": last_updated
+        "last Updated": last_updated,
     }
 
     # Example: pprint all contacts
