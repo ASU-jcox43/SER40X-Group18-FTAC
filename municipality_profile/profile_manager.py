@@ -194,6 +194,7 @@ def createMunicipalityProfile(
 
     # Example: pprint all contacts
     for contact in contacts:
-        pprint(contact)
+        print(f"Contact added: {contact['Department']}")
+        # pprint(contact)
 
     return profile
