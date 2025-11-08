@@ -4,51 +4,16 @@ from datetime import datetime
 from profile_manager import createMunicipalityProfile
 
 
-def addProfile(
-    name,
-    fb_type,
-    city,
-    province,
-    population,
-    avgAge,
-    ethnicity,
-    houseSize,
-    educationLevel,  # list of education levels
-    income,
-    min_wage,
-    comm_tax_rates,
-    last_updated,
-    region,
-    popSqMile,
-    areaSqMiles,
-    lat,
-    long,
-    adjMunicipalities,  # list of neighboring municipalities
-):
-    # Add logic to ask for profile information
-    profile = createMunicipalityProfile(
-        name,
-        fb_type,
-        city,
-        province,
-        population,
-        avgAge,
-        ethnicity,
-        houseSize,
-        educationLevel,  # list of education levels
-        income,
-        min_wage,
-        comm_tax_rates,
-        last_updated,
-        region,
-        popSqMile,
-        areaSqMiles,
-        lat,
-        long,
-        adjMunicipalities,  # list of neighboring municipalities
-    )
+def addProfile(**kwargs):
+    profile = createMunicipalityProfile(**kwargs)
+    # Save/update the profile
 
-def load_existing_profile(save_path):
+    save_path = load_existing_profile(profile)
+    return save_path
+
+def load_existing_profile(profile):
+    city = profile["Geographic"]["City"]
+    province = profile["Geographic"]["Province"]
 
     # folder path for profiles
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -88,7 +53,6 @@ def load_existing_profile(save_path):
         json.dump(existing_profile, file, indent=4)
 
     print(f"Profile for {city}, {province} saved to {save_path} successfully!")
-
 
 if __name__ == "__main__":
     #load test data 
