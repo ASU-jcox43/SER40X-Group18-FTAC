@@ -13,10 +13,6 @@ class IngestDocsPut(BaseModel):
     get_pdfs: bool
     regex: str | None = None
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
 @app.post("/ingest-docs")
 async def update_item(req:IngestDocsPut):
     """
