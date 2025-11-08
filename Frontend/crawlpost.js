@@ -4,18 +4,23 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         
         let formEntries = Object.fromEntries(new FormData(form));
-        console.log(formEntries);
+        let reqBody = JSON.stringify({
+            start_url: formEntries["startUrl"],
+            layers: Number(formEntries["numLayers"]),
+            get_pdfs: formEntries["getPdfs"],
+            regex: formEntries["regexFilter"]
+        });
+
+        console.log(reqBody);
         
-        fetch("localhost", {
-            method: "POST",
-            body: JSON.stringify({
-                start_url: formEntries["startUrl"],
-                layers: Number(formEntries["numLayers"]),
-                get_pdfs: formEntries["getPdfs"],
-                regex: formEntries["regexFilter"]
-            }),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            }
-        }
-    );})})
+        let response = await fetch("http://localhost:8000/Frontend/ingest-docs", {
+                method: "POST",
+                body: reqBody,
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                }
+        })
+
+        let outputText = document.getElementById('output');
+        outputText.innerHTML = await response.text()
+        })})

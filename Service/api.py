@@ -5,15 +5,24 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import asyncio
 from ..Logic.scrapers.document_scraper.spiders.DocumentScraper import run_document_scraper
+from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], #TODO: specify the allow_origins (frontend origin)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+ )
 
 class IngestDocsPut(BaseModel):
     start_url: str
     layers: int
-    get_pdfs: bool
+    get_pdfs: bool | str
     regex: str | None = None
 
-@app.post("/ingest-docs")
+@app.post("/Frontend/ingest-docs")
 async def update_item(req:IngestDocsPut):
     """
     :return: path to the extracted links Service/Links/municipality_items.json

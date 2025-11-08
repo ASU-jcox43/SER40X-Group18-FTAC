@@ -57,5 +57,5 @@ async def run_document_scraper(start_url: str, layers: int=1, get_pdfs: bool=Tru
 
     process.crawl(DocumentScraperSpider, start_url=start_url, layers=layers, get_pdfs=get_pdfs, rex=rex)
     process.start()  # the script will block here until the crawling is finished
-    process.stop()
-    return export_to
+    process.stop() #TODO: allow client to run this crawler multiple times without restarting the server using celery
+    return open(export_to, "r").read(-1)
