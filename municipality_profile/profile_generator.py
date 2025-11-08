@@ -56,10 +56,16 @@ def load_existing_profile(profile):
 
 if __name__ == "__main__":
     #load test data 
-    with open("test_profile_data.json", "r", encoding="utf-8") as f:
-        test_data = json.load(f)
-    
-    # timestamp automatically 
-    test_data["last_updated"] = datetime.now().isoformat()
+    test_dir = "testData"
 
-    addProfile(**test_data)
+    for filename in os.listdir(test_dir):
+        if filename.endswith(".json"):
+            file_path = os.path.join(test_dir, filename)
+            with open(file_path, "r", encoding="utf-8") as f:
+                test_data = json.load(f)
+            
+            # timestamp automatically 
+            test_data["last_updated"] = datetime.now().isoformat()
+
+            addProfile(**test_data)
+            print(f"Processed {filename}")
