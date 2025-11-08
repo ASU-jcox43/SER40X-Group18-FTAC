@@ -48,6 +48,8 @@ def addProfile(
         adjMunicipalities,  # list of neighboring municipalities
     )
 
+def load_existing_profile(save_path):
+
     # folder path for profiles
     base_dir = os.path.dirname(os.path.abspath(__file__))
     folder_path = os.path.join(base_dir, "profiles")
@@ -89,53 +91,11 @@ def addProfile(
 
 
 if __name__ == "__main__":
-    # example values for testing
-    name = "Food Truck Co"
-    fb_type = "food truck"
-    city = "Toronto"
-    province = "Ontario"
-    population = 2800000
-    avgAge = 36.8
-    ethnicityComposition = {
-        "White": 65.0,
-        "Hispanic": 10.0,
-        "Filipino": 10.0,
-        "Asian": 15.0,
-    }
-    houseSize = 2.8
-    educationLevel = {
-        "High School": 90.0,
-        "College": 48.5,
-    }
-    income = 600000
-    min_wage = 17.00
-    comm_tax_rates = 0.20
-    last_updated = datetime.now().isoformat()
-    region = "Central Canada"
-    popSqMile = 4750
-    areaSqMiles = 40.2
-    lat = 33.4
-    long = -111.5
-    adjMunicipalities = ["Mississauga", "Vaughan", "Markham", "Brampton", "Pickering"]
+    #load test data 
+    with open("test_profile_data.json", "r", encoding="utf-8") as f:
+        test_data = json.load(f)
+    
+    # timestamp automatically 
+    test_data["last_updated"] = datetime.now().isoformat()
 
-    addProfile(
-        name,
-        fb_type,
-        city,
-        province,
-        population,
-        avgAge,
-        ethnicityComposition,
-        houseSize,
-        educationLevel,
-        income,
-        min_wage,
-        comm_tax_rates,
-        last_updated,
-        region,
-        popSqMile,
-        areaSqMiles,
-        lat,
-        long,
-        adjMunicipalities
-    )
+    addProfile(**test_data)
