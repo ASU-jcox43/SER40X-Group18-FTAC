@@ -1,36 +1,39 @@
-def createDemographic(population, age, community):
+from pprint import pprint
+
+
+def createDemographic(
+    population, avgAge, ethnicityComposition, houseSize, educationLevels
+):
+    # Create demographic information
+    # Ethnicity composition includes percentage for each ethinicity in the municipality
+    # Education levels include percentage of people with certain education levels
     return {
+        "Average Age": avgAge,
+        "Ethnicity Compisition": ethnicityComposition,
         "Population": population,
-        "Age": age,
-        "community": community,
+        "Average House Hold Size": houseSize,
+        "Education Levels": educationLevels,
     }
 
-
-def createGeographic(cityName, province, region, location, landArea, boundaries):
-    # Example geographic profile section
-    # City Name: City of Makrham
-    # Province: Ontario
-    # Region: York Region (Greater Toronto Area)
-    # Location: East of Toronto
-    # land Area: 212 sq km
-    # Boundaries: {
-    #        'North':'Whitechurch-Stouffville',
-    #        'South': 'Toronto',
-    #        'East': 'Pickering',
-    #        'West': 'Vaughan'
-    #   }
-
+def createGeographic(
+    city, province, region, popSqMile, areaSqMiles, lat, long, adjMunicipalities
+):
+    # Create geographic information
+    # The longitude and Latitude is the city center
+    # Adjacent municipalities includes list of municipalities neighboring the profile
     return {
-        "City Name": cityName,
+        "City": city,
         "Province": province,
         "Region": region,
-        "Location": location,
-        "Area": landArea,
-        "Boundaries": boundaries,
+        "Population Density Per Sq Mile": popSqMile,
+        "Area Sq Miles": areaSqMiles,
+        "Latitude": lat,
+        "Longitude": long,
+        "Adjacent Municipalities": adjMunicipalities,
     }
 
 
-def createContactInfo(department, address, phone, email, website):
+def createContactInfo(department, address, fax, phoneNumber, email, website, hours):
     # Multiple contact information can be created
     # Contact information could include: Licensing, permit office,
     # parking/bylaw office, public health/food safety office, fire deparment office, etc
@@ -38,10 +41,13 @@ def createContactInfo(department, address, phone, email, website):
     return {
         "Department": department,
         "Address": address,
-        "Phone": phone,
+        "Fax": fax,
+        "Phone": phoneNumber,
         "Email": email,
         "Website": website,
+        "Hours": hours,
     }
+
 
 def createScore():
     # Create scoring system based on municipality profile and rubric
@@ -56,57 +62,80 @@ def createScore():
         "Foundational Score": 0,
         "Licensing Requirements": 0,
         "Operations & Restrictions": 0,
-        "Friendliness index": 0
+        "Friendliness index": 0,
     }
 
 def scoreBreakdown():
     # Detailed breakdown of scores for each section
     # Scoring rubric topics are proprietary information and cannot be shared
-    
+
     # example response structure below
     friendlinessBreakdown = {
         "Foundational": {
             "Points Awarded": 0,
             "Points Available": 10,
             "Percentage": 0,
-            "Friendliness Index": "Very friendly"
+            "Friendliness Index": "Very friendly",
         },
         "Licensing Requirements": {
             "Points Awarded": 0,
             "Points Available": 10,
             "Percentage": 0,
-            "Friendliness Index": "Very friendly"
+            "Friendliness Index": "Very friendly",
         },
         "Operations & Restrictions": {
             "Points Awarded": 0,
             "Points Available": 30,
             "Percentage": 0,
-            "Friendliness Index": "Very friendly"
-        }
+            "Friendliness Index": "Very friendly",
+        },
     }
     return friendlinessBreakdown
-    
 
-
-# TODO: Add more aspects if needed
-def createEconomy(income, minWage, commTaxRates):
+def createEconomy(income, min_wage, comm_tax_rates):
     return {
         "Income Level": income,
-        "Minimum Wage": minWage,
-        "Commercial Tax Rates": commTaxRates,
+        "Minimum Wage": min_wage,
+        "Commercial Tax Rates": comm_tax_rates,
     }
-
 
 def createMunicipalityProfile(
-    name, province, population, age, community, income, minWage, commTaxRates
+    name,
+    fb_type,
+    city,
+    province,
+    population,
+    avgAge,
+    ethnicityComposition,
+    houseSize,
+    educationLevel,  # list of education levels
+    income,
+    min_wage,
+    comm_tax_rates,
+    last_updated,
+    region,
+    popSqMile,
+    areaSqMiles,
+    lat,
+    long,
+    adjMunicipalities,  # list of neighboring municipalities
+    contacts # list of contact info 
 ):
+
     profile = {
         "Name": name,
+        "fb_type": fb_type,
         "Province": province,
-        "Demographic": createDemographic(population, age, community),
-        "Economy": createEconomy(income, minWage, commTaxRates),
-        # "Geographic": createGeographic(),
-        # "Contact Information": createContactInfo()
+        "Demographic": createDemographic(
+            population, avgAge, ethnicityComposition, houseSize, educationLevel
+            ),
+        "Economy": createEconomy(income, min_wage, comm_tax_rates),
+        "Geographic": createGeographic(
+            city, province, region, popSqMile, 
+            areaSqMiles, lat, long, adjMunicipalities
+            ),
+        "Contact Information": contacts,
+        "last Updated": last_updated
     }
-    return profile
 
+    return profile
