@@ -4,4 +4,4 @@
 .vscode
 **/analysis_ready
 **/visualizeTest
-municipality_profile/profiles
+municipality_profile/profiles/*
