@@ -3,8 +3,7 @@
 from typing import Union
 from fastapi import FastAPI
 from pydantic import BaseModel
-import asyncio
-from ..Logic.scrapers.document_scraper.spiders.DocumentScraper import run_document_scraper
+from .tasks import *
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 
@@ -27,4 +26,4 @@ async def update_item(req:IngestDocsPut):
     """
     :return: path to the extracted links Service/Links/municipality_items.json
     """
-    return await run_document_scraper(req.start_url, layers=req.layers, get_pdfs=req.get_pdfs, rex=req.regex)
+    return run_document_scraper(req.start_url, layers=req.layers, get_pdfs=req.get_pdfs, rex=req.regex)

@@ -17,3 +17,5 @@ fastapi
 fastapi[standard]
 pydantic
 asyncio
+celery
+celery[redis]
