@@ -4,4 +4,6 @@
 .vscode
 **/analysis_ready
 **/visualizeTest
+
+.idea
 **/profiles
