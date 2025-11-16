@@ -43,6 +43,37 @@ def saveJsonContents(data, outputPath):
         print(f"\nDebug file saved to: {outputPath}")
     except Exception as e:
         print(f"Failed to save debug file: {e}")
+        
+def processSelections(selection1, selection2):
+    municipalityPaths = getMunicipalityProfiles()
+    
+    # Convert user inputs into integers
+    try:
+        idx1 = int(selection1) - 1
+        idx2 = int(selection2) - 1
+    except ValueError:
+        return "Selections must be numbers."
+
+    # Bounds check
+    if not (0 <= idx1 < len(municipalityPaths)) or not (0 <= idx2 < len(municipalityPaths)):
+        return "Invalid selections. Please choose from the displayed list."
+    
+    # Get the actual Path objects
+    firstPath = municipalityPaths[idx1]
+    secondPath = municipalityPaths[idx2]
+
+    # Now read JSON for each (must pass a list!)
+    firstData = readMunicipalityJson([firstPath])
+    secondData = readMunicipalityJson([secondPath])
+    firstKey = next(iter(firstData))
+    secondKey = next(iter(secondData))
+    
+    # TODO: Change to return content, used for easy debug
+    return {
+        "first": firstKey,
+        "second": secondKey
+    }
+    
 
 # TODO: Delete testing method
 if __name__ == "__main__":
