@@ -10,6 +10,8 @@ FILEPATH = "../analysis_ready"
 SCORE = "../scoring/friendliness_summary.json"
 OUTPUT = "generated reports"
 
+seen = set()
+
 
 def json_to_table(file_path, score_path, output_path):
     # Open the extracted text and scoring files.
@@ -64,9 +66,15 @@ def json_to_table(file_path, score_path, output_path):
         for subcategory, items in content.items():
             if isinstance(items, list):
                 for line in items:
-                    doc.add_paragraph(line)
+                    if line not in seen:
+                        doc.add_paragraph(line)
+                        seen.add(line)
 
     doc.add_heading('Recommendations', level=1)
+    for category, content in keyword_contexts.items():
+        empty = (len(content) == 0)
+        if empty:
+            doc.add_paragraph(f"Find more information for {category}.")
 
     doc.save(output_path)
     print(f"Word document saved to: {output_path}")
