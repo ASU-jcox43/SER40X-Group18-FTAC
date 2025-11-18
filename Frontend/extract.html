@@ -1,0 +1,134 @@
+<!--
+1. The user provides optional fields: municipality, classification, title, then submits.
+2. A request is sent to view results that match the provided filters.
+3. The client gets a response containing the first 20 or so results and they are displayed in a list.
+4. The client may select one or more of the results then click "extract from selected documents".
+5. A request is sent to convert the selected documents to text.
+-->
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Extract Text</title>
+        <meta charset="utf-8"/>
+    </head>
+    <body>
+        <h1>Search for Documents</h1>
+        <form id="extractForm" novalidate>
+            <label for="municipality">municipality</label>
+            <input id="municipality" name="municipality" type="search"/><br>
+            <label for="title">title</label>
+            <input id="title" name="title" type="search"/><br>
+            <label for="category">category</label>
+            <select>
+                <option value="legal">legal</option>
+                <option value="permit" selected>permit</option>
+            </select><br>
+            <button type="submit">search</button>
+        </form>
+        <!-- insert results inside resultsTable -->
+        <table id="resultsTable">
+            <!--
+            <tr>
+                <th>Municipality</th>
+                <th>Title</th>
+                <th>Category</th>
+                <th>select</th>
+            </tr>
+            <tr>
+                <td>Municipality</td>
+                <td>Title</td>
+                <td>Category</td>
+            </tr>
+            ...
+            -->
+        </table> 
+        <button type="submit" id="startExtract">extract from selected documents</button>
+        <script>
+            const form = document.getElementById('extractForm');
+            const submit = document.getElementById('startExtract');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault()
+                /*
+                let reqBody = JSON.stringify({
+                    municipality: formEntries["municipality"],
+                    title: formEntries["title"],
+                    category: formEntries["category"]
+                });
+
+                let formEntries = Object.fromEntries(new FormData(form));
+                
+                let response = await fetch("http://localhost:8000/Frontend/extract", {
+                    method: "GET",
+                    body: reqBody,
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8"
+                    }
+                });
+                */
+                let resultsTable = document.getElementById('resultsTable');
+                // results = await response.text()
+                let results = [ // Dummy data
+                    {municipality:"Calgary",        title:"licences and permits 1", category:"permit"},
+                    {municipality:"Mississauga",    title:"licences and permits 2", category:"permit"},
+                    {municipality:"Vancouver",      title:"licences and permits 3", category:"permit"},
+                    {municipality:"Oakville",       title:"legal stuff 1",          category:"legal"},
+                    {municipality:"Toronto",        title:"legal stuff 2",          category:"legal"},
+                    {municipality:"Quebec City",    title:"legal stuff 3",          category:"legal"},
+                    {municipality:"York",           title:"legal stuff 4",          category:"legal"},
+                ];
+
+                let resultHeader = document.createElement("tr");
+
+                let resultHeaderMunicipality = document.createElement('th');
+                resultHeaderMunicipality.textContent = "Municipality";
+                resultHeader.appendChild(resultHeaderMunicipality);
+
+                let resultHeaderTitle = document.createElement('th');
+                resultHeaderTitle.textContent = "Title";
+                resultHeader.appendChild(resultHeaderTitle);
+
+                let resultHeaderCategory = document.createElement('th');
+                resultHeaderCategory.textContent = "Category";
+                resultHeader.appendChild(resultHeaderCategory);
+
+                let resultHeaderSelect = document.createElement('th');
+                resultHeaderSelect.textContent = "Select";
+                resultHeader.appendChild(resultHeaderSelect);
+
+                resultsTable.appendChild(resultHeader);
+
+                for (let i = 0; i < results.length; i++) {
+                    let resultRow = document.createElement("tr");
+                    resultRow.setAttribute("id", "row".concat(i));
+
+                    let municipality = document.createElement('td');
+                    municipality.textContent = results[i].municipality;
+                    resultRow.appendChild(municipality);
+                    
+                    let title = document.createElement('td');
+                    title.textContent = results[i].title;
+                    resultRow.appendChild(title);
+                    
+                    let category = document.createElement('td');
+                    category.textContent = results[i].category;
+                    resultRow.appendChild(category);
+
+                    let checkboxEntry = document.createElement('td');
+                    let checkbox = document.createElement('input');
+                    checkbox.setAttribute("type", "checkbox");
+                    checkbox.setAttribute("name", "checkbox".concat(i));
+                    checkboxEntry.appendChild(checkbox);
+                    resultRow.appendChild(checkboxEntry);
+
+                    resultsTable.appendChild(resultRow);
+                }
+            })
+            submit.addEventListener('submit', async (e) => {
+                let reqBody = JSON.stringify({
+                    municipality: formEntries["municipality"],
+                    title: formEntries["title"],
+                    category: formEntries["category"]
+                });
+            })
+        </script>
+    </body>

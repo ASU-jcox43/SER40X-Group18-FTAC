@@ -15,15 +15,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class IngestDocsPut(BaseModel):
+class PostIngestDocs(BaseModel):
     start_url: str
     layers: int
     get_pdfs: bool | str
     regex: str | None = None
 
+class SearchDocsGet(BaseModel):
+    x: None
+
 @app.post("/Frontend/ingest-docs")
-async def update_item(req:IngestDocsPut):
+async def update_item(req:PostIngestDocs):
     """
     :return: path to the extracted links Service/Links/municipality_items.json
     """
     return run_document_scraper(req.start_url, layers=req.layers, get_pdfs=req.get_pdfs, rex=req.regex)
+
+@app.get("/Frontend/extract")
+async def search_docs(req:SearchDocsGet):
+    pass

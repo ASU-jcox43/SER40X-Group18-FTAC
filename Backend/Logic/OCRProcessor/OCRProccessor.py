@@ -1,6 +1,6 @@
 import json
 import re
-import fitz  # PyMuPDF
+import pymupdf
 from pdf2image import convert_from_path
 import pytesseract
 from PIL import Image
@@ -24,7 +24,6 @@ for pkg in required_nltk:
     except LookupError:
         nltk.download(pkg)
 
-
 # Get all PDF files in a folder
 # Function that retrieves and stores PDF files to a list
 def get_pdf_files(folder_path):
@@ -42,7 +41,7 @@ def get_pdf_files(folder_path):
 # Function to check if pdf is scanned (image based)
 def is_scanned_pdf(file_path):
     try:
-        doc = fitz.open(file_path)
+        doc = pymupdf.open(file_path)
         text = "".join([page.get_text() for page in doc])
         print(f"{file_path} is image based (scanned)")
         return text.strip() == ""  # True if scanned
@@ -91,7 +90,7 @@ def run_ocr(file_path, dpi=300):
 
 def extract_text(file_path):
     try:
-        doc = fitz.open(file_path)
+        doc = pymupdf.open(file_path)
         # Regex matches headings like "Section 1", "SECTION I", "Article 2", etc.
         section_pattern = re.compile(r"^(Section|SECTION|Article|ARTICLE|§)\s*[\w\d\.\-]+", re.IGNORECASE)
         
