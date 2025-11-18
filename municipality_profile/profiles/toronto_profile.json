@@ -42,6 +42,30 @@
             "Pickering"
         ]
     },
+    "friendlinessScore": {
+        "Score": 85.24,
+        "Friendliness Index": "Very friendly"
+    },
+    "friendlinessScoreBreakdown": {
+        "Foundational": {
+            "Points Awarded": 8,
+            "Points Available": 10,
+            "Percentage": "80%",
+            "Friendliness Index": "Very friendly"
+        },
+        "Licensing Requirements": {
+            "Points Awarded": 9,
+            "Points Available": 10,
+            "Percentage": "90%",
+            "Friendliness Index": "Very friendly"
+        },
+        "Operations & Restrictions": {
+            "Points Awarded": 30,
+            "Points Available": 35,
+            "Percentage": "86%",
+            "Friendliness Index": "Very friendly"
+        }
+    },
     "Contact Information": [
         {
             "Department": "City of Toronto License & Permit Issuing Office",
@@ -89,5 +113,5 @@
             "Hours": "Monday to Friday: 8:00 a.m. to 5:00 p.m."
         }
     ],
-    "last Updated": "2025-11-07T19:59:22.735556"
+    "last Updated": "2025-11-17T18:58:06.329928"
 }

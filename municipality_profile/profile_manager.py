@@ -1,6 +1,5 @@
 from pprint import pprint
 
-
 def createDemographic(
     population, avgAge, ethnicityComposition, houseSize, educationLevels
 ):
@@ -32,66 +31,30 @@ def createGeographic(
         "Adjacent Municipalities": adjMunicipalities,
     }
 
-
-def createContactInfo(department, address, fax, phoneNumber, email, website, hours):
+def createContactInfo(contacts):
     # Multiple contact information can be created
     # Contact information could include: Licensing, permit office,
     # parking/bylaw office, public health/food safety office, fire deparment office, etc
 
-    return {
-        "Department": department,
-        "Address": address,
-        "Fax": fax,
-        "Phone": phoneNumber,
-        "Email": email,
-        "Website": website,
-        "Hours": hours,
-    }
+    return contacts
 
-
-def createScore():
+def createFriendlinessScore(score):
     # Create scoring system based on municipality profile and rubric
     # Foundational score (out of 10)
     # Licensing Requirements score (out of 10)
     # Operations & Restrictions score (out of 30)
     # Equity & Fairness PLACEHOLDER
 
-    friendliness_index = scoreBreakdown()
+    return score
 
-    return {
-        "Foundational Score": 0,
-        "Licensing Requirements": 0,
-        "Operations & Restrictions": 0,
-        "Friendliness index": 0,
-    }
-
-def scoreBreakdown():
+def createScoreBreakdown(breakdown):
     # Detailed breakdown of scores for each section
     # Scoring rubric topics are proprietary information and cannot be shared
 
     # example response structure below
-    friendlinessBreakdown = {
-        "Foundational": {
-            "Points Awarded": 0,
-            "Points Available": 10,
-            "Percentage": 0,
-            "Friendliness Index": "Very friendly",
-        },
-        "Licensing Requirements": {
-            "Points Awarded": 0,
-            "Points Available": 10,
-            "Percentage": 0,
-            "Friendliness Index": "Very friendly",
-        },
-        "Operations & Restrictions": {
-            "Points Awarded": 0,
-            "Points Available": 30,
-            "Percentage": 0,
-            "Friendliness Index": "Very friendly",
-        },
-    }
-    return friendlinessBreakdown
+    return breakdown
 
+    
 def createEconomy(income, min_wage, comm_tax_rates):
     return {
         "Income Level": income,
@@ -119,6 +82,8 @@ def createMunicipalityProfile(
     lat,
     long,
     adjMunicipalities,  # list of neighboring municipalities
+    friendlinessScore,
+    friendlinessScoreBreakdown,
     contacts # list of contact info 
 ):
 
@@ -134,7 +99,9 @@ def createMunicipalityProfile(
             city, province, region, popSqMile, 
             areaSqMiles, lat, long, adjMunicipalities
             ),
-        "Contact Information": contacts,
+        "friendlinessScore": createFriendlinessScore(friendlinessScore),
+        "friendlinessScoreBreakdown": createScoreBreakdown(friendlinessScoreBreakdown),
+        "Contact Information": createContactInfo(contacts),
         "last Updated": last_updated
     }
 
