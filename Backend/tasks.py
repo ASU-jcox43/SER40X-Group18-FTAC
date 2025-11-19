@@ -1,6 +1,6 @@
 from celery import Celery
 import subprocess
-from ..Logic.scrapers.document_scraper.spiders.DocumentScraper import *
+from Logic.scrapers.document_scraper.spiders.DocumentScraper import *
 
 document_scraper_app = Celery(
     "worker",

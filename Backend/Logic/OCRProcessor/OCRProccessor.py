@@ -79,7 +79,7 @@ def run_ocr(file_path, dpi=300):
                 else:
                     current_section["text"] += " " + word
         except Exception as e:
-            print(f"Error running OCR on page {page_num} of {file_path}:{e}")
+            print(f"Error running OCR on page {page} of {file_path}:{e}")
             continue
 
     # Append last section

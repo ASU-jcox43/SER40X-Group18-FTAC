@@ -10,8 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
             get_pdfs: formEntries["getPdfs"],
             regex: formEntries["regexFilter"]
         });
-
-        console.log(reqBody);
         
         let response = await fetch("http://localhost:8000/Frontend/ingest-docs", {
                 method: "POST",
