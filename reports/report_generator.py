@@ -5,6 +5,7 @@ from docx import Document
 from docx.shared import Inches
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+from docx2pdf import convert
 
 FILEPATH = "../analysis_ready"
 SCORE = "../scoring/friendliness_summary.json"
@@ -13,7 +14,7 @@ OUTPUT = "generated reports"
 seen = set()
 
 
-def json_to_table(file_path, score_path, output_path):
+def json_to_table(file_path, score_path, output_path, pdf=False):
     # Open the extracted text and scoring files.
     with open(file_path, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -79,10 +80,15 @@ def json_to_table(file_path, score_path, output_path):
     doc.save(output_path)
     print(f"Word document saved to: {output_path}")
 
+    if pdf:
+        pdf_path = output_path.replace(".docx", ".pdf")
+        convert(output_path, pdf_path)
+        print(f"PDF saved to: {pdf_path}")
+
 
 if __name__ == "__main__":
     for filename in os.listdir(FILEPATH):
         file_path = os.path.join(FILEPATH, filename)
         output_name = os.path.splitext(filename)[0] + "_Report.docx"
         output_path = os.path.join(OUTPUT, output_name)
-        json_to_table(file_path, SCORE, output_path)
+        json_to_table(file_path, SCORE, output_path, pdf=True)
