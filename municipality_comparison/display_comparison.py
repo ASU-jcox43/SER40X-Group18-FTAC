@@ -1,6 +1,6 @@
 from comparison_util import getMunicipalityProfiles, readMunicipalityJson, processSelections
 
-def displayProfiles() :
+def displayProfiles():
     municipalityPaths = getMunicipalityProfiles()
     municipalityContent = readMunicipalityJson(municipalityPaths)
     
@@ -16,7 +16,7 @@ def getProfileSelections():
     selection2 = input("Second Selection: ")
     
     print(processSelections(selection1, selection2))
-    
+
 if __name__ == "__main__":
     displayProfiles()
     getProfileSelections()

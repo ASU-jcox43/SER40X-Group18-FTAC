@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from comparison_template import COMPARISON_TEMPLATE
 
 # Folder containing JSON files
 PROFILES_PATH = "../municipality_profile/profiles"
@@ -68,12 +69,53 @@ def processSelections(selection1, selection2):
     firstKey = next(iter(firstData))
     secondKey = next(iter(secondData))
     
-    # TODO: Change to return content, used for easy debug
-    return {
-        "first": firstKey,
-        "second": secondKey
-    }
+    firstKey = next(iter(firstData))
+    secondKey = next(iter(secondData))
+
+    compareProfiles(firstData[firstKey], secondData[secondKey], firstKey, secondKey)
+
+    return f"Compared {firstKey} and {secondKey}"
+
+# Display of the profiles to compare
+def compareProfiles(profileA, profileB, nameA, nameB):
+    print("\n" + "="*80)
+    print(f"{nameA:^40} | {nameB:^40}")
+    print("="*80)
+
+    for section, config in COMPARISON_TEMPLATE.items():
+        print(f"\n--- {section} ---")
+
+        # simple fields
+        for field in config.get("fields", []):
+            valA = getNested(profileA, field)
+            valB = getNested(profileB, field)
+            print(f"{field:35}: {str(valA)[:40]:40} | {str(valB)[:40]:40}")
+
+        # nested field groups
+        nested_cfg = config.get("nested", {})
+        for label, key in nested_cfg.items():
+            print(f"\n  {label}:")
+            subA = profileA.get("Demographic", {}).get(key, {})
+            subB = profileB.get("Demographic", {}).get(key, {})
+
+            for sub_field in subA.keys():
+                valA = subA.get(sub_field)
+                valB = subB.get(sub_field)
+                print(f"    {sub_field:30}: {str(valA):10} | {str(valB):10}")
+
+    print("\n" + "="*80 + "\n")
     
+# Safe nested lookup
+def getNested(data, key):
+    # handle top-level and nested keys
+    if key in data:
+        return data[key]
+
+    for category in data.values():
+        if isinstance(category, dict) and key in category:
+            return category[key]
+
+    return "N/A"
 
 # TODO: Delete testing method
 if __name__ == "__main__":
