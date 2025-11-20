@@ -1,7 +1,8 @@
-import os
+from os.path import join, abspath, dirname, realpath
+from os import makedirs, listdir
 import json
 from PyPDF2 import PdfReader
-from extraction_util import cleanText, extractKeywords
+from .extraction_util import cleanText, extractKeywords
 
 # TODO Update for relevant categories and terms
 # Define your keyword categories and terms
@@ -39,13 +40,13 @@ KEYWORDS = {
   "exterior appearance guidelines": ["paint", "painted", "appearance", "vehicle signage", "branding on truck", "exterior look", "color", "color contrast", "colour", "colour contrast", "identification markings"]
 }
 
-FILEPATH = os.path.join("../..", "test documents")
-SAVEPATH = os.path.join("../..", "analysis_ready")
+FILEPATH = abspath(join(dirname( __file__ ),"..", "..", "test documents"))
+SAVEPATH = abspath(join(dirname( __file__ ),"..", "..", "analysis_ready"))
 
 
 # TODO: Change the output of a analysis ready json to a txt file if needed
 def extractTXT(filename):
-    txtPath = os.path.join(FILEPATH, filename)
+    txtPath = join(FILEPATH, filename)
     # Read plain text
     with open(txtPath, "r", encoding="utf-8") as file:
         txtRaw = file.read()
@@ -67,8 +68,8 @@ def extractTXT(filename):
         "keyword_contexts": txtResults,
     }
 
-    os.makedirs(SAVEPATH, exist_ok=True)
-    saveFile = os.path.join(SAVEPATH, filename.replace(".txt", ".json"))
+    makedirs(SAVEPATH, exist_ok=True)
+    saveFile = join(SAVEPATH, filename.replace(".txt", ".json"))
     with open(saveFile, "w", encoding="utf-8") as saveFile:
         json.dump(txtJSON, saveFile, indent=2)
 
@@ -76,7 +77,7 @@ def extractTXT(filename):
 
 
 def extractPDF(filename):
-    pdfPath = os.path.join(FILEPATH, filename)
+    pdfPath = join(FILEPATH, filename)
 
     # Read PDF file
     with open(pdfPath, "rb") as pdf_file:
@@ -103,16 +104,18 @@ def extractPDF(filename):
         "keyword_contexts": pdfResults,
     }
 
-    os.makedirs(SAVEPATH, exist_ok=True)
-    saveFile = os.path.join(SAVEPATH, filename.replace(".pdf", ".json"))
+    makedirs(SAVEPATH, exist_ok=True)
+    saveFile = join(SAVEPATH, filename.replace(".pdf", ".json"))
     with open(saveFile, "w", encoding="utf-8") as saveFile:
         json.dump(pdfJSON, saveFile, indent=2)
 
     print("Extracted pdf file")
 
 
-if __name__ == "__main__":
-    for file_name in os.listdir(FILEPATH):
+def extract():
+    print(dirname(realpath(__file__)))
+    print(FILEPATH)
+    for file_name in listdir(FILEPATH):
         if file_name.lower().endswith(".txt"):
             extractTXT(file_name)
         elif file_name.lower().endswith(".pdf"):

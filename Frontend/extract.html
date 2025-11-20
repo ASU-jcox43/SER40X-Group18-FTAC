@@ -1,5 +1,5 @@
 <!--
-1. The user provides optional fields: municipality, classification, title, then submits.
+1. The user provides optional fields: municipality, classification, title, link, then submits.
 2. A request is sent to view results that match the provided filters.
 3. The client gets a response containing the first 20 or so results and they are displayed in a list.
 4. The client may select one or more of the results then click "extract from selected documents".
@@ -14,12 +14,14 @@
     <body>
         <h1>Search for Documents</h1>
         <form id="extractForm" novalidate>
+            <label for="url">link</label>
+            <input id="url" name="url" type="search"/><br>
             <label for="municipality">municipality</label>
             <input id="municipality" name="municipality" type="search"/><br>
             <label for="title">title</label>
             <input id="title" name="title" type="search"/><br>
             <label for="category">category</label>
-            <select>
+            <select id="category" name="category">
                 <option value="legal">legal</option>
                 <option value="permit" selected>permit</option>
             </select><br>
@@ -29,39 +31,36 @@
         <table id="resultsTable"></table>
         <button type="submit" id="startExtract">extract from selected documents</button>
         <script>
-            const form = document.getElementById('extractForm');
-            const submit = document.getElementById('startExtract');
+            const search_form = document.getElementById('extractForm');
+            const extract_button = document.getElementById('startExtract');
             document.addEventListener('DOMContentLoaded', () => {
-                form.addEventListener('submit', async (e) => {
+                search_form.addEventListener('submit', async (e) => {
                 e.preventDefault()
-                /*
-                let reqBody = JSON.stringify({
-                    municipality: formEntries["municipality"],
-                    title: formEntries["title"],
-                    category: formEntries["category"]
-                });
-
-                let formEntries = Object.fromEntries(new FormData(form));
-                
-                let response = await fetch("http://localhost:8000/Frontend/extract", {
-                    method: "GET",
-                    body: reqBody,
-                    headers: {
-                        "Content-type": "application/json; charset=UTF-8"
-                    }
-                });
-                */
                 const resultsTable = document.getElementById('resultsTable');
-                // results = await response.text()
-                const results = [ // Dummy data
-                    {municipality:"Calgary",        url:"calgary.ca/bylaw2"},
-                    {municipality:"Mississauga",    url:"mississauga.ca/bylaws/5802.pdf"},
-                    {municipality:"Vancouver",      url:"vancouver.ca/bylaws/325.pdf"},
-                    {municipality:"Oakville",       url:"oakville.ca/bylaws/9011.pdf"},
-                    {municipality:"Toronto",        url:"toronto.ca/bylaws/5802.pdf"},
-                    {municipality:"Quebec City",    url:"ville.quebec.qc.ca/bylaws/businessess3/40.html"},
-                    {municipality:"York",           url:"york.ca/bylaws/36.html"},
-                ];
+
+                while (resultsTable.hasChildNodes()) {
+                    resultsTable.removeChild(resultsTable.firstChild);
+                }
+
+                let formEntries = Object.fromEntries(new FormData(search_form));
+
+                console.log(formEntries);
+                
+                const page = 0;
+                var URLParams = "?page=".concat(page);
+
+                for (const [key, value] of Object.entries(formEntries)) {
+                    if (value.length > 0) {
+                        URLParams = URLParams.concat("&" + key + "=" + value);
+                    }
+                }
+
+                console.log(URLParams);
+
+                const response = await fetch("http://localhost:8000/extract".concat(URLParams));
+                const results = await response.json();
+                console.log(results)
+                console.log(response)
 
                 const resultHeader = document.createElement("tr");
 
@@ -105,24 +104,24 @@
                     resultsTable.appendChild(resultRow);
                 }
                 })
-                submit.addEventListener('click', async (e) => {
+                extract_button.addEventListener('click', async (e) => {
                 e.preventDefault()
 
                 const rows = document.getElementsByClassName("resultRow");
-                const reqBody = [];
+                const reqBody = {urls: []};
 
                 for (let i = 0; i < rows.length; i++) {
                     const checkbox = rows[i].querySelector(".resultCheckbox");
 
                     if (checkbox.checked) {
                         const url = rows[i].getElementsByClassName("URLEntry")[0].textContent;
-                        reqBody.push(url);
+                        reqBody.urls.push(url);
                     }
                 }
 
                 console.log(reqBody);
 
-                const response = await fetch("http://localhost:8000/Frontend/ingest-docs", {
+                const response = await fetch("http://localhost:8000/extract", {
                     method: "POST",
                     body: JSON.stringify(reqBody),
                     headers: {

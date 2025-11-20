@@ -28,9 +28,10 @@ for pkg in required_nltk:
 # Function that retrieves and stores PDF files to a list
 def get_pdf_files(folder_path):
     # Folder where PDFs are stored
-    pdf_folder = "bylawDocuments/"
+    pdf_folder = folder_path
     try:
-        pdf_files = glob.glob(os.path.join(pdf_folder, "*.pdf"))
+        pdf_files = glob.glob(os.path.join(pdf_folder, "*.pdf"), root_dir='.')
+        print(os.path.join(pdf_folder, "*.pdf"))
         print(f"Files in directory {pdf_files}") # TEST print file path
         return pdf_files or []  # returns empty list if no PDFs
     except Exception as e:

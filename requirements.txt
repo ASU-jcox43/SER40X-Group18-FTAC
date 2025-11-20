@@ -20,7 +20,8 @@ pydantic
 asyncio
 celery
 celery[redis]
-unstructured
+unstructured[all_docs]
 pdf2image
 pytesseract
 PyMuPDF
+pdfminer
