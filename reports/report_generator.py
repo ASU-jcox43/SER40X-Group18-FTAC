@@ -45,9 +45,9 @@ def json_to_table(file_path, score_path, output_path, pdf=False):
     # Put a Green for a found category and Red for a missing category.
     for category, content in keyword_contexts.items():
         empty = (len(content) == 0)
-        status = "+" if not empty else "-"
+        status = "Found" if not empty else "Missing"
         row_cells = table.add_row().cells
-        row_cells[0].text = category
+        row_cells[0].text = category.capitalize()
         row_cells[1].text = status
         tc = row_cells[1]._tc
         tcPr = tc.get_or_add_tcPr()
@@ -67,8 +67,13 @@ def json_to_table(file_path, score_path, output_path, pdf=False):
         for subcategory, items in content.items():
             if isinstance(items, list):
                 for line in items:
-                    if line not in seen:
-                        doc.add_paragraph(line)
+                    if line not in seen and len(line.split()) >= 4:
+                        if "." not in line:
+                            doc.add_paragraph((line + ".").capitalize())
+                        elif "$" in line:
+                            doc.add_paragraph((line + ".").capitalize())
+                        else:
+                            doc.add_paragraph(line.capitalize())
                         seen.add(line)
 
     doc.add_heading('Recommendations', level=1)
