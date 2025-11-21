@@ -64,7 +64,7 @@ def normalize_profile(data):
         "Region": region,
         "Score": score_value,
         "Friendliness Index": score.get("Friendliness Index", ""),
-        "Breakdown": breakdown
+        #"Breakdown": breakdown
     }
 
 
@@ -93,13 +93,17 @@ if __name__ == "__main__":
     #print("\nAll Profiles:")
     #pprint.pprint(profiles)
 
-    # Print search functionality
+    # Print search by score functionality
     print ("\nSearching for profiles with friendliness score > 83:")
-    results = search_profiles(profiles, min_score=83.0, province="Ontario")
+    results = search_profiles(profiles, min_score=83.0)
     pprint.pprint(results)
 
     # Print Search by province functionality
     print("\nSearching for profiles in Ontario:")
     results = search_profiles(profiles, province="Ontario")
     pprint.pprint(results)
-    
+
+    # Print Search by score and province functionality
+    print("\nSearching for profiles in Ontario with friendliness score > 85:")
+    results = search_profiles(profiles, min_score=85.0, province="Ontario")
+    pprint.pprint(results)
