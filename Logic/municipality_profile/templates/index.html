@@ -11,19 +11,26 @@
         <h1>Municipality Search</h1>
         <form id="searchForm" method="POST">
             <label for="province">Select Province:</label>
-            <select name="province" id="province">
-                <option value="">-- All Provinces --</option>
-                <option value="Ontario">Ontario</option>
-                <option value="Quebec">Quebec</option>
-                <option value="British Columbia">British Columbia</option>
-                <option value="Alberta">Alberta</option>
-            </select>
+                <select name="province" id="province">
+                    <option value="">-- All Provinces --</option>
+                    {% for p in provinces %}
+                        <option value="{{ p }}">{{ p }}</option>
+                    {% endfor %}
+                </select>
 
             <label for="minScore">Minimum Friendliness Score:</label>
             <input type="number" name="minScore" id="minScore" placeholder="e.g., 80" min="0" max="100">
 
             <button type="submit">Search</button>
         </form>
+
+        <!-- Sort dropdown -->
+        <label for="sortOrder">Sort by Score:</label>
+        <select name="sortOrder" id="sortOrder">
+            <option value="">-- No Sorting --</option>
+            <option value="high-to-low">High to Low</option>
+            <option value="low-to-high">Low to High</option>
+        </select>
 
         <div id="results">
             {% if results %}
@@ -59,3 +66,29 @@
     </div>
 </body>
 </html>
+
+<script>
+const sortSelect = document.getElementById("sortOrder");
+
+sortSelect.addEventListener("change", () => {
+    const sortOrder = sortSelect.value;
+    const resultsList = document.querySelectorAll("#results ul li");
+
+    if (!resultsList.length) return;
+
+    const resultsArray = Array.from(resultsList);
+
+    resultsArray.sort((a, b) => {
+        const scoreA = parseFloat(a.querySelector(".score").innerText);
+        const scoreB = parseFloat(b.querySelector(".score").innerText);
+
+        if (sortOrder === "high-to-low") return scoreB - scoreA;
+        if (sortOrder === "low-to-high") return scoreA - scoreB;
+        return 0;
+    });
+
+    const ul = document.querySelector("#results ul");
+    ul.innerHTML = ""; // clear current list
+    resultsArray.forEach(li => ul.appendChild(li));
+});
+</script>

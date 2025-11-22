@@ -68,7 +68,22 @@ def normalize_profile(data):
 
 
 # Search profiles based on specific criteria
-def search_profiles(profiles, min_score=None, province=None, city=None, region=None):
+def search_profiles(profiles, min_score=None, province=None, city=None, region=None, sort_order=None):
+    """
+    Filter and optionally sort municipality profiles.
+
+    Args:
+        profiles: List of normalized profiles.
+        min_score: Minimum score to filter.
+        province: Province name to filter.
+        city: City name to filter.
+        region: Region name to filter.
+        sort_order: 'high-to-low' or 'low-to-high' to sort by Score.
+
+    Returns:
+        List of filtered (and sorted) profiles.
+    """
+     
     results = []
 
     for profile in profiles:
@@ -81,6 +96,12 @@ def search_profiles(profiles, min_score=None, province=None, city=None, region=N
         if region is not None and profile["Region"] != region:
             continue
         results.append(profile)
+
+    # Sort the results if sort_order is specified
+    if sort_order == "high-to-low":
+        results.sort(key=lambda x: x["Score"], reverse=True)
+    elif sort_order == "low-to-high":
+        results.sort(key=lambda x: x["Score"])
 
     return results
 
@@ -111,3 +132,6 @@ if __name__ == "__main__":
     print("\nSearching for profiles in Ontario with friendliness score > 85:")
     results = search_profiles(profiles, min_score=85.0, )
     pprint.pprint(results)
+
+    # Print Search by score, province, and sort functionality
+    results = search_profiles(profiles, min_score=70, province="Ontario", sort_order="high-to-low")
