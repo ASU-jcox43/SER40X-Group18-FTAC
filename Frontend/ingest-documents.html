@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Ingest Documents</title>
+        <meta charset="utf-8"/>
+    </head>
+    <body>
+        <h1>Ingest Documents</h1>
+        <form id="crawlForm" novalidate>
+            <label for="startUrl">Start URL</label>
+            <input id="startUrl" name="startUrl" type="url" placeholder="https://example.ca/bylaws/..." required/><br>
+            <label for="numLayers"># of layers</label>
+            <input id="numLayers" name="numLayers" type="number" min="0" step="1" value="1" required/><br>
+            <label class="row" for="getPdfs">
+                <span>Get PDFs?</span>
+                <input id="getPdfs" name="getPdfs" type="checkbox"/><br>
+            </label>
+            <label for="regexFilter">Regex filter (optional)</label>
+            <input id="regexFilter" name="regexFilter" type="text"/><br>
+            <div class="note">click Submit to post Json</div>
+            <button type="submit">Submit</button>
+        </form>
+        <label for="output"></label>
+        <textarea id="output" name="output" rows="10" cols="17"></textarea>
+        <script src="crawlpost.js"></script>
+    </body>
+</html>
