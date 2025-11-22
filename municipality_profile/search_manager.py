@@ -93,7 +93,7 @@ if __name__ == "__main__":
     #print("\nAll Profiles:")
     #pprint.pprint(profiles)
 
-    # Print search by score functionality
+    # Print search by score above 83 functionality
     print ("\nSearching for profiles with friendliness score > 83:")
     results = search_profiles(profiles, min_score=83.0)
     pprint.pprint(results)
@@ -106,4 +106,9 @@ if __name__ == "__main__":
     # Print Search by score and province functionality
     print("\nSearching for profiles in Ontario with friendliness score > 85:")
     results = search_profiles(profiles, min_score=85.0, province="Ontario")
+    pprint.pprint(results)
+
+    # Print Search by score above 90 functionality
+    print("\nSearching for profiles in Ontario with friendliness score > 85:")
+    results = search_profiles(profiles, min_score=85.0, )
     pprint.pprint(results)
