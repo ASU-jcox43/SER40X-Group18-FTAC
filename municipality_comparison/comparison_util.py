@@ -21,6 +21,8 @@ def getMunicipalityProfiles():
         print(f"Found {len(jsonFiles)} JSON file(s):")
         for file in jsonFiles:
             print(f"{file}")
+    
+    print()
 
     return jsonFiles # Returns list of paths to each profile
 
@@ -36,14 +38,14 @@ def readMunicipalityJson(municipalityPathList):
             print(f"Failed to read {file}: {e}")
     return data
 
-
+# TODO: Delete debug method
 def saveJsonContents(data, outputPath):
     try:
         with open(outputPath, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
-        print(f"\nDebug file saved to: {outputPath}")
+        print(f"Debug file saved to: {outputPath}\n")
     except Exception as e:
-        print(f"Failed to save debug file: {e}")
+        print(f"Failed to save debug file: {e}\n")
         
 def processSelections(selection1, selection2):
     municipalityPaths = getMunicipalityProfiles()
@@ -53,11 +55,11 @@ def processSelections(selection1, selection2):
         idx1 = int(selection1) - 1
         idx2 = int(selection2) - 1
     except ValueError:
-        return "Selections must be numbers."
+        return False
 
     # Bounds check
     if not (0 <= idx1 < len(municipalityPaths)) or not (0 <= idx2 < len(municipalityPaths)):
-        return "Invalid selections. Please choose from the displayed list."
+        return False
     
     # Get the actual Path objects
     firstPath = municipalityPaths[idx1]
@@ -66,56 +68,83 @@ def processSelections(selection1, selection2):
     # Now read JSON for each (must pass a list!)
     firstData = readMunicipalityJson([firstPath])
     secondData = readMunicipalityJson([secondPath])
-    firstKey = next(iter(firstData))
-    secondKey = next(iter(secondData))
     
     firstKey = next(iter(firstData))
     secondKey = next(iter(secondData))
 
     compareProfiles(firstData[firstKey], secondData[secondKey], firstKey, secondKey)
 
-    return f"Compared {firstKey} and {secondKey}"
+    return True
 
-# Display of the profiles to compare
+def getField(profile, section, field):
+    """Unified safe lookup for both top-level and section fields."""
+
+    # 1. Check top-level
+    if field in profile:
+        return profile[field]
+
+    # 2. Check section dictionary (if exists)
+    sec = profile.get(section)
+    if isinstance(sec, dict):
+        return sec.get(field, "N/A")
+
+    return "N/A"
+
+
 def compareProfiles(profileA, profileB, nameA, nameB):
-    print("\n" + "="*80)
-    print(f"{nameA:^40} | {nameB:^40}")
-    print("="*80)
+    print("\n" + "="*100)
+    print(f"{nameA:^50} | {nameB:^50}")
+    print("="*100)
 
     for section, config in COMPARISON_TEMPLATE.items():
         print(f"\n--- {section} ---")
 
-        # simple fields
         for field in config.get("fields", []):
-            valA = getNested(profileA, field)
-            valB = getNested(profileB, field)
-            print(f"{field:35}: {str(valA)[:40]:40} | {str(valB)[:40]:40}")
+            valA = getField(profileA, section, field)
+            valB = getField(profileB, section, field)
+            print(f"{field:40}: {str(valA)[:45]:45} | {str(valB)[:45]:45}")
 
-        # nested field groups
-        nested_cfg = config.get("nested", {})
-        for label, key in nested_cfg.items():
-            print(f"\n  {label}:")
-            subA = profileA.get("Demographic", {}).get(key, {})
-            subB = profileB.get("Demographic", {}).get(key, {})
+        for label, nestedKey in config.get("nested", {}).items():
+            print(f"{label}:")
 
-            for sub_field in subA.keys():
-                valA = subA.get(sub_field)
-                valB = subB.get(sub_field)
-                print(f"    {sub_field:30}: {str(valA):10} | {str(valB):10}")
+            secA = profileA.get(section, {})
+            secB = profileB.get(section, {})
 
-    print("\n" + "="*80 + "\n")
-    
-# Safe nested lookup
-def getNested(data, key):
-    # handle top-level and nested keys
-    if key in data:
-        return data[key]
+            subA = secA.get(nestedKey, {}) if isinstance(secA, dict) else {}
+            subB = secB.get(nestedKey, {}) if isinstance(secB, dict) else {}
 
-    for category in data.values():
-        if isinstance(category, dict) and key in category:
-            return category[key]
+            # Handle list nested fields (like Adjacent Municipalities)
+            if isinstance(subA, list) or isinstance(subB, list):
+                listA = ", ".join(subA) if isinstance(subA, list) else "N/A"
+                listB = ", ".join(subB) if isinstance(subB, list) else "N/A"
+                print(f"    {listA:45} | {listB:45}")
+                continue
 
-    return "N/A"
+            # Handle dict nested fields
+            keys = sorted(set(subA.keys()) | set(subB.keys()))
+            for k in keys:
+                print(f"    {k:36}: {str(subA.get(k, 'N/A'))[:20]:45} | {str(subB.get(k, 'N/A'))[:20]}")
+
+        if "list_fields" in config:
+            listA = profileA.get(section, [])
+            listB = profileB.get(section, [])
+
+            max_len = max(len(listA), len(listB))
+
+            print("Entries:")
+
+            for i in range(max_len):
+                entryA = listA[i] if i < len(listA) else {}
+                entryB = listB[i] if i < len(listB) else {}
+
+                print(f"    Entry {i+1}:")
+                for lf in config["list_fields"]:
+                    valA = entryA.get(lf, "N/A")
+                    valB = entryB.get(lf, "N/A")
+                    print(f"    {lf:36}: {str(valA)[:40]:45} | {str(valB)[:40]}")
+
+    print("\n" + "="*100 + "\n")
+
 
 # TODO: Delete testing method
 if __name__ == "__main__":
