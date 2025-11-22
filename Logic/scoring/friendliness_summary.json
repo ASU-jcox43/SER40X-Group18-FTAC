@@ -1,6 +1,14 @@
 {
   "phoenix_mobile_vending_and_mobile_food_vending_brochure.json": {
-    "test_expressions": 0.0,
-    "foodtruck": 16.67
+    "foodtruck": 33.33,
+    "test_expressions": 0.0
+  },
+  "Toronto_Food_Trucks_Copied_And_Pasted.json": {
+    "foodtruck": 53.33,
+    "test_expressions": 0.0
+  },
+  "Windsor_Food_Trucks_Copied_And_Pasted.json": {
+    "foodtruck": 16.67,
+    "test_expressions": 0.0
   }
 }

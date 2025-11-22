@@ -39,8 +39,8 @@ KEYWORDS = {
   "exterior appearance guidelines": ["paint", "painted", "appearance", "vehicle signage", "branding on truck", "exterior look", "color", "color contrast", "colour", "colour contrast", "identification markings"]
 }
 
-FILEPATH = os.path.join("../..", "test documents")
-SAVEPATH = os.path.join("../..", "analysis_ready")
+FILEPATH = os.path.join("../", "test_documents")
+SAVEPATH = os.path.join("../", "analysis_ready")
 
 
 # TODO: Change the output of a analysis ready json to a txt file if needed
