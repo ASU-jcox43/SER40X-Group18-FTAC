@@ -68,11 +68,3 @@ async def generate_report_endpoint(req: ReportRequest):
         results.append(file_result)
 
     return results
-
-@app.get("/Frontend/download")
-async def download_file(path: str):
-    """
-    :return: file for downloading in the browser
-    """
-    filename = os.path.basename(path)
-    return FileResponse(path, filename=filename)
