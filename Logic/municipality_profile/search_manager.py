@@ -33,7 +33,6 @@ def load_profiles():
 
     return profiles
 
-
 def normalize_profile(data):
     geo = data.get("Geographic", {})
     city = geo.get("City")

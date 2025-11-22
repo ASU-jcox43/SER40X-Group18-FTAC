@@ -1,26 +1,26 @@
-from flask import Flask, render_template, request, jsonify
-import search_manager
+from flask import Flask, render_template, request
+from search_manager import load_profiles, search_profiles
 
 app = Flask(__name__)
 
-# Load profiles once
-profiles = search_manager.load_profiles()
-provinces = sorted(list({p["Province"] for p in profiles if p["Province"]}))
+# Load profiles once at startup
+profiles = load_profiles()
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def index():
-    return render_template("index.html", provinces=provinces)
-
-@app.route("/search", methods=["POST"])
-def search():
-    province = request.form.get("province")
-    min_score = request.form.get("min_score")
-    try:
+    results = None
+    if request.method == "POST":
+        province = request.form.get("province")
+        min_score = request.form.get("minScore")
         min_score = float(min_score) if min_score else None
-    except ValueError:
-        min_score = None
-    results = search_manager.search_profiles(profiles, min_score=min_score, province=province)
-    return jsonify(results)
+
+        # Treat empty string or "all" as no filter
+        if not province or province.lower() == "all":
+            province = None
+
+        results = search_profiles(profiles, min_score=min_score, province=province)
+    
+    return render_template("index.html", results=results)
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,13 +1,13 @@
 body {
     font-family: 'Helvetica Neue', Arial, sans-serif;
-    background: #eef2f7;
+    background: #b4b4b4;
     margin: 0;
     padding: 20px;
     color: #333;
 }
 
 .container {
-    max-width: 700px;
+    max-width: 450px;
     margin: 0 auto;
     background: #fff;
     padding: 30px;
@@ -17,6 +17,7 @@ body {
 
 h1 {
     text-align: center;
+    margin-bottom: auto;
     color: #2c3e50;
 }
 
@@ -70,6 +71,7 @@ form button:hover {
 #results ul {
     list-style: none;
     padding: 0;
+    margin: 0;
 }
 
 #results li {
@@ -80,3 +82,55 @@ form button:hover {
 #results li:last-child {
     border-bottom: none;
 }
+
+.result-row {
+    display: flex;                  /* left stack vs right score */
+    justify-content: space-between; /* push score to right */
+    align-items: flex-start;        /* top-align score with city */
+}
+
+.location-friendliness {
+    display: flex;
+    flex-direction: column; /* stack city, province, friendliness vertically */
+    gap: 5px;
+}
+
+/* City and Province */
+.city {
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #010170; /* blue */
+}
+
+.province {
+    font-style: italic;
+    font-size: 0.90em;
+    color: #6c757d; /* gray */
+}
+
+/* Friendliness box */
+.friendliness {
+    padding: 3px 7px;
+    border-radius: 7px;
+    
+    font-family: sans-serif;
+    font-weight: bold;
+    width: fit-content;
+}
+
+.friendliness.high { background-color: #28a745; color: #161616; }    /* Very friendly */
+.friendliness.medium { background-color: #ffc107; color: #161616; } /* Friendly */
+.friendliness.low { background-color: #dc3545; color: #161616; }     /* Not friendly */
+
+/* Score box */
+.score {
+    padding: 2px 1px;
+    border-radius: 7px;
+    font-weight: bold;
+    text-align: center;
+    min-width: 50px;
+}
+
+.score.high { background-color: #28a745; color: #161616; }
+.score.medium { background-color: #ffc107; color: #161616; }
+.score.low { background-color: #dc3545; color: #161616; }

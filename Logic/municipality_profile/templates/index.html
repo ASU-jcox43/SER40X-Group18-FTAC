@@ -31,9 +31,24 @@
                 <ul>
                     {% for profile in results %}
                         <li>
-                            <strong>{{ profile['City'] }}, {{ profile['Province'] }}</strong><br>
-                            Score: {{ profile['Score'] }}<br>
-                            Friendliness: {{ profile['Friendliness Index'] }}
+                            <div class="result-row">
+                                <div class="location-friendliness">
+                                    <span class="city">{{ profile['City'] }}</span>
+                                    <span class="province">{{ profile['Province'] }}</span>
+                                    <span class="friendliness 
+                                        {% if profile['Friendliness Index'] == 'Very friendly' %}high
+                                        {% elif profile['Friendliness Index'] == 'Friendly' %}medium
+                                        {% else %}low{% endif %}">
+                                        {{ profile['Friendliness Index'] }}
+                                    </span>
+                                </div>
+                                <span class="score 
+                                    {% if profile['Score'] >= 80 %}high
+                                    {% elif profile['Score'] >= 60 %}medium
+                                    {% else %}low{% endif %}">
+                                    {{ profile['Score'] }}
+                                </span>
+                            </div>
                         </li>
                     {% endfor %}
                 </ul>
