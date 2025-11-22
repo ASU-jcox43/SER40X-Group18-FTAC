@@ -6,16 +6,20 @@ from docx.shared import Inches
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx2pdf import convert
+from pathlib import Path
 
-FILEPATH = "../analysis_ready"
-SCORE = "../scoring/friendliness_summary.json"
-OUTPUT = "generated_reports"
+FILEPATH = Path("../analysis_ready")
+SCORE = Path("../scoring/friendliness_summary.json")
+OUTPUT = Path("generated_reports")
 
 seen = set()
 
 
-def json_to_table(file_path, score_path, output_path, pdf=False):
+def generate_report(file_path, score_path, output_path, pdf=False):
     # Open the extracted text and scoring files.
+    file_path = Path(file_path)
+    score_path = Path(score_path)
+    output_path = Path(output_path)
     with open(file_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
@@ -23,11 +27,7 @@ def json_to_table(file_path, score_path, output_path, pdf=False):
         scores = json.load(f)
 
     # Get the file name to search for in the score summary.
-    filename = data.get("file", "unnamed file")
-    if ".txt" in filename:
-        filename = filename.replace(".txt", ".json")
-    else:
-        filename = filename.replace(".pdf", ".json")
+    filename = Path(data.get("file", "unnamed file")).with_suffix(".json").name
 
     score = scores.get(filename, {}).get("foodtruck", "N/A")
 
@@ -67,6 +67,7 @@ def json_to_table(file_path, score_path, output_path, pdf=False):
         row.cells[1].width = Inches(1)
 
     doc.add_heading('Key Findings', level=1)
+    seen = set()
     for category, content in keyword_contexts.items():
         for subcategory, items in content.items():
             if isinstance(items, list):
@@ -87,18 +88,19 @@ def json_to_table(file_path, score_path, output_path, pdf=False):
             doc.add_paragraph(f"Find more information for {category}.")
 
     doc.save(output_path)
-    print(f"Word document saved to: {output_path}")
+
+    pdf_path = None
 
     if pdf:
-        pdf_path = output_path.replace(".docx", ".pdf")
+        pdf_path = output_path.with_suffix(".pdf")
         convert(output_path, pdf_path)
         print(f"PDF saved to: {pdf_path}")
 
+    return output_path, pdf_path
+
 
 if __name__ == "__main__":
-    os.makedirs(OUTPUT, exist_ok=True)
-    for filename in os.listdir(FILEPATH):
-        file_path = os.path.join(FILEPATH, filename)
-        output_name = os.path.splitext(filename)[0] + "_Report.docx"
-        output_path = os.path.join(OUTPUT, output_name)
-        json_to_table(file_path, SCORE, output_path, pdf=True)
+    OUTPUT.mkdir(exist_ok=True)
+    for file_path in FILEPATH.iterdir():
+        output_path = OUTPUT / f"{file_path.stem}_Report.docx"
+        generate_report(file_path, SCORE, output_path, pdf=False)
