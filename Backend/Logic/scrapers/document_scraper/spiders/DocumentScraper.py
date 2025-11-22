@@ -1,8 +1,6 @@
 import scrapy
-from scrapy.crawler import CrawlerProcess
 from scrapy.http.response import Response
 import re
-import threading
 
 class DocumentScraperSpider(scrapy.Spider):
     name = "DocumentScraper"

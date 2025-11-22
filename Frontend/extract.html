@@ -1,0 +1,136 @@
+<!--
+1. The user provides optional fields: municipality, classification, title, link, then submits.
+2. A request is sent to view results that match the provided filters.
+3. The client gets a response containing the first 20 or so results and they are displayed in a list.
+4. The client may select one or more of the results then click "extract from selected documents".
+5. A request is sent to convert the selected documents to text.
+-->
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Extract Text</title>
+        <meta charset="utf-8"/>
+    </head>
+    <body>
+        <h1>Search for Documents</h1>
+        <form id="extractForm" novalidate>
+            <label for="url">link</label>
+            <input id="url" name="url" type="search"/><br>
+            <label for="municipality">municipality</label>
+            <input id="municipality" name="municipality" type="search"/><br>
+            <label for="title">title</label>
+            <input id="title" name="title" type="search"/><br>
+            <label for="category">category</label>
+            <select id="category" name="category">
+                <option value="legal">legal</option>
+                <option value="permit" selected>permit</option>
+            </select><br>
+            <button type="submit">search</button>
+        </form>
+        <!-- insert results inside resultsTable -->
+        <table id="resultsTable"></table>
+        <button type="submit" id="startExtract">extract from selected documents</button>
+        <script>
+            const search_form = document.getElementById('extractForm');
+            const extract_button = document.getElementById('startExtract');
+            document.addEventListener('DOMContentLoaded', () => {
+                search_form.addEventListener('submit', async (e) => {
+                e.preventDefault()
+                const resultsTable = document.getElementById('resultsTable');
+
+                while (resultsTable.hasChildNodes()) {
+                    resultsTable.removeChild(resultsTable.firstChild);
+                }
+
+                let formEntries = Object.fromEntries(new FormData(search_form));
+
+                console.log(formEntries);
+                
+                const page = 0;
+                var URLParams = "?page=".concat(page);
+
+                for (const [key, value] of Object.entries(formEntries)) {
+                    if (value.length > 0) {
+                        URLParams = URLParams.concat("&" + key + "=" + value);
+                    }
+                }
+
+                console.log(URLParams);
+
+                const response = await fetch("http://localhost:8000/extract".concat(URLParams));
+                const results = await response.json();
+                console.log(results)
+                console.log(response)
+
+                const resultHeader = document.createElement("tr");
+
+                const resultHeaderMunicipality = document.createElement('th');
+                resultHeaderMunicipality.textContent = "Municipality";
+                resultHeader.appendChild(resultHeaderMunicipality);
+
+                const resultHeaderUrl = document.createElement('th');
+                resultHeaderUrl.textContent = "URL";
+                resultHeader.appendChild(resultHeaderUrl);
+
+                const resultHeaderSelect = document.createElement('th');
+                resultHeaderSelect.textContent = "Select";
+                resultHeader.appendChild(resultHeaderSelect);
+
+                resultsTable.appendChild(resultHeader);
+
+                for (let i = 0; i < results.length; i++) {
+                    const resultRow = document.createElement("tr");
+                    resultRow.setAttribute("id", "row".concat(i));
+                    resultRow.setAttribute("class", "resultRow");
+
+                    const municipality = document.createElement('td');
+                    municipality.textContent = results[i].municipality;
+                    resultRow.appendChild(municipality);
+
+                    const url = document.createElement('td');
+                    url.setAttribute("class", "URLEntry");
+                    url.textContent = results[i].url;
+                    resultRow.appendChild(url);
+
+                    const checkboxEntry = document.createElement('td');
+                    const checkbox = document.createElement('input');
+                    checkbox.setAttribute("type", "checkbox");
+                    checkbox.setAttribute("name", "checkbox".concat(i));
+                    checkbox.setAttribute("id", "checkbox".concat(i));
+                    checkbox.setAttribute("class", "resultCheckbox");
+                    checkboxEntry.appendChild(checkbox);
+                    resultRow.appendChild(checkboxEntry);
+
+                    resultsTable.appendChild(resultRow);
+                }
+                })
+                extract_button.addEventListener('click', async (e) => {
+                e.preventDefault()
+
+                const rows = document.getElementsByClassName("resultRow");
+                const reqBody = {urls: []};
+
+                for (let i = 0; i < rows.length; i++) {
+                    const checkbox = rows[i].querySelector(".resultCheckbox");
+
+                    if (checkbox.checked) {
+                        const url = rows[i].getElementsByClassName("URLEntry")[0].textContent;
+                        reqBody.urls.push(url);
+                    }
+                }
+
+                console.log(reqBody);
+
+                const response = await fetch("http://localhost:8000/extract", {
+                    method: "POST",
+                    body: JSON.stringify(reqBody),
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8"
+                    }
+                })
+
+                console.log(await response.text())
+                })
+            });
+        </script>
+    </body>
