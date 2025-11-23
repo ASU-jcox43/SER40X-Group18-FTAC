@@ -37,15 +37,6 @@ def readMunicipalityJson(municipalityPathList):
         except Exception as e:
             print(f"Failed to read {file}: {e}")
     return data
-
-# TODO: Delete debug method
-def saveJsonContents(data, outputPath):
-    try:
-        with open(outputPath, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4)
-        print(f"Debug file saved to: {outputPath}\n")
-    except Exception as e:
-        print(f"Failed to save debug file: {e}\n")
         
 def processSelections(selection1, selection2):
     municipalityPaths = getMunicipalityProfiles()
@@ -144,15 +135,3 @@ def compareProfiles(profileA, profileB, nameA, nameB):
                     print(f"    {lf:36}: {str(valA)[:40]:45} | {str(valB)[:40]}")
 
     print("\n" + "="*100 + "\n")
-
-
-# TODO: Delete testing method
-if __name__ == "__main__":
-    # Step 1: Find JSON files
-    jsonFilePaths = getMunicipalityProfiles()
-
-    # Step 2: Read JSON contents
-    jsonContent = readMunicipalityJson(jsonFilePaths)
-
-    # Step 3: Save all contents to a single debug JSON
-    saveJsonContents(jsonContent, "municipality_list.json")
