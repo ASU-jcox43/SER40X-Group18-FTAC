@@ -3,7 +3,7 @@ from pathlib import Path
 from comparison_template import COMPARISON_TEMPLATE
 
 # Folder containing JSON files
-PROFILES_PATH = "../municipality_profile/profiles"
+PROFILES_PATH = "../Logic/municipality_profile/profiles"
 
 # Gets a list of municipality profile paths
 def getMunicipalityProfiles():

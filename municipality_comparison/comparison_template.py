@@ -36,6 +36,24 @@ COMPARISON_TEMPLATE = {
             "Adjacent Municipalities": "Adjacent Municipalities"
         }
     },
+    
+    # Friendliness Score section
+    "friendlinessScore": {
+        "fields": [
+            "Score",
+            "Friendliness Index",
+        ]
+            
+    },
+    
+    #Friendliness Breakdown section
+    "friendlinessScoreBreakdown": {
+        "nested": {
+            "Foundational": "Foundational",
+            "Licensing Requirements": "Licensing Requirements",
+            "Operations & Restrictions": "Operations & Restrictions"
+        }
+    },
 
     # Special case: Contact Information is a list of objects
     # The comparison code will need to loop through each department
