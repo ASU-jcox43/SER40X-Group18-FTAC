@@ -1,0 +1,136 @@
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background: #b4b4b4;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+}
+
+.container {
+    max-width: 450px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: auto;
+    color: #2c3e50;
+}
+
+form {
+    margin-bottom: 30px;
+}
+
+form label {
+    display: block;
+    margin: 15px 0 5px;
+    font-weight: bold;
+}
+
+form input, form select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+form button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+form button:hover {
+    background: #2980b9;
+}
+
+#results {
+    background: #f7f9fc;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+#results h2 {
+    margin-top: 0;
+    color: #2c3e50;
+}
+
+#results ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#results li {
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+#results li:last-child {
+    border-bottom: none;
+}
+
+.result-row {
+    display: flex;                  /* left stack vs right score */
+    justify-content: space-between; /* push score to right */
+    align-items: flex-start;        /* top-align score with city */
+}
+
+.location-friendliness {
+    display: flex;
+    flex-direction: column; /* stack city, province, friendliness vertically */
+    gap: 5px;
+}
+
+/* City and Province */
+.city {
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #010170; /* blue */
+}
+
+.province {
+    font-style: italic;
+    font-size: 0.90em;
+    color: #6c757d; /* gray */
+}
+
+/* Friendliness box */
+.friendliness {
+    padding: 3px 7px;
+    border-radius: 7px;
+    
+    font-family: sans-serif;
+    font-weight: bold;
+    width: fit-content;
+}
+
+.friendliness.high { background-color: #28a745; color: #161616; }    /* Very friendly */
+.friendliness.medium { background-color: #ffc107; color: #161616; } /* Friendly */
+.friendliness.low { background-color: #dc3545; color: #161616; }     /* Not friendly */
+
+/* Score box */
+.score {
+    padding: 2px 1px;
+    border-radius: 7px;
+    font-weight: bold;
+    text-align: center;
+    min-width: 50px;
+}
+
+.score.high { background-color: #28a745; color: #161616; }
+.score.medium { background-color: #ffc107; color: #161616; }
+.score.low { background-color: #dc3545; color: #161616; }
