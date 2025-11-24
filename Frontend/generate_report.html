@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Ingest Documents</title>
+        <meta charset="utf-8"/>
+    </head>
+    <body>
+        <h1>Generate Report</h1>
+        <form id="reportForm" novalidate>
+            <label class ="row" for="reportPDF">
+                <span>Generate report as PDF too?</span>
+                <input id="reportPDF" name="reportPDF" type="checkbox"/><br>
+            </label>
+            <button type="submit">Generate Reports</button>
+        </form>
+        <div id="loading" style="display:none; color:blue; font-weight:bold;">
+            Generating reports... please wait.
+        </div>
+        <textarea id="reportOutput" name="reportOutput" rows="10" cols="50"></textarea>
+        <script src="reportpost.js"></script>
+    </body>
+</html>

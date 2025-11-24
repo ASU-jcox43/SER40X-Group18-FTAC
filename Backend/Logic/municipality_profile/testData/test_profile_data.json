@@ -29,6 +29,31 @@
     "lat": 43.6532,
     "long": -79.3832,
     "adjMunicipalities": ["Mississauga", "Vaughan", "Markham", "Brampton", "Pickering"],
+    "friendlinessScore": {
+        "Score": 85.24,
+        "Friendliness Index": "Very friendly"
+    },
+
+    "friendlinessScoreBreakdown": {
+        "Foundational": {
+            "Points Awarded": 8,
+            "Points Available": 10,
+            "Percentage": "80%",
+            "Friendliness Index": "Very friendly"
+        },
+        "Licensing Requirements": {
+            "Points Awarded": 9,
+            "Points Available": 10,
+            "Percentage": "90%",
+            "Friendliness Index": "Very friendly"
+        },
+        "Operations & Restrictions": {
+            "Points Awarded": 30,
+            "Points Available": 35,
+            "Percentage": "86%",
+            "Friendliness Index": "Very friendly"
+        }
+    },
     "contacts": [
         {
             "Department": "City of Toronto License & Permit Issuing Office",
