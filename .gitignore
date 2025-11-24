@@ -7,3 +7,5 @@
 **/profiles
 
 .idea
+.DS_Store
+**/friendliness_summary.json
