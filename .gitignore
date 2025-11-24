@@ -9,3 +9,5 @@
 **/visualizeTest
 **/profiles
 **/friendliness_summary.json
+**/generated_reports
+**/.venv
