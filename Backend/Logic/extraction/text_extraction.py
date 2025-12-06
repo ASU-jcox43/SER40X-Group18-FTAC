@@ -1,8 +1,15 @@
+import os, sys
 from os.path import join, abspath, dirname, realpath
 from os import makedirs, listdir
 import json
 from PyPDF2 import PdfReader
-from .extraction_util import cleanText, extractKeywords
+
+# Allow running as script OR as module
+if __package__ is None or __package__ == "":
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    from extraction_util import cleanText, extractKeywords
+else:
+    from .extraction_util import cleanText, extractKeywords
 
 # TODO Update for relevant categories and terms
 # Define your keyword categories and terms
@@ -120,3 +127,6 @@ def extract():
             extractTXT(file_name)
         elif file_name.lower().endswith(".pdf"):
             extractPDF(file_name)
+
+if __name__ == "__main__":
+    extract()
