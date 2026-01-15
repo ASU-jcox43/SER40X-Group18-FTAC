@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let formEntries = Object.fromEntries(new FormData(form));
         let reqBody = JSON.stringify({
-            pdf: formEntries["reportPDF"]
+            pdf: formEntries["reportMd"]
         });
 
         try {
@@ -25,12 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             results.forEach((report, index) => {
                 html += `Report ${index + 1}:\n`;
-                if (report.docx) {
-                    html += `Download Word: ${report.docx}\n`;
-                }
-                if (report.pdf) {
-                    html += `Download PDF: ${report.pdf}\n`;
-                }
+                html += `Download Md: ${report.md}\n`;
                 html += "\n";
             });
 

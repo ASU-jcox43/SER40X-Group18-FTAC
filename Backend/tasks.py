@@ -1,8 +1,8 @@
 from celery import Celery
 import subprocess
-from Logic.scrapers.document_scraper.spiders.DocumentScraper import *
-from Logic.OCRProcessor.ocr_processor import process_pdfs
-from Logic.extraction.text_extraction import extract
+from Backend.Logic.scrapers.document_scraper.spiders.DocumentScraper import *
+from Backend.Logic.OCRProcessor.ocr_processor import process_pdfs
+from Backend.Logic.extraction.text_extraction import extract
 
 celery_app = Celery(
     "worker",

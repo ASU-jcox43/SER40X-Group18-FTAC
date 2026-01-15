@@ -2,17 +2,12 @@ import json
 
 from pathlib import Path
 
-FILEPATH = Path("../../../Logic/analysis_ready")
-SCORE = Path("../scoring/friendliness_summary.json")
-OUTPUT = Path("../../../Logic/reports/generated_reports")
-
-seen = set()
-
 def generate_report(file_path, score_path, output_path):
     # Open the extracted text and scoring files.
     file_path = Path(file_path)
     score_path = Path(score_path)
     output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(file_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
@@ -44,17 +39,24 @@ def generate_report(file_path, score_path, output_path):
 
     # For key findings, check if they are unique by checking the seen set and adding to it if it is new.
     markdown.append("\n## Key Findings\n")
+
     seen = set()
 
     for category, content in keyword_contexts.items():
-        for subcategory, items in content.items():
-            if isinstance(items, list):
-                for line in items:
-                    if line not in seen and len(line.split()) >= 4:
-                        if "." not in line:
-                            line = line + "."
-                            markdown.append(f"- {line.capitalize()}\n")
-                            seen.add(line)
+        if not isinstance(content, dict):
+            continue
+        for items in content.values():
+            if not isinstance(items, list):
+                continue
+            for line in items:
+                if len(line.split()) < 4:
+                    continue
+                line = line.strip()
+                if not line.endswith("."):
+                    line += "."
+                if line not in seen:
+                    markdown.append(f"- {line.capitalize()}\n")
+                    seen.add(line)
 
     # For now, recommendations are just finding more info about missing categories.
     markdown.append("\n## Recommendations\n")
