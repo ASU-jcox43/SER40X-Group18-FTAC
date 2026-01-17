@@ -9,6 +9,10 @@ from fastapi.responses import FileResponse
 import os
 from Backend.Logic.reports.report_generator import generate_report
 from pathlib import Path
+from fastapi.responses import FileResponse
+import zipfile
+import tempfile
+
 app = FastAPI()
 
 app.add_middleware(
@@ -32,18 +36,14 @@ async def update_item(req:IngestDocsPut):
     """
     return run_document_scraper(req.start_url, layers=req.layers, get_pdfs=req.get_pdfs, rex=req.regex)
 
-class ReportRequest(BaseModel):
-    pass
-
 @app.post("/Frontend/generate-report")
-async def generate_report_endpoint(req: ReportRequest):
+async def generate_report_endpoint():
     """
     :return: links the frontend can use to download the report files.
     """
     ROOT = Path(__file__).resolve().parent.parent
     analysis_dir = ROOT / "Logic" / "analysis_ready"
     score_file = ROOT / "Backend" / "Logic" / "scoring" / "friendliness_summary.json"
-
     output_dir = ROOT / "Logic" / "reports" / "generated_reports"
     output_dir.mkdir(exist_ok=True)
 
@@ -60,8 +60,32 @@ async def generate_report_endpoint(req: ReportRequest):
         )
 
         file_result = {
-            "md": str(md_path)
+            "filename": md_path.name
         }
         results.append(file_result)
 
     return results
+
+@app.get("/Frontend/download-reports")
+async def download_reports():
+    """
+    :return: makes the backend zip up all the reports, and send it all as a download for the frontend.
+    """
+    ROOT = Path(__file__).resolve().parent.parent
+    reports_dir = ROOT / "Logic" / "reports" / "generated_reports"
+
+    if not reports_dir.exists():
+        return {"error": "No reports exist to be downloaded."}
+
+    tmp_dir = Path(tempfile.mkdtemp())
+    zip_path = tmp_dir / "reports.zip"
+
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+        for md_file in reports_dir.glob("*.md"):
+            zipf.write(md_file, arcname=md_file.name)
+
+    return FileResponse(
+        path=zip_path,
+        media_type="application/zip",
+        filename="reports.zip"
+    )

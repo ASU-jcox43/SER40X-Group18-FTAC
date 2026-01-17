@@ -2,31 +2,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('reportForm');
     const loadingDiv = document.getElementById('loading');
     const output = document.getElementById('reportOutput');
+    const downloadForm = document.getElementById('downloadForm');
+
+    downloadForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        window.location.assign("http://localhost:8000/Frontend/download-reports");
+    });
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         output.value = "";
         loadingDiv.style.display = "block";
 
-        let formEntries = Object.fromEntries(new FormData(form));
-        let reqBody = JSON.stringify({
-            pdf: formEntries["reportMd"]
-        });
-
         try {
-            let response = await fetch("http://localhost:8000/Frontend/generate-report", {
+            const response = await fetch("http://localhost:8000/Frontend/generate-report", {
             method: "POST",
-            body: reqBody,
-            headers: { "Content-type": "application/json; charset=UTF-8"}
+            headers: { "Content-Type": "application/json" }
             });
 
-            let results = await response.json();
+            const results = await response.json();
             let html = "";
 
             results.forEach((report, index) => {
-                html += `Report ${index + 1}:\n`;
-                html += `Download Md: ${report.md}\n`;
-                html += "\n";
+                html += `Report ${index + 1} Generated:\n`;
+                html += `${report.filename}\n\n`;
             });
 
             output.value = html
