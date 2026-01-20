@@ -1,0 +1,19 @@
+services:
+  server:
+    build:
+      context: .
+    ports:
+      - 8000:8000
+  web:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./frontend:/usr/share/nginx/html
+    ports:
+      - "80:80"
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+
