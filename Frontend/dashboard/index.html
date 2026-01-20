@@ -20,5 +20,61 @@
         </nav>
     </header>
 
+    <!-- Dashboard page -->
+    <div id="dashboardPage" class="page">
+    <aside id="filterPanel">
+        <h3>Filters</h3>
+        <label>Business Type
+        <select id="businessType">
+            <option>Food Truck</option>
+            <option>Cottage Food</option>
+            <option>Catering</option>
+        </select>
+        </label>
+        <label>Province
+        <select id="province">
+            <option>ON</option>
+            <option>AB</option>
+            <option>BC</option>
+            <option>MB</option>
+            <option>NB</option>
+            <option>NL</option>
+            <option>NS</option>
+            <option>PE</option>
+            <option>QC</option>
+            <option>SK</option>
+            <option>YT</option>
+            <option>NT</option>
+            <option>NU</option>
+        </select>
+        </label>
+        <label>Minimum Score
+        <input type="range" id="minScore" min="0" max="100">
+        </label>
+    </aside>
+
+    <main id="resultsPanel">
+        <table id="jurisdictionTable">
+        <thead>
+            <tr>
+            <th>City</th>
+            <th>Score</th>
+            <th>Business Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- populated dynamically -->
+        </tbody>
+        </table>
+    </main>
+
+    <aside id="detailsPanel">
+        <h3>Jurisdiction Details</h3>
+        <div id="detailsContent">
+        <!-- AI summary, flags, score breakdown -->
+        </div>
+    </aside>
+    </div>
+
 </body>
 </html>

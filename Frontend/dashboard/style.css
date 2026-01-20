@@ -55,3 +55,38 @@ header.floating {
 .header-nav a:hover::after {
   width: 100%;
 }
+
+.page {
+  display: none; /* hide all pages by default */
+}
+
+.page.active {
+  display: flex; /* or block/flex depending on layout */
+}
+
+
+#dashboardPage {
+  display: flex;
+  height: calc(100vh - headerHeight); /* full screen minus header */
+}
+
+#filterPanel {
+  width: 20%;
+  padding: 2rem;
+  background-color: #fff;
+  box-shadow: 2px 0 6px rgba(0,0,0,0.03);
+}
+
+#resultsPanel {
+  width: 20%;
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+#detailsPanel {
+  width: 25%;
+  padding: 2rem;
+  background-color: #fff;
+  box-shadow: -2px 0 6px rgba(0,0,0,0.03);
+}
