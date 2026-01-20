@@ -1,0 +1,52 @@
+header {
+  background-color: #fffdf9; /* cream */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08); /* slight shadow */
+  border-bottom: 1px solid #e2e2e2;
+  border-radius: 20px 20px 30px 30px; 
+}
+
+/* Optional: fully rounded floating style */
+header.floating {
+  border-radius: 12px;
+  margin: 1rem 2rem; /* inset from edges */
+}
+
+
+.header-nav {
+  display: flex;
+  gap: 2rem;
+}
+
+.header-nav a {
+  text-decoration: none;
+  color: #555;
+  font-weight: 500;
+  padding: 0.3rem 0;
+  position: relative;
+  transition: color 0.2s;
+}
+
+/* Highlight on hover */
+.header-nav a:hover {
+  color: #203a82;
+}
+
+/* Optional: underline effect on hover */
+.header-nav a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0;
+  height: 2px;
+  background-color: #000000;
+  transition: width 0.3s;
+}
+
+.header-nav a:hover::after {
+  width: 100%;
+}
