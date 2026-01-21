@@ -16,6 +16,12 @@
             <button type="submit">Download Reports</button>
         </form>
         <textarea id="reportOutput" name="reportOutput" rows="10" cols="50"></textarea>
+        <h2>Available Reports</h2>
+        <input type="text" id="search" placeholder="Search reports..." />
+        <button id="selectVisible">Select Visible</button>
+        <button id="clearSelection">Clear</button>
+        <ul id="reportList" style="max-height:300px; overflow:auto;"></ul>
+        <button id="downloadSelected">Download Selected Reports</button>
         <script src="reportpost.js"></script>
     </body>
 </html>

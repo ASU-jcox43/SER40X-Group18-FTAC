@@ -69,7 +69,7 @@ async def generate_report_endpoint():
 @app.get("/Frontend/download-reports")
 async def download_reports():
     """
-    :return: makes the backend zip up all the reports, and send it all as a download for the frontend.
+    Returns: makes the backend zip up all the reports, and send it all as a download for the frontend.
     """
     ROOT = Path(__file__).resolve().parent.parent
     reports_dir = ROOT / "Logic" / "reports" / "generated_reports"
@@ -89,3 +89,20 @@ async def download_reports():
         media_type="application/zip",
         filename="reports.zip"
     )
+
+@app.get("/Frontend/list-reports")
+async def list_reports():
+    """
+    Returns: list of reports that are ready to be downloaded for the user.
+    """
+    ROOT = Path(__file__).resolve().parent.parent
+    reports_dir = ROOT / "Logic" / "reports" / "generated_reports"
+
+    if not reports_dir.exists():
+        return []
+
+    file_list = []
+    for f in reports_dir.glob("*.md"):
+        file_list.append({"id": f.name, "name": f.stem.replace("_", " ")})
+
+    return file_list

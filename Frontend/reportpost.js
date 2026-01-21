@@ -1,4 +1,60 @@
+const reports = [];
+const selected = new Set();
+
+async function loadReports() {
+    const res = await fetch("http://localhost:8000/Frontend/list-reports");
+    const data = await res.json();
+
+    reports.length = 0;
+    reports.push(...data);
+
+    renderReports();
+}
+
+function renderReports(filter = "") {
+    const list = document.getElementById("reportList");
+    list.innerHTML = "";
+    reports
+        .filter(r => r.name.toLowerCase().includes(filter.toLowerCase()))
+        .forEach(r => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+                <label>
+                    <input type="checkbox"
+                       ${selected.has(r.id) ? "checked" : ""}
+                       onchange="toggleReport('${r.id}')">
+                    ${r.name}
+                </label>
+            `;
+            list.appendChild(li);
+        });
+}
+
+function toggleReport(id) {
+    if (selected.has(id)) {
+        selected.delete(id);
+    }
+    else {
+        selected.add(id);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    loadReports();
+    document.getElementById("search").addEventListener("input", e=> {
+        renderReports(e.target.value);
+    });
+    document.getElementById("selectVisible").onclick = () => {
+        const filter = document.getElementById("search").value.toLowerCase();
+        reports
+            .filter(r => r.name.toLowerCase().includes(filter))
+            .forEach(r => selected.add(r.id));
+        renderReports(filter);
+    };
+    document.getElementById("clearSelection").onclick = () => {
+        selected.clear();
+        renderReports(document.getElementById("search").value);
+    };
     const form = document.getElementById('reportForm');
     const loadingDiv = document.getElementById('loading');
     const output = document.getElementById('reportOutput');
