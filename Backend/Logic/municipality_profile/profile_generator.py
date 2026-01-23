@@ -2,16 +2,17 @@ import os
 import json
 from datetime import datetime
 from profile_manager import createMunicipalityProfile
+from Logic.mongo_db.profile_collection import upsert_profile
 
 
 def addProfile(**kwargs):
     profile = createMunicipalityProfile(**kwargs)
     # Save/update the profile
 
-    save_path = load_existing_profile(profile)
-    return save_path
+    upsert_profile(profile)
+    print(f"Upserted profile for {profile['Geographic']['City']}")
 
-def load_existing_profile(profile):
+def load_existing_profile(profile): # TODO: Delete later if MongoDB works
     city = profile["Geographic"]["City"]
     province = profile["Geographic"]["Province"]
 
