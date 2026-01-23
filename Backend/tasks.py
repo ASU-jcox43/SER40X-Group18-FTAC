@@ -1,4 +1,5 @@
 from celery import Celery
+import os
 import subprocess
 from .Logic.scrapers.document_scraper.spiders.DocumentScraper import *
 from .Logic.OCRProcessor.ocr_processor import process_pdfs
@@ -13,17 +14,18 @@ celery_app = Celery(
 @celery_app.task
 def run_document_scraper(start_url: str, layers: int=1, get_pdfs: bool=True, rex: str|None=None):
     name_regex = r"(?<=.)\w*(?=\.ca\W)"
-    output_path = f'scraper_output/{re.findall(name_regex, start_url)[0]}.json'
+    output_path = f'{re.findall(name_regex, start_url)[0]}.csv'
+    os.chdir('Backend/Logic/scrapers')
     command = [
-        'scrapy', 'runspider',
+        'scrapy', 'crawl',
         '-a', f'start_url={start_url}',
         '-a', f'layers={layers}',
         '-a', f'get_pdfs={get_pdfs}',
         '-a', f'rex={rex}',
-        'Backend/Logic/scrapers/document_scraper/spiders/DocumentScraper.py',
-        '-O', f'{output_path}'
+        'DocumentScraper'
     ]
     subprocess.run(command, text=True)
+    os.chdir('../../..')
     return output_path
 
 @celery_app.task
