@@ -112,6 +112,12 @@ async def list_reports():
 
 @app.post("/Frontend/download-selected")
 async def download_selected(reportIds: list[str] = Body(...)):
+    """
+    Args:
+        reportIds: Takes a list of the report Ids to download.
+
+    Returns: Stream of the zip file of the reports.
+    """
     ROOT = Path(__file__).resolve().parent.parent
     reports_dir = ROOT / "Logic" / "reports" / "generated_reports"
 
