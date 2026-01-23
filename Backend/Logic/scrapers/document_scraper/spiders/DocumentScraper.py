@@ -23,6 +23,12 @@ class DocumentScraperSpider(scrapy.Spider):
         self.get_pdfs = get_pdfs
         self.rex = re.compile(rex) if rex else None
 
+    @classmethod
+    def from_crawler(cls, crawler, *args, **kwargs):
+        spider = super().from_crawler(crawler, *args, **kwargs)
+        spider.settings.set("FEEDS", {f'/scrapy_output/{spider.allowed_domains[0][:-3]}.csv': {'format': 'csv'}}, priority="spider")
+        return spider
+    
     def parse(self, response: Response):
         if self.rex is not None:
             self.rex = re.compile(self.rex)
