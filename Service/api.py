@@ -12,6 +12,9 @@ from pathlib import Path
 from fastapi.responses import FileResponse
 import zipfile
 import tempfile
+from fastapi import Body
+from fastapi.responses import StreamingResponse
+from io import BytesIO
 
 app = FastAPI()
 
@@ -106,3 +109,29 @@ async def list_reports():
         file_list.append({"id": f.name, "name": f.stem.replace("_", " ")})
 
     return file_list
+
+@app.post("/Frontend/download-selected")
+async def download_selected(reportIds: list[str] = Body(...)):
+    ROOT = Path(__file__).resolve().parent.parent
+    reports_dir = ROOT / "Logic" / "reports" / "generated_reports"
+
+    if not reportIds:
+        return {"error": "No reports selected."}
+
+    zip_buffer = BytesIO()
+
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
+        for report_id in reportIds:
+            report_path = reports_dir / report_id
+            if report_path.exists() and report_path.is_file():
+                zipf.write(report_path, arcname=report_path.name)
+    zip_buffer.seek(0)
+
+    reports = StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": "attachment; filename=selected_reports.zip"}
+    )
+    return reports
+
+

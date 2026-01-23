@@ -51,6 +51,24 @@ document.addEventListener('DOMContentLoaded', () => {
             .forEach(r => selected.add(r.id));
         renderReports(filter);
     };
+    document.getElementById("downloadSelected").onclick = async () => {
+        if (selected.size === 0) {
+            alert("No reports selected");
+            return;
+        }
+        const res = await fetch("http://localhost:8000/Frontend/download-selected", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify([...selected])
+        });
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "selected_reports.zip";
+        a.click();
+        window.URL.revokeObjectURL(url);
+    };
     document.getElementById("clearSelection").onclick = () => {
         selected.clear();
         renderReports(document.getElementById("search").value);
