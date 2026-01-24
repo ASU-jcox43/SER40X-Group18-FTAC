@@ -71,10 +71,10 @@ def extractTXT(filename):
 
     upsert_extraction(txtJSON)
 
-    makedirs(SAVEPATH, exist_ok=True)
-    saveFile = join(SAVEPATH, filename.replace(".txt", ".json"))
-    with open(saveFile, "w", encoding="utf-8") as saveFile:
-        json.dump(txtJSON, saveFile, indent=2)
+    # makedirs(SAVEPATH, exist_ok=True)
+    # saveFile = join(SAVEPATH, filename.replace(".txt", ".json"))
+    # with open(saveFile, "w", encoding="utf-8") as saveFile:
+        # json.dump(txtJSON, saveFile, indent=2)
 
     print("Extracted txt file")
 
@@ -100,7 +100,7 @@ def extractPDF(filename):
     pdfResults = {}
 
     for category, terms in KEYWORDS.items():
-        pdfResults[category] = extractKeywords(pdfRaw, terms)
+        pdfResults[category] = extractKeywords(pdfCleaned, terms)
 
     pdfJSON = {
         "file": filename,
@@ -109,10 +109,10 @@ def extractPDF(filename):
 
     upsert_extraction(pdfJSON)
 
-    makedirs(SAVEPATH, exist_ok=True)
-    saveFile = join(SAVEPATH, filename.replace(".pdf", ".json"))
-    with open(saveFile, "w", encoding="utf-8") as saveFile:
-        json.dump(pdfJSON, saveFile, indent=2)
+    # makedirs(SAVEPATH, exist_ok=True)
+    # saveFile = join(SAVEPATH, filename.replace(".pdf", ".json"))
+    # with open(saveFile, "w", encoding="utf-8") as saveFile:
+        # json.dump(pdfJSON, saveFile, indent=2)
 
     print("Extracted pdf file")
 
