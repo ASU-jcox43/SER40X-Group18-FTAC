@@ -9,7 +9,6 @@ body {
   background-color: #f9f7f4; /* subtle cream background for page */
 }
 
-
 header {
   background-color: #fdfbf8; /* cream colored */
   display: flex;
@@ -27,7 +26,7 @@ header.floating {
   margin: 1rem 2rem; /* inset from edges */
 }
 
-/* Nav container */
+/* Navigation container */
 .header-nav {
   display: flex;
   justify-content: space-between;
@@ -52,7 +51,7 @@ header.floating {
   color: #203a82;
 }
 
-/* Optional: underline effect on hover */
+/* underline effect on hover */
 .header-nav a::after {
   content: '';
   position: absolute;
@@ -107,6 +106,7 @@ header.floating {
   margin: 0.1rem;
 }
 
+/* Header within details panel */
 #detailsPanel {
   flex: 3;
   min-width: 100px;
@@ -116,7 +116,108 @@ header.floating {
   border-bottom: 1px solid #e2e2e2;
   border-radius: 10px;
   margin: 0.1rem;
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* collapse animation */
+  transition: flex 0.35s ease, min-width 0.35s ease;
 }
+
+/* Header inside details panel */
+#detailsPanel .panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid #eaeaea;
+  font-weight: 600;
+}
+
+/* Collapse button */
+.panel-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #555;
+  transition: color 0.2s ease;
+}
+
+.panel-toggle:hover {
+  color: #203a82;
+}
+
+/* Content container */
+#detailsPanel .panel-content {
+  padding: 1.5rem 2rem;
+  overflow-y: auto;
+
+  max-height: 1000px;
+  transition: max-height 0.45s ease, opacity 0.25s ease;
+}
+
+/* Entire panel collapsed */
+#detailsPanel.collapsed {
+  flex: 0.6;
+  min-width: 60px;
+}
+
+/* Hide content when collapsed */
+#detailsPanel.collapsed .panel-content {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Rotate arrow */
+#detailsPanel.collapsed .panel-header .arrow {
+  transform: rotate(-90deg);
+}
+
+
+.detail-section {
+  margin-bottom: 1.25rem;
+}
+
+.collapse-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.5rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.collapse-toggle:hover {
+  color: #203a82;
+}
+
+.collapse-content {
+  display: none;
+  padding-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.detail-section.open .collapse-content {
+  display: block;
+}
+
+.arrow {
+  transition: transform 0.25s ease;
+}
+
+.detail-section.open .arrow {
+  transform: rotate(180deg);
+}
+
+
+
 
 /* Ensure each filter label + input is vertical */
 .filter-item {
