@@ -90,7 +90,6 @@ def createMunicipalityProfile(
     profile = {
         "Name": name,
         "fb_type": fb_type,
-        "Province": province,
         "Demographic": createDemographic(
             population, avgAge, ethnicityComposition, houseSize, educationLevel
             ),
