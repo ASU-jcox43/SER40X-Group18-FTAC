@@ -68,19 +68,81 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- dynamically populated -->
+                    <tr onclick="showDetails('Toronto')">
+                        <td>Toronto</td>
+                        <td>72</td>
+                        <td>Food Truck</td>
+                    </tr>
+                    <tr onclick="showDetails('Vancouver')">
+                        <td>Vancouver</td>
+                        <td>65</td>
+                        <td>Food Truck</td>
+                    </tr>
+                    <tr onclick="showDetails('Calgary')">
+                        <td>Calgary</td>
+                        <td>81</td>
+                        <td>Food Truck</td>
+                    </tr>
                 </tbody>
             </table>
         </main>
 
         <!-- Right Details Panel -->
-        <aside id="detailsPanel">
-            <h3>Jurisdiction Details</h3>
-            <div id="detailsContent">
-                <!-- AI summary, flags, score breakdown -->
+        <aside id="detailsPanel" class="open">
+            <div class="panel-header">
+                <h3>Jurisdiction Details</h3>
+            </div>
+
+            <div class="panel-content">
+                <div id="detailsContent">
+
+                <div class="detail-section open">
+                    <button class="collapse-toggle" onclick="toggleSection(this)">
+                    AI Summary
+                    <span class="arrow">▾</span>
+                    </button>
+                    <div class="collapse-content">
+                    <p>
+                        This municipality presents a moderate regulatory environment for
+                        food truck operators. Permit costs are above average and zoning
+                        restrictions limit operating areas in dense commercial zones.
+                    </p>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <button class="collapse-toggle" onclick="toggleSection(this)">
+                    Key Requirements
+                    <span class="arrow">▾</span>
+                    </button>
+                    <div class="collapse-content">
+                    <ul>
+                        <li>Mobile food vendor license required</li>
+                        <li>Annual public health inspection</li>
+                        <li>Fire safety clearance</li>
+                    </ul>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <button class="collapse-toggle" onclick="toggleSection(this)">
+                    Score Breakdown
+                    <span class="arrow">▾</span>
+                    </button>
+                    <div class="collapse-content">
+                    <ul>
+                        <li>Permit Cost: 60</li>
+                        <li>Approval Time: 85</li>
+                        <li>Operational Flexibility: 70</li>
+                    </ul>
+                    </div>
+                </div>
+
+                </div>
             </div>
         </aside>
     </div>
+
 
 
 </body>

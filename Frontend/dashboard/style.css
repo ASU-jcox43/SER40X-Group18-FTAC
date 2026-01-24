@@ -27,7 +27,6 @@ header.floating {
   margin: 1rem 2rem; /* inset from edges */
 }
 
-
 /* Nav container */
 .header-nav {
   display: flex;
@@ -88,7 +87,7 @@ header.floating {
 
 #filterPanel {
   flex: 2;
-  min-width: 200px;
+  min-width: 150px;
   padding: 2rem;
   background-color: #fff;
   box-shadow: 1px 2px 12px rgba(0,0,0,0.08); /* slight shadow */
@@ -110,7 +109,7 @@ header.floating {
 
 #detailsPanel {
   flex: 3;
-  min-width: 250px;
+  min-width: 100px;
   padding: 2rem;
   background-color: #fff;
   box-shadow: 1px 2px 12px rgba(0,0,0,0.08); /* slight shadow */
@@ -138,4 +137,81 @@ header.floating {
   border-radius: 6px;
   font-family: 'Inter', sans-serif;
   font-size: 0.95rem;
+}
+
+/* Jurisdiction Table interaction, Middle Section */
+#jurisdictionTable tbody tr {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+/* td positioning context */
+#jurisdictionTable td {
+  position: relative;   
+  padding: 0.9rem 2rem 1.2rem 0;
+}
+
+/* Underline */
+#jurisdictionTable tbody tr td::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;      
+  width: 0;
+  height: 2px;
+  background-color: #000;
+  transition: width 0.35s ease;
+}
+
+/* Animate underline on row hover */
+#jurisdictionTable tbody tr:hover td::after {
+  width: 100%;
+}
+
+/* Subtle row hover */
+#jurisdictionTable tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+
+
+/* Detail sections, Right Panel */
+.detail-section {
+  margin-bottom: 1rem;
+}
+
+.collapse-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.5rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.collapse-toggle:hover {
+  color: #203a82;
+}
+
+.collapse-content {
+  display: none;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.arrow {
+  transition: transform 0.25s ease;
+}
+
+.detail-section.open .collapse-content {
+  display: block;
+}
+
+.detail-section.open .arrow {
+  transform: rotate(180deg);
 }
