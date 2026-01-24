@@ -24,7 +24,9 @@
     <div id="dashboardPage" class="page active">
         <!-- Left Filter Panel -->
         <aside id="filterPanel">
-            <h3>Filters</h3>
+            <div class="panel-header">
+                <span>FILTERS</span>
+            </div>
             <div class="filter-item">
                 <label for="businessType">Business Type</label>
                 <select id="businessType">
@@ -55,32 +57,42 @@
                 <label for="minScore">Minimum Score</label>
                 <input type="range" id="minScore" min="0" max="100">
             </div>
+            <div>  
+                <button class="apply-filters" onclick="applyFilters()">Apply Filters</button>
+            </div>
         </aside>
 
         <!-- Middle Results Panel -->
         <main id="resultsPanel">
+            <div class="panel-header">
+                <span>JURISDICTION RESULTS</span>
+            </div>
             <table id="jurisdictionTable">
                 <thead>
                     <tr>
-                        <th>City</th>
+                        <th>Rank</th>
+                        <th>Municipality</th>
                         <th>Score</th>
                         <th>Business Type</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr onclick="showDetails('Toronto')">
+                        <td>1</td>
+                        <td>Waterloo</td>
+                        <td>81</td>
+                        <td>Food Truck</td>
+                    </tr>
+                    <tr onclick="showDetails('Vancouver')">
+                        <td>2</td>
                         <td>Toronto</td>
                         <td>72</td>
                         <td>Food Truck</td>
                     </tr>
-                    <tr onclick="showDetails('Vancouver')">
-                        <td>Vancouver</td>
-                        <td>65</td>
-                        <td>Food Truck</td>
-                    </tr>
                     <tr onclick="showDetails('Calgary')">
+                        <td>3</td>
                         <td>Calgary</td>
-                        <td>81</td>
+                        <td>61</td>
                         <td>Food Truck</td>
                     </tr>
                 </tbody>
@@ -90,7 +102,7 @@
         <!-- Right Details Panel -->
         <aside id="detailsPanel">
             <div class="panel-header">
-                <span>Details</span>
+                <span>DETAILS</span>
                 <button class="panel-toggle" onclick="toggleDetailsPanel()">
                 <span class="arrow">▾</span>
                 </button>

@@ -9,6 +9,7 @@ body {
   background-color: #f9f7f4; /* subtle cream background for page */
 }
 
+/* Header styles */
 header {
   background-color: #fdfbf8; /* cream colored */
   display: flex;
@@ -83,11 +84,10 @@ header.floating {
     padding: 1rem 2rem;
 }
 
-
 #filterPanel {
   flex: 2;
   min-width: 150px;
-  padding: 2rem;
+  padding: 1.5rem;
   background-color: #fff;
   box-shadow: 1px 2px 12px rgba(0,0,0,0.08); /* slight shadow */
   border-bottom: 1px solid #e2e2e2;
@@ -98,19 +98,44 @@ header.floating {
 #resultsPanel {
   flex: 5;
   min-width: 300px;
-  padding: 2rem;
+  padding: 1.5rem;
   overflow-y: auto;
   box-shadow: 1px 2px 12px rgba(0,0,0,0.08); /* slight shadow */
   border-bottom: 1px solid #e2e2e2;
   border-radius: 10px;
   margin: 0.1rem;
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: #fff;
 }
+
+/* Panel heading */
+#resultsPanel .panel-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #203a82;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #eaeaea;
+}
+
+/* Table container padding */
+#resultsPanel table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.3rem;
+  padding: 1rem 2rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+}
+
 
 /* Header within details panel */
 #detailsPanel {
   flex: 3;
   min-width: 100px;
-  padding: 2rem;
+  padding: 1.5rem;
   background-color: #fff;
   box-shadow: 1px 2px 12px rgba(0,0,0,0.08); /* slight shadow */
   border-bottom: 1px solid #e2e2e2;
@@ -124,13 +149,16 @@ header.floating {
 }
 
 /* Header inside details panel */
-#detailsPanel .panel-header {
+#resultsPanel .panel-header,
+#filterPanel .panel-header,
+#detailsPanel .panel-header{
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 2rem;
   border-bottom: 1px solid #eaeaea;
   font-weight: 600;
+  margin-bottom: 0.1rem;
 }
 
 /* Collapse button */
@@ -216,9 +244,6 @@ header.floating {
   transform: rotate(180deg);
 }
 
-
-
-
 /* Ensure each filter label + input is vertical */
 .filter-item {
   display: flex;
@@ -226,27 +251,40 @@ header.floating {
   margin-bottom: 1.5rem;  /* space between filters */
 }
 
+
 .filter-item label {
-  font-weight: 500;
+  margin-top: 2rem;
   margin-bottom: 0.5rem;   /* space between label and input */
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .filter-item select,
 .filter-item input {
-  padding: 0.5rem;
+  padding: 0.25rem;
   border: 1px solid #e2e2e2;
   border-radius: 6px;
   font-family: 'Inter', sans-serif;
   font-size: 0.95rem;
+  font-weight: 400;
 }
 
 /* Jurisdiction Table interaction, Middle Section */
+#jurisdictionTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem; /* space between rows */
+}
+
 #jurisdictionTable tbody tr {
+  background-color: #fff;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.25s ease;
 }
 
 /* td positioning context */
+#jurisdictionTable th,
 #jurisdictionTable td {
   position: relative;   
   padding: 0.9rem 2rem 1.2rem 0;
@@ -261,7 +299,6 @@ header.floating {
   width: 0;
   height: 2px;
   background-color: #000;
-  transition: width 0.35s ease;
 }
 
 /* Animate underline on row hover */
@@ -273,7 +310,6 @@ header.floating {
 #jurisdictionTable tbody tr:hover {
   background-color: rgba(0, 0, 0, 0.02);
 }
-
 
 
 /* Detail sections, Right Panel */
