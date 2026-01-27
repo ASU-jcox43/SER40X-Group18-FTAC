@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
             regex: formEntries["regexFilter"]
         });
         
-        let response = await fetch("http://localhost:8000/Frontend/ingest-docs", {
+        let response = await fetch("http://localhost:8000/ingest-docs", {
                 method: "POST",
                 body: reqBody,
                 headers: {

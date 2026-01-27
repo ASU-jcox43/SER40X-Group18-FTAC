@@ -91,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const response = await fetch("http://localhost:8000/Frontend/generate-report", {
+
             method: "POST",
             headers: { "Content-Type": "application/json" }
             });
