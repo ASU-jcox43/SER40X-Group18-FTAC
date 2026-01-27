@@ -84,4 +84,9 @@ DOWNLOAD_DELAY = 1
 #HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
 
 # Set settings whose default value is deprecated to a future-proof value
-FEED_EXPORT_ENCODING = "utf-8"
+FEEDS = {
+    '/scrapy_output/items.csv': {
+        'format': 'csv',
+        'encoding': 'utf-8'
+    }
+}

@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         try {
-            let response = await fetch("http://localhost:8000/Frontend/generate-report", {
+            let response = await fetch("http://localhost:8000/generate-report", {
             method: "POST",
             body: reqBody,
             headers: { "Content-type": "application/json; charset=UTF-8"}
