@@ -3,7 +3,7 @@
 from typing import Union
 from fastapi import FastAPI
 from pydantic import BaseModel
-from tasks import *
+from .tasks import *
 from fastapi.middleware.cors import CORSMiddleware
 api_app = FastAPI()
 

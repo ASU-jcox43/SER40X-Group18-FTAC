@@ -1,3 +1,5 @@
+pydantic
+fastapi[standard]
 asarPy==1.0.1
 Cython==3.1.4
 flatdict
@@ -6,22 +8,33 @@ Markdown==3.9
 MarkupSafe==3.0.3
 meson==1.5.2
 packaging==25.0
-pycairo==1.28.0
 Pygments==2.19.2
-PyGObject==3.50.1
+PyGObject==3.54.5
 setuptools==80.9.0
 six==1.17.0
 wheel==0.46.1
-scrapy==2.5.1
+scrapy
 PyPDF2==3.0.1
-fastapi
-fastapi[standard]
-pydantic
 asyncio
-celery
 celery[redis]
-unstructured[all_docs]
 pdf2image
-pytesseract
-PyMuPDF
 pdfminer
+
+# Core numerical and image processing
+Pillow
+
+# OCR
+pytesseract
+
+# PDF processing
+PyMuPDF==1.26.6
+
+# NLP
+nltk==3.9.1
+
+# Document structuring
+onnx==1.20.1
+unstructured[pdf]
+
+# Optional: pyarrow is excluded to avoid CMake issues on macOS arm64
+# pyarrow>=12.0.1
