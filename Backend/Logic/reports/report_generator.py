@@ -3,9 +3,9 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-FILEPATH = ROOT / "Logic" / "analysis_ready"
+FILEPATH = ROOT / "Backend" / "Logic" / "analysis_ready"
 SCORE = ROOT / "Backend" / "Logic" / "scoring" / "friendliness_summary.json"
-OUTPUT = ROOT / "Logic" / "reports" / "generated_reports"
+OUTPUT = ROOT / "Backend" / "Logic" / "reports" / "generated_reports"
 
 def generate_report(file_path, score_path, output_path):
     # Open the extracted text and scoring files.

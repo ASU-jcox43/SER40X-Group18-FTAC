@@ -48,7 +48,7 @@ KEYWORDS = {
 }
 
 FILEPATH = abspath(join(dirname( __file__ ),"..", "..", "test documents"))
-SAVEPATH = abspath(join(dirname( __file__ ),"..", "..", "analysis_ready"))
+SAVEPATH = abspath(join(dirname( __file__ ),"..", "analysis_ready"))
 
 
 # TODO: Change the output of a analysis ready json to a txt file if needed
