@@ -6,7 +6,6 @@ from PyPDF2 import PdfReader
 from Backend.Logic.mongo_db.extraction_collection import upsert_extraction
 from Backend.Logic.extraction.extraction_util import cleanText, extractKeywords
 
-# TODO Update for relevant categories and terms
 # Define your keyword categories and terms
 # Category: Terms []
 KEYWORDS = {
@@ -43,6 +42,7 @@ KEYWORDS = {
 }
 
 FILEPATH = abspath(join(dirname( __file__ ),"..", "..", "test documents"))
+# TODO: replace with MongoDB code
 SAVEPATH = abspath(join(dirname( __file__ ),"..", "..", "analysis_ready"))
 
 
