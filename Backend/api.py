@@ -71,9 +71,9 @@ async def generate_report_endpoint():
     :return: links the frontend can use to download the report files.
     """
     ROOT = Path(__file__).resolve().parent.parent
-    analysis_dir = ROOT / "Logic" / "analysis_ready"
+    analysis_dir = ROOT / "Backend" / "Logic" / "analysis_ready"
     score_file = ROOT / "Backend" / "Logic" / "scoring" / "friendliness_summary.json"
-    output_dir = ROOT / "Logic" / "reports" / "generated_reports"
+    output_dir = ROOT / "Backend" / "Logic" / "reports" / "generated_reports"
     output_dir.mkdir(exist_ok=True)
 
     results = []
@@ -101,7 +101,7 @@ async def download_reports():
     Returns: makes the backend zip up all the reports, and send it all as a download for the frontend.
     """
     ROOT = Path(__file__).resolve().parent.parent
-    reports_dir = ROOT / "Logic" / "reports" / "generated_reports"
+    reports_dir = ROOT / "Backend" / "Logic" / "reports" / "generated_reports"
 
     if not reports_dir.exists():
         return {"error": "No reports exist to be downloaded."}
@@ -125,7 +125,7 @@ async def list_reports():
     Returns: list of reports that are ready to be downloaded for the user.
     """
     ROOT = Path(__file__).resolve().parent.parent
-    reports_dir = ROOT / "Logic" / "reports" / "generated_reports"
+    reports_dir = ROOT / "Backend" / "Logic" / "reports" / "generated_reports"
 
     if not reports_dir.exists():
         return []
@@ -145,7 +145,7 @@ async def download_selected(reportIds: list[str] = Body(...)):
     Returns: Stream of the zip file of the reports.
     """
     ROOT = Path(__file__).resolve().parent.parent
-    reports_dir = ROOT / "Logic" / "reports" / "generated_reports"
+    reports_dir = ROOT / "Backend" / "Logic" / "reports" / "generated_reports"
 
     if not reportIds:
         return {"error": "No reports selected."}
