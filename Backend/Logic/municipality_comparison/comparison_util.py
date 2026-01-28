@@ -1,9 +1,10 @@
 import json
 from pathlib import Path
-from os.path import join, abspath, dirname, realpath
+from os.path import dirname, realpath
 from comparison_template import COMPARISON_TEMPLATE
 
 # Folder containing JSON files
+# TODO Don't need profiles path anymore, replace with MongoDB
 PROFILES_PATH = Path(dirname(realpath(__file__))) / "../municipality_profile/profiles"
 PROFILES_PATH = PROFILES_PATH.resolve()
 
@@ -70,8 +71,6 @@ def processSelections(selection1, selection2):
     return True
 
 def getField(profile, section, field):
-    """Unified safe lookup for both top-level and section fields."""
-
     # 1. Check top-level
     if field in profile:
         return profile[field]

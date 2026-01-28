@@ -1,17 +1,18 @@
 import os
 import json
 from datetime import datetime
-from profile_manager import createMunicipalityProfile
+from Backend.Logic.municipality_profile.profile_manager import createMunicipalityProfile
+from Backend.Logic.mongo_db.profile_collection import upsert_profile
 
 
 def addProfile(**kwargs):
     profile = createMunicipalityProfile(**kwargs)
     # Save/update the profile
 
-    save_path = load_existing_profile(profile)
-    return save_path
+    upsert_profile(profile)
+    print(f"Upserted profile for {profile['Geographic']['City']}")
 
-def load_existing_profile(profile):
+def load_existing_profile(profile): # TODO: Delete later if MongoDB works
     city = profile["Geographic"]["City"]
     province = profile["Geographic"]["Province"]
 
@@ -56,7 +57,8 @@ def load_existing_profile(profile):
 
 if __name__ == "__main__":
     #load test data 
-    test_dir = "testData"
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    test_dir = os.path.join(base_dir, "testData")
 
     for filename in os.listdir(test_dir):
         if filename.endswith(".json"):
