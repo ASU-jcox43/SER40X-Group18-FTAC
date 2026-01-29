@@ -1,23 +1,35 @@
 services:
-  server:
+  backend:
     build:
       context: .
     ports:
       - 8000:8000
     volumes:
       - scrapy-output:/scrapy_output
-  web:
-    image: nginx:latest
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./frontend:/usr/share/nginx/html
-    ports:
-      - "80:80"
     develop:
       watch:
         - action: sync
           path: .
           target: /app
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./frontend:/usr/share/nginx/html
+    ports:
+      - 80:80
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+  mongodb:
+    image: mongodb/mongodb-community-server:latest
+    ports:
+      - 27017:27017
 volumes:
   scrapy-output:
     name: "scrapy-output"
+# MongoDB may need to have a volume declared
+#  mongodb:
+#    name: "mongodb"

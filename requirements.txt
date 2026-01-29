@@ -38,3 +38,5 @@ unstructured[pdf]
 
 # Optional: pyarrow is excluded to avoid CMake issues on macOS arm64
 # pyarrow>=12.0.1
+
+pymongo
