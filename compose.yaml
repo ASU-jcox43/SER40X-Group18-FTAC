@@ -6,6 +6,9 @@ services:
       - 8000:8000
     volumes:
       - scrapy-output:/scrapy_output
+    depends_on:
+      - mongodb
+
   web:
     image: nginx:latest
     volumes:
@@ -18,6 +21,19 @@ services:
         - action: sync
           path: .
           target: /app
+
+  mongodb:
+    image: mongo:7
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: secret
+    volumes:
+      - mongo-data:/data/db
+
 volumes:
   scrapy-output:
     name: "scrapy-output"
+  mongo-data:

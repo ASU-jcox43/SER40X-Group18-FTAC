@@ -19,6 +19,7 @@ asyncio
 celery[redis]
 pdf2image
 pdfminer
+pymongo==4.16.0
 
 # Core numerical and image processing
 Pillow
