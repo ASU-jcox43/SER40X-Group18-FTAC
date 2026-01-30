@@ -3,15 +3,9 @@ from os.path import join, abspath, dirname, realpath
 from os import makedirs, listdir
 import json
 from PyPDF2 import PdfReader
+from Backend.Logic.mongo_db.extraction_collection import upsert_extraction
+from Backend.Logic.extraction.extraction_util import cleanText, extractKeywords
 
-# Allow running as script OR as module
-if __package__ is None or __package__ == "":
-    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-    from extraction_util import cleanText, extractKeywords
-else:
-    from .extraction_util import cleanText, extractKeywords
-
-# TODO Update for relevant categories and terms
 # Define your keyword categories and terms
 # Category: Terms []
 KEYWORDS = {
@@ -48,10 +42,9 @@ KEYWORDS = {
 }
 
 FILEPATH = abspath(join(dirname( __file__ ),"..", "..", "test documents"))
-SAVEPATH = abspath(join(dirname( __file__ ),"..", "analysis_ready"))
+# TODO: replace with MongoDB code
+SAVEPATH = abspath(join(dirname( __file__ ),"..", "..", "analysis_ready"))
 
-
-# TODO: Change the output of a analysis ready json to a txt file if needed
 def extractTXT(filename):
     txtPath = join(FILEPATH, filename)
     # Read plain text
@@ -75,10 +68,12 @@ def extractTXT(filename):
         "keyword_contexts": txtResults,
     }
 
-    makedirs(SAVEPATH, exist_ok=True)
-    saveFile = join(SAVEPATH, filename.replace(".txt", ".json"))
-    with open(saveFile, "w", encoding="utf-8") as saveFile:
-        json.dump(txtJSON, saveFile, indent=2)
+    upsert_extraction(txtJSON)
+
+    # makedirs(SAVEPATH, exist_ok=True)
+    # saveFile = join(SAVEPATH, filename.replace(".txt", ".json"))
+    # with open(saveFile, "w", encoding="utf-8") as saveFile:
+        # json.dump(txtJSON, saveFile, indent=2)
 
     print("Extracted txt file")
 
@@ -104,17 +99,19 @@ def extractPDF(filename):
     pdfResults = {}
 
     for category, terms in KEYWORDS.items():
-        pdfResults[category] = extractKeywords(pdfRaw, terms)
+        pdfResults[category] = extractKeywords(pdfCleaned, terms)
 
     pdfJSON = {
         "file": filename,
         "keyword_contexts": pdfResults,
     }
 
-    makedirs(SAVEPATH, exist_ok=True)
-    saveFile = join(SAVEPATH, filename.replace(".pdf", ".json"))
-    with open(saveFile, "w", encoding="utf-8") as saveFile:
-        json.dump(pdfJSON, saveFile, indent=2)
+    upsert_extraction(pdfJSON)
+
+    # makedirs(SAVEPATH, exist_ok=True)
+    # saveFile = join(SAVEPATH, filename.replace(".pdf", ".json"))
+    # with open(saveFile, "w", encoding="utf-8") as saveFile:
+        # json.dump(pdfJSON, saveFile, indent=2)
 
     print("Extracted pdf file")
 
