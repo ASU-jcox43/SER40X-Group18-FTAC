@@ -26,7 +26,7 @@ services:
   mongodb:
     image: mongodb/mongodb-community-server:latest
     ports:
-      - 27017:27017
+      - 27016:27017
 volumes:
   scrapy-output:
     name: "scrapy-output"

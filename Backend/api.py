@@ -1,5 +1,3 @@
-# Don't use .venv
-
 from typing import Union
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -55,3 +53,7 @@ async def search_docs(
         {"municipality":"Quebec City",    "url":"ville.quebec.qc.ca/bylaws/businessess3/40.html"},
         {"municipality":"York",           "url":"york.ca/bylaws/36.html"}
     ]
+
+@api_app.get("/scrapy_config")
+async def search_configs(municipality: str | None = None):
+    return search_configs(municipality)

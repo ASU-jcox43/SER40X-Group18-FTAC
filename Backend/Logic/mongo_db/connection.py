@@ -1,4 +1,4 @@
 from pymongo import MongoClient
 
-CLIENT = MongoClient("mongodb://localhost:27017")
+CLIENT = MongoClient("mongodb://localhost:27016")
 DB = CLIENT["CapstoneDB"]

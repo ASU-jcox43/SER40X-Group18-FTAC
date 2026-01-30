@@ -1,0 +1,76 @@
+[
+    {
+        "_id": "quebec city",
+        "start_url": "https://www.ville.quebec.qc.ca/apropos/avis-publics/reglements.aspx",
+        "layers": 2,
+        "get_pdfs": true,
+        "regex": "\\.pdf|reglements",
+        "pagination": {}
+    },
+    {
+        "_id": "laval",
+        "start_url": "https://www.laval.ca/reglements-permis/index-reglements/",
+        "layers": 1,
+        "get_pdfs": true,
+        "regex": "uploads",
+        "pagination": {}
+    },
+    {
+        "_id": "york",
+        "start_url": "https://www.york.ca/york-region/bylaws",
+        "layers": 1,
+        "get_pdfs": false,
+        "regex": "bylaws",
+        "pagination": {}
+    },
+    {
+        "_id": "calgary",
+        "start_url": "https://www.calgary.ca/bylaws/city-bylaw-library.html",
+        "layers": 1,
+        "get_pdfs": true,
+        "regex": "lldm01",
+        "pagination": {}
+    },
+    {
+        "_id": "mississauga",
+        "start_url": "https://www.mississauga.ca/council/by-laws/",
+        "layers": 2,
+        "get_pdfs": true,
+        "regex": "publication|uploads"
+    },
+    {
+        "_id": "antigonish",
+        "start_url": "https://antigonishcounty.ca/municipal-by-laws/",
+        "layers": 1,
+        "get_pdfs": true,
+        "regex": "uploads"
+    },
+    {
+        "_id": "ottawa",
+        "start_url": "https://ottawa.ca/en/living-ottawa/laws-licences-and-permits/laws/laws-z",
+        "layers": 1,
+        "get_pdfs": false,
+        "regex": "laws-z"
+    },
+    {
+        "_id": "oakville",
+        "start_url": "https://www.oakville.ca/town-hall/by-laws-enforcement/popular-by-laws/",
+        "layers": 2,
+        "get_pdfs": true,
+        "regex": "by-law/|By-law"
+    },
+    {
+        "_id": "edmonton",
+        "start_url": "https://www.edmonton.ca/city_government/bylaws/bylaws-by-number",
+        "layers": 1,
+        "get_pdfs": true,
+        "regex": "\\.pdf"
+    },
+    {
+        "_id": "regina",
+        "start_url": "https://www.regina.ca/bylaws-permits-licences/bylaws/",
+        "layers": 2,
+        "get_pdfs": true,
+        "regex": "Bylaw/|\\.pdf"
+    }
+]

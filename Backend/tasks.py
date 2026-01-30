@@ -4,6 +4,7 @@ import subprocess
 from .Logic.scrapers.document_scraper.spiders.DocumentScraper import *
 from .Logic.OCRProcessor.ocr_processor import process_pdfs
 from .Logic.extraction.text_extraction import extract
+from .Logic.mongo_db.scrapy_config import get_profile
 
 celery_app = Celery(
     "worker",
@@ -30,7 +31,9 @@ def run_document_scraper(start_url: str, layers: int=1, get_pdfs: bool=True, rex
 
 @celery_app.task
 def run_ocr_and_extraction_process(urls: list[str]):
-    print(urls)
     process_pdfs('Logic/OCRProcessor/bylawDocuments')
     extract()
     pass
+
+def search_configs(municipality: str):
+    return get_profile(municipality)
