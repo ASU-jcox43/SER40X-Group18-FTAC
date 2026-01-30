@@ -106,4 +106,5 @@ def import_models(path: str):
 
 
 if __name__ == "__main__":
+    # TODO: replace with MongoDB code
     score_jurisdictions("../analysis_ready", import_models("scoring_models"))

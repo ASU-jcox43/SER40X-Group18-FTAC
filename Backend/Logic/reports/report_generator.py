@@ -8,6 +8,7 @@ from docx.oxml.ns import qn
 from docx2pdf import convert
 from pathlib import Path
 
+# TODO: replace with MongoDB code
 FILEPATH = Path("../analysis_ready")
 SCORE = Path("../scoring/friendliness_summary.json")
 OUTPUT = Path("generated_reports")

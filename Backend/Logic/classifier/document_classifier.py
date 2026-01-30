@@ -117,4 +117,5 @@ def classify_files(folder_path):
 
 
 if __name__ == "__main__":
+    # TODO: replace with MongoDB code
     classify_files("../analysis_ready")

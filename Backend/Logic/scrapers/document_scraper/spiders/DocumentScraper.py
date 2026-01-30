@@ -1,6 +1,10 @@
 import scrapy
 from scrapy.http.response import Response
 import re
+from scrapy.item import Item, Field
+
+class DocumentScraperItem(Item):
+    url = Field()
 
 class DocumentScraperSpider(scrapy.Spider):
     name = "DocumentScraper"
@@ -19,6 +23,12 @@ class DocumentScraperSpider(scrapy.Spider):
         self.get_pdfs = get_pdfs
         self.rex = re.compile(rex) if rex else None
 
+    @classmethod
+    def from_crawler(cls, crawler, *args, **kwargs):
+        spider = super().from_crawler(crawler, *args, **kwargs)
+        spider.settings.set("FEEDS", {f'/scrapy_output/{spider.allowed_domains[0][:-3]}.csv': {'format': 'csv'}}, priority="spider")
+        return spider
+    
     def parse(self, response: Response):
         if self.rex is not None:
             self.rex = re.compile(self.rex)
@@ -29,7 +39,7 @@ class DocumentScraperSpider(scrapy.Spider):
         # You will know when you are visiting a PDF when you get a response body that starts with '%PDF-' 
         if response.body.startswith(b'%PDF-') or (layer == 0 and not self.get_pdfs):
             self.doc_count = self.doc_count + 1
-            yield {self.doc_count: response.url}
+            yield DocumentScraperItem(url=response.url)
         elif layer > 0:
             links = response.xpath('//@href').getall()
             for link in links:
