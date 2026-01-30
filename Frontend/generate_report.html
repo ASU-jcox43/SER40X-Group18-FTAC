@@ -1,22 +1,82 @@
 <!doctype html>
 <html lang="en">
     <head>
-        <title>Ingest Documents</title>
+        <title>Download Your Reports</title>
         <meta charset="utf-8"/>
     </head>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: repeating-linear-gradient(
+            to top,
+            #5c7a76 0%,
+            #5c7a76 100px,
+            #fefaf5 0px,
+            #254441 1000px
+            );
+        }
+        h2 {
+            color: #FFFFFF;
+            font-family: 'Work Sans', sans-serif;
+            font-weight: 500;
+            text-align: center;
+            background-color: #254441;
+            border-radius: 10px;
+        }
+        button {
+            background-color: #254441;
+            color: #FFFFFF;
+            font-family: 'Work Sans', sans-serif;
+            font-weight: 500;
+            font-size: 12pt;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        button:hover {
+            background-color: #39524e;
+            transform: translateY(2px);
+        }
+        button:active {
+            background-color: #516E69;
+        }
+        input {
+            font-family: 'Work Sans', sans-serif;
+            font-size: 12pt;
+            padding: 8px;
+        }
+        .hero-header {
+            background-image: url("images/ftacLogo.png");
+            height: 100px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        ul {
+            list-style-type: none;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 12pt;
+            padding: 8px;
+            background-color: #254441;
+            color: white;
+            max-width: 500px;
+            width: 90%;
+            margin: 1rem auto;
+            border-radius: 5px;
+        }
+
+    </style>
     <body>
-        <h1>Generate Report</h1>
-        <form id="reportForm" novalidate>
-            <label class ="row" for="reportPDF">
-                <span>Generate report as PDF too?</span>
-                <input id="reportPDF" name="reportPDF" type="checkbox"/><br>
-            </label>
-            <button type="submit">Generate Reports</button>
-        </form>
-        <div id="loading" style="display:none; color:blue; font-weight:bold;">
-            Generating reports... please wait.
+        <header class="hero-header"></header>
+        <h2>Available Reports For Download</h2>
+        <div style="text-align:center;">
+            <input type="text" id="search" placeholder="Search reports..." />
+            <button id="selectVisible">Select Visible</button>
+            <button id="clearSelection">Clear</button>
+            <button id="downloadSelected">Download Selected Reports</button>
         </div>
-        <textarea id="reportOutput" name="reportOutput" rows="10" cols="50"></textarea>
+        <ul id="reportList"></ul>
         <script src="reportpost.js"></script>
     </body>
 </html>
