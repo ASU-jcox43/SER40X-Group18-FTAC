@@ -42,9 +42,6 @@ KEYWORDS = {
 }
 
 FILEPATH = abspath(join(dirname( __file__ ),"..", "..", "test documents"))
-# TODO: replace with MongoDB code
-SAVEPATH = abspath(join(dirname( __file__ ),"..", "..", "analysis_ready"))
-
 
 def extractTXT(filename):
     txtPath = join(FILEPATH, filename)
@@ -70,12 +67,6 @@ def extractTXT(filename):
     }
 
     upsert_extraction(txtJSON)
-
-    # makedirs(SAVEPATH, exist_ok=True)
-    # saveFile = join(SAVEPATH, filename.replace(".txt", ".json"))
-    # with open(saveFile, "w", encoding="utf-8") as saveFile:
-        # json.dump(txtJSON, saveFile, indent=2)
-
     print("Extracted txt file")
 
 
@@ -108,12 +99,6 @@ def extractPDF(filename):
     }
 
     upsert_extraction(pdfJSON)
-
-    # makedirs(SAVEPATH, exist_ok=True)
-    # saveFile = join(SAVEPATH, filename.replace(".pdf", ".json"))
-    # with open(saveFile, "w", encoding="utf-8") as saveFile:
-        # json.dump(pdfJSON, saveFile, indent=2)
-
     print("Extracted pdf file")
 
 
