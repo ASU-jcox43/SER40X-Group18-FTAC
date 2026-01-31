@@ -1,17 +1,16 @@
 services:
   backend:
+    container_name: ftac-backend
     build:
       context: .
     ports:
       - 8000:8000
     volumes:
       - scrapy-output:/scrapy_output
-    develop:
-      watch:
-        - action: sync
-          path: .
-          target: /app
+    depends_on:
+      - mongodb
   nginx:
+    container_name: nginx
     image: nginx:latest
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
@@ -24,12 +23,24 @@ services:
           path: .
           target: /app
   mongodb:
-    image: mongodb/mongodb-community-server:latest
+    container_name: ftac-mongo
+    image: mongo:latest
     ports:
+      - 27017:27017
       - 27016:27017
+    volumes:
+      - mongodata:/data/db
+      - mongoconfig:/data/configdb
+    # uncomment in order to use mongodb authentication
+    #environment:
+      #MONGO_INITDB_ROOT_USERNAME: "mongoadmin"
+      #MONGO_INITDB_ROOT_PASSWORD: "set password here"
 volumes:
   scrapy-output:
     name: "scrapy-output"
-# MongoDB may need to have a volume declared
-#  mongodb:
-#    name: "mongodb"
+  mongodata:
+    name: "mongodata"
+    driver: local
+  mongoconfig:
+    name: "mongoconfig"
+    driver: local
