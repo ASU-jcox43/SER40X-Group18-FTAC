@@ -26,7 +26,14 @@ function toggleSection(button) {
 // Attach click handlers to header links using a data attribute
 document.querySelectorAll('.header-nav a').forEach(link => {
   link.addEventListener('click', e => {
+
+    // Let external links behave normally
+    if (link.hasAttribute('data-external')) {
+      return;
+    }
+
     e.preventDefault();
+    
     const target = link.dataset.target; // read data-target
     if (target) {
       showPanel(target);
