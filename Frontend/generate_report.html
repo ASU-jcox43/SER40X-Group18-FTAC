@@ -12,7 +12,6 @@
     <!-- Overriding Styles -->
     <style>
         body {
-            font-family: 'Poppins', sans-serif;
             background: repeating-linear-gradient(
             to top,
             #5c7a76 0%,
@@ -52,13 +51,13 @@
             font-size: 12pt;
             padding: 8px;
         }
-        .hero-header {
+        /*.hero-header {
             background-image: url("images/ftacLogo.png");
             height: 100px;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-        }
+        }*/
         ul {
             list-style-type: none;
             font-family: 'Work Sans', sans-serif;
@@ -71,6 +70,7 @@
             margin: 1rem auto;
             border-radius: 5px;
         }
+        
 
     </style>
     <body>
@@ -84,8 +84,8 @@
                 <a href="dashboard/index.html">Dashboard</a>
                 <a href="#" onclick="showPanel('municipalities')">Municipalities</a>
 
-                <!-- Redirect to report page -->
-                <a href="../generate_report.html" data-external>Reports</a>
+                <!-- Do not Redirect to report page -->
+                <a href="#" onclick="showPanel('scores')">Reports</a>
 
                 <a href="#" onclick="showPanel('ai')">AI Analysis</a>
                 <a href="#" onclick="showPanel('scores')">Scores</a>

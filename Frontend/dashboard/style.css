@@ -1,12 +1,13 @@
 /* Apply to the whole page */
 body {
-  font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'Poppins', sans-serif;
   font-size: 16px;       /* base font size */
   line-height: 1.5;      /* clean spacing between lines */
   color: #333;           /* neutral dark text */
   margin: 0;
   padding: 0;
-  background-color: #f9f7f4; /* subtle cream background for page */
+  
+  background: linear-gradient(to bottom, #5c7a76 70%, #c7c2bc 100%);
 }
 
 /* Header styles */
@@ -15,10 +16,10 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 3rem 1rem 1rem; /* top, right, bottom, left */
+  padding: 0.75rem 3rem 0.75rem 0.75rem; /* top, right, bottom, left */
   box-shadow: 1px 2px 12px rgba(0,0,0,0.08); /* slight shadow */
   border-bottom: 1px solid #e2e2e2;
-  border-radius: 40px 40px 40px 40px; 
+  border-radius: 30px; 
   margin: 0.5rem 0.5rem 1rem 0.5rem; /* top, right, bottom, left */
 }
 
@@ -35,7 +36,8 @@ header.floating {
   max-width: none;    
   margin-left: 2rem;
   margin-right: 2rem;  
-  gap: 0;           
+  gap: 2rem;           
+  align-items: flex-end
 }
 
 .header-nav a {
@@ -69,7 +71,7 @@ header.floating {
 }
 
 .nav-logo {
-  height: 80px; /* logo size */
+  height: 70px; /* logo size */
   margin-right: 1rem;
 }
 
