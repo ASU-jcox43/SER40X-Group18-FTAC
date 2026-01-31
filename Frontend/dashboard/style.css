@@ -68,6 +68,11 @@ header.floating {
   width: 100%;
 }
 
+.nav-logo {
+  height: 80px; /* logo size */
+  margin-right: 1rem;
+}
+
 .page {
   display: none; /* hide all pages by default */
 }

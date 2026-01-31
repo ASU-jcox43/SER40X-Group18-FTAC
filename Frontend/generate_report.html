@@ -3,7 +3,13 @@
     <head>
         <title>Download Your Reports</title>
         <meta charset="utf-8"/>
+
+        <!-- Linked style sheet for navigation bar consistency -->
+        <link rel="stylesheet" href="dashboard/style.css">
     </head>
+
+    <!-- fix: Update color schemes and styling in the future -->
+    <!-- Overriding Styles -->
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -68,7 +74,25 @@
 
     </style>
     <body>
-        <header class="hero-header"></header>
+
+        <!-- Top Bar -->
+        <header>
+            <nav class="header-nav">
+                <img src="images/ftacLogo.png" alt="FTAC Logo" class="nav-logo">
+
+                <a href="#" onclick="showPanel('about')">About</a>
+                <a href="dashboard/index.html">Dashboard</a>
+                <a href="#" onclick="showPanel('municipalities')">Municipalities</a>
+
+                <!-- Redirect to report page -->
+                <a href="../generate_report.html" data-external>Reports</a>
+
+                <a href="#" onclick="showPanel('ai')">AI Analysis</a>
+                <a href="#" onclick="showPanel('scores')">Scores</a>
+            </nav>
+        </header>
+
+        <!-- <header class="hero-header"></header> -->
         <h2>Available Reports For Download</h2>
         <div style="text-align:center;">
             <input type="text" id="search" placeholder="Search reports..." />
