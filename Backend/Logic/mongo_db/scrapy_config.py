@@ -3,15 +3,17 @@ from .connection import DB
 SCRAPY_CONFIG_COLLECTION = DB["scrapy_config"]
 
 # Method that inserts or upates an already existing scrapy config
-def insert_config(sconfig: dict):
+def update_config(sconfig: dict):
     SCRAPY_CONFIG_COLLECTION.update_one(
-        {"_id": sconfig["municipality"]},
-        {"start_url": sconfig["start_url"]},
-        {"layers": sconfig["layers"]},
-        {"get_pdfs": sconfig["get_pdfs"]},
-        {"regex": sconfig.get("regex")},
-        {"pagination": sconfig["pagination"]},
-        upsert=True
+        filter={"_id": sconfig["_id"]},
+        update={"$set": {
+            "start_url": sconfig["start_url"],
+            "layers": sconfig["layers"],
+            "get_pdfs": sconfig["get_pdfs"],
+            "regex": sconfig.get("regex"),
+            "pagination": sconfig.get("pagination")
+            }
+        }
     )
 
 # Method to return scrapy config based on city

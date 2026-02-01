@@ -20,8 +20,8 @@ services:
     develop:
       watch:
         - action: sync
-          path: .
-          target: /app
+          path: /frontend
+          target: /usr/share/nginx/html
   mongodb:
     container_name: ftac-mongo
     image: mongo:latest
