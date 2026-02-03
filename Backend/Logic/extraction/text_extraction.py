@@ -45,7 +45,6 @@ FILEPATH = abspath(join(dirname( __file__ ),"..", "..", "test documents"))
 # TODO: replace with MongoDB code
 SAVEPATH = abspath(join(dirname( __file__ ),"..", "..", "analysis_ready"))
 
-
 def extractTXT(filename):
     txtPath = join(FILEPATH, filename)
     # Read plain text
