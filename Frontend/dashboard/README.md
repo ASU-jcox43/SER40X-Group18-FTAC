@@ -51,3 +51,10 @@ http://localhost:8000
 Dependencies
 None.
 Works on modern browsers (Chrome, Firefox, Edge).
+
+
+TODOs
+[] Fix filters being applied 
+[] Ranks are not updating based on sorting 
+[] Add some color to the scores
+[] Ensure details panel shows proper information
