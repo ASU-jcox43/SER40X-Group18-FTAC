@@ -1,9 +1,7 @@
-import os, sys
 from os.path import join, abspath, dirname, realpath
-from os import makedirs, listdir
-import json
+from os import listdir
 from PyPDF2 import PdfReader
-from Backend.Logic.mongo_db.extraction_collection import upsert_extraction
+from Backend.Logic.mongo_db.extraction_collection import upsertExtraction
 from Backend.Logic.extraction.extraction_util import cleanText, extractKeywords
 
 # Define your keyword categories and terms
@@ -41,7 +39,7 @@ KEYWORDS = {
   "exterior appearance guidelines": ["paint", "painted", "appearance", "vehicle signage", "branding on truck", "exterior look", "color", "color contrast", "colour", "colour contrast", "identification markings"]
 }
 
-FILEPATH = abspath(join(dirname( __file__ ),"..", "..", "test documents"))
+FILEPATH = abspath(join(dirname( __file__ ),"..", "..", "test_documents"))
 
 def extractTXT(filename):
     txtPath = join(FILEPATH, filename)
@@ -66,7 +64,7 @@ def extractTXT(filename):
         "keyword_contexts": txtResults,
     }
 
-    upsert_extraction(txtJSON)
+    upsertExtraction(txtJSON)
     print("Extracted txt file")
 
 
@@ -98,7 +96,7 @@ def extractPDF(filename):
         "keyword_contexts": pdfResults,
     }
 
-    upsert_extraction(pdfJSON)
+    upsertExtraction(pdfJSON)
     print("Extracted pdf file")
 
 

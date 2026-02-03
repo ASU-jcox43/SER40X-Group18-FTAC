@@ -1,48 +1,18 @@
-import json
-from pathlib import Path
-from os.path import dirname, realpath
-from comparison_template import COMPARISON_TEMPLATE
+from .comparison_template import COMPARISON_TEMPLATE
+from Backend.Logic.mongo_db.profile_collection import getAllProfiles
 
 # Folder containing JSON files
-# TODO Don't need profiles path anymore, replace with MongoDB
-PROFILES_PATH = Path(dirname(realpath(__file__))) / "../municipality_profile/profiles"
-PROFILES_PATH = PROFILES_PATH.resolve()
 
-# Gets a list of municipality profile paths
+# Gets documents from 
 def getMunicipalityProfiles():
-    directory = Path(PROFILES_PATH)
-
-    if not directory.exists():
-        print(f"Error: The directory '{directory}' does not exist.")
-        return []
-
-    jsonFiles = list(directory.rglob("*.json"))
+    profiles = getAllProfiles()
     
-    if not jsonFiles:
-        print("No JSON files found.")
-    else:
-        print(f"Found {len(jsonFiles)} JSON file(s):")
-        for file in jsonFiles:
-            print(f"{file}")
+    print(f"Found {len(profiles)} profiles\n")
     
-    print()
-
-    return jsonFiles # Returns list of paths to each profile
-
-# Reads each from the list of paths
-def readMunicipalityJson(municipalityPathList):
-    data = {}
-    for file in municipalityPathList:
-        try:
-            with open(file, "r", encoding="utf-8") as municipalityFile:
-                key = file.stem
-                data[key] = json.load(municipalityFile)
-        except Exception as e:
-            print(f"Failed to read {file}: {e}")
-    return data
+    return profiles # Returns profiles from db as json
         
 def processSelections(selection1, selection2):
-    municipalityPaths = getMunicipalityProfiles()
+    profiles = getMunicipalityProfiles()
     
     # Convert user inputs into integers
     try:
@@ -52,21 +22,17 @@ def processSelections(selection1, selection2):
         return False
 
     # Bounds check
-    if not (0 <= idx1 < len(municipalityPaths)) or not (0 <= idx2 < len(municipalityPaths)):
+    if not (0 <= idx1 < len(profiles)) or not (0 <= idx2 < len(profiles)):
         return False
     
     # Get the actual Path objects
-    firstPath = municipalityPaths[idx1]
-    secondPath = municipalityPaths[idx2]
+    firstProfile = profiles[idx1]
+    secondProfile = profiles[idx2]
 
-    # Now read JSON for each (must pass a list!)
-    firstData = readMunicipalityJson([firstPath])
-    secondData = readMunicipalityJson([secondPath])
-    
-    firstKey = next(iter(firstData))
-    secondKey = next(iter(secondData))
+    nameA = firstProfile["Geographic"]["City"]
+    nameB = secondProfile["Geographic"]["City"]
 
-    compareProfiles(firstData[firstKey], secondData[secondKey], firstKey, secondKey)
+    compareProfiles(firstProfile, secondProfile, nameA, nameB)
 
     return True
 
