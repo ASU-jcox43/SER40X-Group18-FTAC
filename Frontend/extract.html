@@ -43,8 +43,6 @@
                 }
 
                 let formEntries = Object.fromEntries(new FormData(search_form));
-
-                console.log(formEntries);
                 
                 const page = 0;
                 var URLParams = "?page=".concat(page);
@@ -55,12 +53,9 @@
                     }
                 }
 
-                console.log(URLParams);
-
                 const response = await fetch("http://localhost:8000/extract".concat(URLParams));
                 const results = await response.json();
-                console.log(results)
-                console.log(response)
+                console.log(results);
 
                 const resultHeader = document.createElement("tr");
 
@@ -118,8 +113,6 @@
                         reqBody.urls.push(url);
                     }
                 }
-
-                console.log(reqBody);
 
                 const response = await fetch("http://localhost:8000/extract", {
                     method: "POST",
