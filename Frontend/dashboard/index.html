@@ -5,29 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bylaw Dashboard</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="images/ftacLogo.png" type="image/png">
 </head>
 <body>
 
     <!-- Top Bar -->
     <header>
         <nav class="header-nav">
-            <!-- Food Trucks Canada Logo on the left -->
-            <img src="../images/ftacLogo.png" alt="FTAC Logo" class="nav-logo">
+            <img src="assets/ftacLogo.png" alt="FTAC Logo" class="nav-logo">
 
             <a href="#" onclick="showPanel('about')">About</a>
             <a href="#" onclick="showPanel('dashboard')">Dashboard</a>
             <a href="#" onclick="showPanel('municipalities')">Municipalities</a>
-
-            <!-- Redirect to report page -->
             <a href="../generate_report.html" data-external>Reports</a>
-
             <a href="#" onclick="showPanel('ai')">AI Analysis</a>
             <a href="#" onclick="showPanel('scores')">Scores</a>
         </nav>
     </header>
 
-    <!-- Dashboard page -->
+    <!-- Dashboard Page -->
     <div id="dashboardPage" class="page active">
+
         <!-- Left Filter Panel -->
         <aside id="filterPanel">
             <div class="panel-header">
@@ -37,9 +35,10 @@
             <div class="filter-item">
                 <label for="businessType">Business Type</label>
                 <select id="businessType">
-                    <option>Food Truck</option>
-                    <option>Cottage Food</option>
-                    <option>Catering</option>
+                    <option value="">All</option>
+                    <option value="Food Truck">Food Truck</option>
+                    <option value="Cottage Food">Cottage Food</option>
+                    <option value="Catering">Catering</option>
                 </select>
             </div>
             
@@ -47,26 +46,29 @@
                 <label for="province">Province</label>
                 <select id="province">
                     <option value="">All</option>
-                    <option>ON</option>
-                    <option>AB</option>
-                    <option>BC</option>
-                    <option>MB</option>
-                    <option>NB</option>
-                    <option>NL</option>
-                    <option>NS</option>
-                    <option>PE</option>
-                    <option>QC</option>
-                    <option>SK</option>
-                    <option>YT</option>
-                    <option>NT</option>
-                    <option>NU</option>
+                    <option value="ON">ON</option>
+                    <option value="AB">AB</option>
+                    <option value="BC">BC</option>
+                    <option value="MB">MB</option>
+                    <option value="NB">NB</option>
+                    <option value="NL">NL</option>
+                    <option value="NS">NS</option>
+                    <option value="PE">PE</option>
+                    <option value="QC">QC</option>
+                    <option value="SK">SK</option>
+                    <option value="YT">YT</option>
+                    <option value="NT">NT</option>
+                    <option value="NU">NU</option>
                 </select>
             </div>
 
             <div class="filter-item">
-                <label for="minScore">Minimum Score</label>
-                <input type="range" id="minScore" min="0" max="100">
+                <label for="minScore">Minimum Score: <span id="minScoreValue">0</span></label>
+                <input type="range" id="minScore" min="0" max="100" value="50" 
+                    oninput="document.getElementById('minScoreValue')
+                    .innerText = this.value">
             </div>
+
 
             <div>  
                 <button class="apply-filters" onclick="applyFilters()">Apply Filters</button>
@@ -81,7 +83,7 @@
 
             <div class="results-controls">
                 <label for="sortOrder">Sort by Score:</label>
-                <select name="sortOrder" id="sortOrder" onchange="applyFilters()">
+                <select name="sortOrder" id="sortOrder">
                     <option value="">None</option>
                     <option value="high-to-low">High to Low</option>
                     <option value="low-to-high">Low to High</option>
@@ -97,8 +99,6 @@
                         <th>Business Type</th>
                     </tr>
                 </thead>
-                
-                <!-- Javascript fills the table dynamically -->
                 <tbody id="jurisdictionBody"></tbody>
             </table>
         </main>
@@ -108,53 +108,45 @@
             <div class="panel-header">
                 <span>DETAILS</span>
                 <button class="panel-toggle" onclick="toggleDetailsPanel()">
-                <span class="arrow">▾</span>
+                    <span class="arrow">▾</span>
                 </button>
             </div>
 
             <div class="panel-content">
                 <div class="detail-section open">
-                <button class="collapse-toggle" onclick="toggleSection(this)">
-                    AI Summary
-                    <span class="arrow">▾</span>
-                </button>
-                <div class="collapse-content">
-                    <p>
-                    This municipality presents a moderate regulatory environment for
-                    food truck operators. Permit costs are above average and zoning
-                    restrictions limit operating areas.
-                    </p>
-                </div>
+                    <button class="collapse-toggle" onclick="toggleSection(this)">
+                        AI Summary <span class="arrow">▾</span>
+                    </button>
+                    <div class="collapse-content">
+                        <p>This municipality presents a moderate regulatory environment.</p>
+                    </div>
                 </div>
 
                 <div class="detail-section">
-                <button class="collapse-toggle" onclick="toggleSection(this)">
-                    Key Requirements
-                    <span class="arrow">▾</span>
-                </button>
-                <div class="collapse-content">
-                    <ul>
-                    <li>Mobile food vendor license</li>
-                    <li>Annual health inspection</li>
-                    <li>Fire safety clearance</li>
-                    </ul>
-                </div>
+                    <button class="collapse-toggle" onclick="toggleSection(this)">
+                        Key Requirements <span class="arrow">▾</span>
+                    </button>
+                    <div class="collapse-content">
+                        <ul>
+                            <li>Mobile food vendor license</li>
+                            <li>Annual health inspection</li>
+                            <li>Fire safety clearance</li>
+                        </ul>
+                    </div>
                 </div>
 
                 <div class="detail-section">
-                <button class="collapse-toggle" onclick="toggleSection(this)">
-                    Score Breakdown
-                    <span class="arrow">▾</span>
-                </button>
-                <div class="collapse-content">
-                    <ul>
-                    <li>Permit Cost: 60</li>
-                    <li>Approval Time: 85</li>
-                    <li>Flexibility: 70</li>
-                    </ul>
+                    <button class="collapse-toggle" onclick="toggleSection(this)">
+                        Score Breakdown <span class="arrow">▾</span>
+                    </button>
+                    <div class="collapse-content">
+                        <ul>
+                            <li>Permit Cost: 60</li>
+                            <li>Approval Time: 85</li>
+                            <li>Flexibility: 70</li>
+                        </ul>
+                    </div>
                 </div>
-                </div>
-
             </div>
         </aside>
 
