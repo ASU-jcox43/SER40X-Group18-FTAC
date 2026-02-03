@@ -102,6 +102,15 @@ header.floating {
   margin: 0.1rem;
 }
 
+#filterPanel .apply-filters {
+  padding: 0.25rem;
+  border: 1px solid #e2e2e2;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 400;
+}
+
 #resultsPanel {
   flex: 5;
   min-width: 300px;
@@ -154,6 +163,7 @@ header.floating {
   overflow: hidden; /* collapse animation */
   transition: flex 0.35s ease, min-width 0.35s ease;
 }
+
 
 /* Header inside details panel */
 #resultsPanel .panel-header,
@@ -278,6 +288,27 @@ header.floating {
 }
 
 /* Jurisdiction Table interaction, Middle Section */
+#resultsPanel .results-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;                       /* space between label and select */
+  padding: 2rem 1rem 0rem 2rem; /* top, right, bottom, left */
+  margin-bottom: 0.5rem;             /* spacing below controls */
+  border-radius: 8px;               /* rounded corners */
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.results-controls select{
+  padding: 0.25rem;
+  border: 1px solid #e2e2e2;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 400;
+}
+
 #jurisdictionTable {
   width: 100%;
   border-collapse: collapse;
@@ -294,7 +325,8 @@ header.floating {
 #jurisdictionTable th,
 #jurisdictionTable td {
   position: relative;   
-  padding: 0.9rem 2rem 1.2rem 0;
+  padding: 0rem 2rem 1.2rem 0; /* top, right, bottom, left */
+  text-align: middle;
 }
 
 /* Underline */
