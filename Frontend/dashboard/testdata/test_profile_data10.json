@@ -1,0 +1,66 @@
+{
+    "name": "Food Truck Co",
+    "fb_type": "food truck",
+    "city": "Brampton",
+    "province": "Ontario",
+    "population": 656000,
+    "avgAge": 36.5,
+    "ethnicityComposition": {
+        "South Asian": 44.0,
+        "White": 26.0,
+        "Black": 14.0,
+        "Filipino": 4.0,
+        "Latin American": 3.0,
+        "Chinese": 2.0,
+        "Other": 7.0
+    },
+    "houseSize": 3.3,
+    "educationLevel": {
+        "High School": 89.0,
+        "College": 42.0
+    },
+    "income": 94000,
+    "min_wage": 16.55,
+    "comm_tax_rates": 0.0288,
+    "region": "Central Canada",
+    "popSqMile": 6800,
+    "areaSqMiles": 103.3,
+    "lat": 43.7315,
+    "long": -79.7624,
+    "adjMunicipalities": ["Mississauga", "Caledon", "Vaughan"],
+    "friendlinessScore": {
+        "Score": 79.40,
+        "Friendliness Index": "Friendly"
+    },
+    "friendlinessScoreBreakdown": {
+        "Foundational": {
+            "Points Awarded": 7,
+            "Points Available": 10,
+            "Percentage": "70%",
+            "Friendliness Index": "Friendly"
+        },
+        "Licensing Requirements": {
+            "Points Awarded": 7,
+            "Points Available": 10,
+            "Percentage": "70%",
+            "Friendliness Index": "Friendly"
+        },
+        "Operations & Restrictions": {
+            "Points Awarded": 29,
+            "Points Available": 35,
+            "Percentage": "83%",
+            "Friendliness Index": "Very friendly"
+        }
+    },
+    "contacts": [
+        {
+            "Department": "Brampton Licensing",
+            "Address": "2 Wellington St W, Brampton, ON L6Y 4R2",
+            "Fax": "n/a",
+            "Phone": "905-874-2000",
+            "Email": "business@brampton.ca",
+            "Website": "https://www.brampton.ca",
+            "Hours": "Monday to Friday: 8:30 AM to 4:30 PM"
+        }
+    ]
+}

@@ -1,0 +1,69 @@
+{
+    "name": "Food Truck Co",
+    "fb_type": "food truck",
+    "city": "Halifax",
+    "province": "Nova Scotia",
+    "population": 480000,
+    "avgAge": 41.9,
+    "ethnicityComposition": {
+        "White": 79.0,
+        "Black": 3.0,
+        "Chinese": 2.0,
+        "South Asian": 2.0,
+        "Arab": 2.0,
+        "Filipino": 1.0,
+        "Latin American": 1.0,
+        "Other": 10.0
+    },
+    "houseSize": 2.3,
+    "educationLevel": {
+        "High School": 88.0,
+        "College": 47.0
+    },
+    "income": 79000,
+    "min_wage": 15.20,
+    "comm_tax_rates": 0.0249,
+    "region": "Atlantic Canada",
+    "popSqMile": 1900,
+    "areaSqMiles": 200.5,
+    "lat": 44.6488,
+    "long": -63.5752,
+    "adjMunicipalities": ["Dartmouth", "Bedford"],
+    "friendlinessScore": {
+        "Score": 83.10,
+        "Friendliness Index": "Very friendly"
+    },
+
+    "friendlinessScoreBreakdown": {
+        "Foundational": {
+            "Points Awarded": 8,
+            "Points Available": 10,
+            "Percentage": "80%",
+            "Friendliness Index": "Very friendly"
+        },
+        "Licensing Requirements": {
+            "Points Awarded": 9,
+            "Points Available": 10,
+            "Percentage": "90%",
+            "Friendliness Index": "Very friendly"
+        },
+        "Operations & Restrictions": {
+            "Points Awarded": 28,
+            "Points Available": 35,
+            "Percentage": "80%",
+            "Friendliness Index": "Very friendly"
+        }
+    },
+
+    "contacts": [
+        {
+            "Department": "Halifax Licensing & Permits",
+            "Address": "40 Alderney Dr, Dartmouth, NS B2Y 2N5",
+            "Fax": "n/a",
+            "Phone": "311",
+            "Email": "permits@halifax.ca",
+            "Website": "https://www.halifax.ca",
+            "Hours": "Monday to Friday: 8:30 AM to 4:30 PM"
+        }
+    ]
+}

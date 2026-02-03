@@ -1,0 +1,66 @@
+{
+    "name": "Food Truck Co",
+    "fb_type": "food truck",
+    "city": "Ottawa",
+    "province": "Ontario",
+    "population": 1016000,
+    "avgAge": 40.6,
+    "ethnicityComposition": {
+        "White": 63.0,
+        "Black": 7.0,
+        "Arab": 6.0,
+        "South Asian": 5.0,
+        "Chinese": 4.0,
+        "Indigenous": 4.0,
+        "Other": 11.0
+    },
+    "houseSize": 2.5,
+    "educationLevel": {
+        "High School": 92.0,
+        "College": 48.0
+    },
+    "income": 102000,
+    "min_wage": 16.55,
+    "comm_tax_rates": 0.0257,
+    "region": "Central Canada",
+    "popSqMile": 1400,
+    "areaSqMiles": 1120.0,
+    "lat": 45.4215,
+    "long": -75.6972,
+    "adjMunicipalities": ["Gatineau", "Clarence-Rockland", "Carleton Place"],
+    "friendlinessScore": {
+        "Score": 83.40,
+        "Friendliness Index": "Very friendly"
+    },
+    "friendlinessScoreBreakdown": {
+        "Foundational": {
+            "Points Awarded": 8,
+            "Points Available": 10,
+            "Percentage": "80%",
+            "Friendliness Index": "Very friendly"
+        },
+        "Licensing Requirements": {
+            "Points Awarded": 8,
+            "Points Available": 10,
+            "Percentage": "80%",
+            "Friendliness Index": "Friendly"
+        },
+        "Operations & Restrictions": {
+            "Points Awarded": 31,
+            "Points Available": 35,
+            "Percentage": "89%",
+            "Friendliness Index": "Very friendly"
+        }
+    },
+    "contacts": [
+        {
+            "Department": "Ottawa Business Licensing",
+            "Address": "100 Constellation Dr, Ottawa, ON K2G 6J8",
+            "Fax": "n/a",
+            "Phone": "613-580-2424",
+            "Email": "businesslicensing@ottawa.ca",
+            "Website": "https://ottawa.ca",
+            "Hours": "Monday to Friday: 8:30 AM to 4:30 PM"
+        }
+    ]
+}

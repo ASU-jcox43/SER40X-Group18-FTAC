@@ -1,0 +1,69 @@
+{
+    "name": "Food Truck Co",
+    "fb_type": "food truck",
+    "city": "Winnipeg",
+    "province": "Manitoba",
+    "population": 749000,
+    "avgAge": 40.0,
+    "ethnicityComposition": {
+        "White": 58.0,
+        "Indigenous": 13.0,
+        "Filipino": 10.0,
+        "South Asian": 6.0,
+        "Chinese": 3.0,
+        "Black": 3.0,
+        "Latin American": 2.0,
+        "Other": 5.0
+    },
+    "houseSize": 2.5,
+    "educationLevel": {
+        "High School": 87.0,
+        "College": 42.0
+    },
+    "income": 82000,
+    "min_wage": 15.30,
+    "comm_tax_rates": 0.0252,
+    "region": "Prairies",
+    "popSqMile": 1530,
+    "areaSqMiles": 464.1,
+    "lat": 49.8951,
+    "long": -97.1384,
+    "adjMunicipalities": ["East St. Paul", "West St. Paul", "Headingley"],
+    "friendlinessScore": {
+        "Score": 76.00,
+        "Friendliness Index": "Friendly"
+    },
+
+    "friendlinessScoreBreakdown": {
+        "Foundational": {
+            "Points Awarded": 7,
+            "Points Available": 10,
+            "Percentage": "70%",
+            "Friendliness Index": "Friendly"
+        },
+        "Licensing Requirements": {
+            "Points Awarded": 8,
+            "Points Available": 10,
+            "Percentage": "80%",
+            "Friendliness Index": "Very friendly"
+        },
+        "Operations & Restrictions": {
+            "Points Awarded": 24,
+            "Points Available": 35,
+            "Percentage": "68%",
+            "Friendliness Index": "Moderate"
+        }
+    },
+
+    "contacts": [
+        {
+            "Department": "Winnipeg Licensing Office",
+            "Address": "395 Main St, Winnipeg, MB R3B 3N8",
+            "Fax": "n/a",
+            "Phone": "311",
+            "Email": "311@winnipeg.ca",
+            "Website": "https://winnipeg.ca",
+            "Hours": "Monday to Friday: 8:30 AM to 4:30 PM"
+        }
+    ]
+}
