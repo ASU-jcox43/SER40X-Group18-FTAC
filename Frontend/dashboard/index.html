@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bylaw Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <header>
+        <nav class="header-nav">
+            <a href="#" onclick="showPanel('about')">About</a>
+            <a href="#" onclick="showPanel('dashboard')">Dashboard</a>
+            <a href="#" onclick="showPanel('municipalities')">Municipalities</a>
+            <a href="#" onclick="showPanel('reports')">Reports</a>
+            <a href="#" onclick="showPanel('ai')">AI Analysis</a>
+            <a href="#" onclick="showPanel('scores')">Scores</a>
+        </nav>
+    </header>
+
+    <!-- Dashboard page -->
+    <div id="dashboardPage" class="page active">
+        <!-- Left Filter Panel -->
+        <aside id="filterPanel">
+            <div class="panel-header">
+                <span>FILTERS</span>
+            </div>
+            <div class="filter-item">
+                <label for="businessType">Business Type</label>
+                <select id="businessType">
+                    <option>Food Truck</option>
+                    <option>Cottage Food</option>
+                    <option>Catering</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label for="province">Province</label>
+                <select id="province">
+                    <option>ON</option>
+                    <option>AB</option>
+                    <option>BC</option>
+                    <option>MB</option>
+                    <option>NB</option>
+                    <option>NL</option>
+                    <option>NS</option>
+                    <option>PE</option>
+                    <option>QC</option>
+                    <option>SK</option>
+                    <option>YT</option>
+                    <option>NT</option>
+                    <option>NU</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label for="minScore">Minimum Score</label>
+                <input type="range" id="minScore" min="0" max="100">
+            </div>
+            <div>  
+                <button class="apply-filters" onclick="applyFilters()">Apply Filters</button>
+            </div>
+        </aside>
+
+        <!-- Middle Results Panel -->
+        <main id="resultsPanel">
+            <div class="panel-header">
+                <span>MUNICIPALITY RESULTS</span>
+            </div>
+            <table id="jurisdictionTable">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Municipality</th>
+                        <th>Score</th>
+                        <th>Business Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr onclick="showDetails('Toronto')">
+                        <td>1</td>
+                        <td>Waterloo</td>
+                        <td>81</td>
+                        <td>Food Truck</td>
+                    </tr>
+                    <tr onclick="showDetails('Vancouver')">
+                        <td>2</td>
+                        <td>Toronto</td>
+                        <td>72</td>
+                        <td>Food Truck</td>
+                    </tr>
+                    <tr onclick="showDetails('Calgary')">
+                        <td>3</td>
+                        <td>Calgary</td>
+                        <td>61</td>
+                        <td>Food Truck</td>
+                    </tr>
+                </tbody>
+            </table>
+        </main>
+
+        <!-- Right Details Panel -->
+        <aside id="detailsPanel">
+            <div class="panel-header">
+                <span>DETAILS</span>
+                <button class="panel-toggle" onclick="toggleDetailsPanel()">
+                <span class="arrow">▾</span>
+                </button>
+            </div>
+
+            <div class="panel-content">
+                <div class="detail-section open">
+                <button class="collapse-toggle" onclick="toggleSection(this)">
+                    AI Summary
+                    <span class="arrow">▾</span>
+                </button>
+                <div class="collapse-content">
+                    <p>
+                    This municipality presents a moderate regulatory environment for
+                    food truck operators. Permit costs are above average and zoning
+                    restrictions limit operating areas.
+                    </p>
+                </div>
+                </div>
+
+                <div class="detail-section">
+                <button class="collapse-toggle" onclick="toggleSection(this)">
+                    Key Requirements
+                    <span class="arrow">▾</span>
+                </button>
+                <div class="collapse-content">
+                    <ul>
+                    <li>Mobile food vendor license</li>
+                    <li>Annual health inspection</li>
+                    <li>Fire safety clearance</li>
+                    </ul>
+                </div>
+                </div>
+
+                <div class="detail-section">
+                <button class="collapse-toggle" onclick="toggleSection(this)">
+                    Score Breakdown
+                    <span class="arrow">▾</span>
+                </button>
+                <div class="collapse-content">
+                    <ul>
+                    <li>Permit Cost: 60</li>
+                    <li>Approval Time: 85</li>
+                    <li>Flexibility: 70</li>
+                    </ul>
+                </div>
+                </div>
+
+            </div>
+        </aside>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
