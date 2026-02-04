@@ -9,6 +9,8 @@ services:
       - scrapy-output:/scrapy_output
     depends_on:
       - mongodb
+    environment:
+      - MONGO_URI=mongodb://ftac-mongo:27017/
   nginx:
     container_name: nginx
     image: nginx:latest
