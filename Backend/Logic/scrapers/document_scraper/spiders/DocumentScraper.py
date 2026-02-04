@@ -18,7 +18,7 @@ class DocumentScraperSpider(scrapy.Spider):
     def __init__(self, start_url: str, layers: int, get_pdfs: bool, rex: str | None = None, **kwargs):
         super().__init__(**kwargs)
         self.start_urls = [start_url]
-        self.allowed_domains = [re.findall(r"(?<=.)\w*.ca(?=\W)", start_url)[0]]
+        self.allowed_domains = [re.findall(r"(?<=\/\/)[\w.]*?(?=\/\W?)", start_url)[0]]
         self.layers = layers
         self.get_pdfs = get_pdfs
         self.rex = re.compile(rex) if rex else None
