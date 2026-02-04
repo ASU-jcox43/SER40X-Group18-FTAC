@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configure Web Scraping</title>
+</head>
+<body>
+    <h3>find scrapy configurations by municipality</h3>
+    <form id="searchForm">
+        <input type="text" name="searchInput" id="searchInput">
+        <button type="submit">search</button>
+    </form>
+    <div id="searchResult"></div>
+    <script>
+        const searchForm = document.getElementById('searchForm');
+        const searchResult = document.getElementById('searchResult');
+        document.addEventListener('DOMContentLoaded', () => {
+            searchForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const input = Object.fromEntries(new FormData(searchForm));
+                const response = await fetch(`http://localhost:8000/scrapy_config?municipality=${input.searchInput.toLowerCase()}`);
+                const responseBody = await response.json();
+
+                while (searchResult.hasChildNodes()) {
+                    searchResult.removeChild(searchResult.firstChild);
+                }
+
+                if (responseBody == null) {
+                    searchResult.textContent = "Municipality not found"
+                }
+                else {
+                    const resultForm = scrapyConfigForm(
+                        responseBody["start_url"],
+                        responseBody["layers"],
+                        responseBody["get_pdfs"],
+                        responseBody["regex"]
+                    )
+
+                    resultForm.addEventListener("submit", async (e) => {
+                        e.preventDefault();
+                        const newConfigInput = Object.fromEntries(new FormData(resultForm));
+                        const response = await fetch(`http://localhost:8000/scrapy_config?municipality=${responseBody["_id"]}`, {
+                            method: 'PUT',
+                            headers: {'Content-type': 'application/json'},
+                            body: JSON.stringify({
+                                start_url: newConfigInput["startUrl"],
+                                layers: newConfigInput["numLayers"],
+                                get_pdfs: ('getPdfs' in newConfigInput) ? true : false,
+                                regex: newConfigInput["regexFilter"]
+                            })
+                        });
+                        confirmation = document.createElement("p1");
+                        confirmation.textContent = "Scrapy config has been changed"
+                        searchResult.appendChild(confirmation)
+                    })
+
+                    searchResult.appendChild(resultForm)
+                }
+            })
+        })
+
+        function scrapyConfigForm (startUrl = "", layers = 1, getPdfs = true, regex = "", id = "scrapyConfigForm") {
+            const resultForm = document.createElement("form");
+            resultForm.id = id;
+            resultForm.noValidate = true;
+
+            const startUrlLabel = document.createElement("label");
+            startUrlLabel.for = "startUrl";
+            startUrlLabel.textContent = "Start URL";
+            const startUrlInput = document.createElement("input");
+            startUrlInput.id = "startUrl";
+            startUrlInput.name = "startUrl";
+            startUrlInput.type = "url";
+            startUrlInput.value = startUrl;
+            resultForm.appendChild(startUrlLabel);
+            resultForm.appendChild(startUrlInput);
+            resultForm.appendChild(document.createElement("br"));
+
+            const numLayersLabel = document.createElement("label");
+            numLayersLabel.for = "numLayers";
+            numLayersLabel.textContent = "# of layers";
+            const numLayersInput = document.createElement("input");
+            numLayersInput.id = "numLayers";
+            numLayersInput.name = "numLayers";
+            numLayersInput.type = "number";
+            numLayersInput.value = layers;
+            resultForm.appendChild(numLayersLabel);
+            resultForm.appendChild(numLayersInput);
+            resultForm.appendChild(document.createElement("br"));
+
+            const getPdfsLabel = document.createElement("label");
+            getPdfsLabel.for = "getPdfs";
+            const getPdfsSpan = document.createElement("span");
+            getPdfsSpan.textContent = "Get PDFs?";
+            getPdfsLabel.appendChild(getPdfsSpan)
+            const getPdfsInput = document.createElement("input");
+            getPdfsInput.id = "getPdfs";
+            getPdfsInput.name = "getPdfs";
+            getPdfsInput.type = "checkbox";
+            getPdfsInput.checked = getPdfs;
+            getPdfsLabel.appendChild(getPdfsInput)
+            resultForm.appendChild(getPdfsLabel);
+            resultForm.appendChild(document.createElement("br"));
+            
+            const regexLabel = document.createElement("label");
+            regexLabel.for = "regexFilter";
+            regexLabel.textContent = "Regex filter (optional)";
+            const regexInput = document.createElement("input");
+            regexInput.id = "regexFilter";
+            regexInput.name = "regexFilter";
+            regexInput.type = "text";
+            regexInput.value = regex;
+            resultForm.appendChild(regexLabel);
+            resultForm.appendChild(regexInput);
+            resultForm.appendChild(document.createElement("br"));
+            
+            const submitConfigButton = document.createElement("button");
+            submitConfigButton.type = "submit"
+            submitConfigButton.textContent = "change config"
+            resultForm.appendChild(submitConfigButton);
+            resultForm.appendChild(document.createElement("br"));
+
+            return resultForm;
+        }
+    </script>
+</body>
+</html>
