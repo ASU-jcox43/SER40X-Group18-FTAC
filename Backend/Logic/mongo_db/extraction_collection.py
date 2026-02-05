@@ -15,7 +15,7 @@ def upsertExtraction(file: dict):
     
 # Method to return profile based on city
 def getExtraction(filename):
-    return EXTRACTION_COLLECTION.find_one( { "_id": filename } )
+    return EXTRACTION_COLLECTION.find_one({"_id": filename})
 
 # Method to return json list of all documents in extraction collection
 def getAllExtractions():

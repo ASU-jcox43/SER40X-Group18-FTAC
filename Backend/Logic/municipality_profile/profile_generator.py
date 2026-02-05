@@ -2,14 +2,14 @@ import os
 import json
 from datetime import datetime
 from Backend.Logic.municipality_profile.profile_manager import createMunicipalityProfile
-from Backend.Logic.mongo_db.profile_collection import upsert_profile
+from Backend.Logic.mongo_db.profile_collection import upsertProfile
 
 
 def addProfile(**kwargs):
     profile = createMunicipalityProfile(**kwargs)
     # Save/update the profile
 
-    upsert_profile(profile)
+    upsertProfile(profile)
     print(f"Upserted profile for {profile['Geographic']['City']}")
 
 if __name__ == "__main__":

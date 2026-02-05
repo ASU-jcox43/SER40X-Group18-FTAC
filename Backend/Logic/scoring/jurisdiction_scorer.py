@@ -15,6 +15,7 @@ import flatdict
 from functools import reduce
 
 from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
+from Backend.Logic.mongo_db.scoring_collection import upsertSummary
 
 BASE_DIR = Path(__file__).resolve().parent
 MODELS_DIR = BASE_DIR / "scoring_models"
@@ -79,17 +80,18 @@ def score_jurisdictions(models: dict[str, dict[str, str]]):
     results = {}
     
     for extraction in extractionJSON:
-        results[extraction["file"]] = {}
+        filename = extraction["file"]
+        filename = filename.split(".")[0]
+        results[filename] = {}
         try:
             for model in models.keys():
                 print("models: ", models.keys())
                 score = score_json_data(extraction, models[model])
-                results[extraction["file"]][model] = score
+                results[filename][model] = score
         except Exception as e:
             print(f"Error reading {extraction['file']} from mongoDB: {e}")
 
-    with open("friendliness_summary.json", "w") as f:
-        json.dump(results, f, indent=2)
+    upsertSummary(results)
 
 
 def import_models(path: str):
@@ -106,5 +108,4 @@ def import_models(path: str):
     return scoring_models
 
 if __name__ == "__main__":
-    # TODO: replace with MongoDB code
     score_jurisdictions(import_models(MODELS_DIR))

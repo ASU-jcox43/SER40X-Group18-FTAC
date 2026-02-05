@@ -3,12 +3,12 @@ from .connection import DB
 SCORING_COLLECTION = DB["scores"]
 
 #TODO: Update scoring collection
-def upsertScore(profile: dict):
-    city = profile["Geographic"]["City"]
-    profile["_id"] = city
-
+def upsertSummary(summary: dict):
     SCORING_COLLECTION.update_one(
-        {"_id": city},
-        {"$set": profile},
+        {"_id": "Summary"},
+        {"$set": summary},
         upsert=True
     )
+
+def getSummary():
+    return SCORING_COLLECTION.find_one({"_id": "Summary"})

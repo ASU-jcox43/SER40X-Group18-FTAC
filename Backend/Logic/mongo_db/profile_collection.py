@@ -15,7 +15,7 @@ def upsertProfile(profile: dict):
 
 # Method to return profile based on city
 def getProfile(city):
-    return PROFILE_COLLECTION.find_one( { "_id": city } )
+    return PROFILE_COLLECTION.find_one({"_id": city})
 
 # Method to return json list of all documents in profile collection
 def getAllProfiles():
