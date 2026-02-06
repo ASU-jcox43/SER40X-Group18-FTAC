@@ -39,7 +39,7 @@ KEYWORDS = {
   "exterior appearance guidelines": ["paint", "painted", "appearance", "vehicle signage", "branding on truck", "exterior look", "color", "color contrast", "colour", "colour contrast", "identification markings"]
 }
 #TODO: Change to where files need to be stored
-FILEPATH = abspath(join(dirname( __file__ ),"..", "..", "test_documents"))
+FILEPATH = abspath(join(dirname( __file__ ),"..", "..","..", "test_documents"))
 
 def extractTXT(filename):
     txtPath = join(FILEPATH, filename)

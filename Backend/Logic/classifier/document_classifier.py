@@ -14,7 +14,8 @@ proper classification based on a set of keywords and how often they appear.
 import json
 import re
 from pathlib import Path
-from utils import extract_text
+from Backend.Logic.classifier.utils import extract_text
+from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
 
 # Our list of keywords that we can customize when classifying documents in a dictionary
 KEYWORDS = {"Permit Documents": ["permit", "license", "authorization", "inspection"],
@@ -91,22 +92,36 @@ def classify_files(folder_path):
     """
 
     results = []
+    newResults = []
+    docs = getAllExtractions()
+    
+    for doc in docs:
+        keywords = doc["keyword_contexts"]
+        print("keywords: " + keywords.values())
+        category, confidence = classify_text(keywords)
+        newResults.append({
+            "filename": doc["file"],
+            "category": category,
+            "confidence": round(confidence, 2)
+        })
+    
+    print("Finish for loop")
     folder = Path(folder_path)
 
     # Here we go through all the files, and run the extract_text function to get their text.
     # We then run classify_text on that found text to get the category that best matched and
     # its confidence score, otherwise it gives an error if the file couldn't be read.
-    for file_path in folder.glob("*.*"):
-        try:
-            text = extract_text(file_path)
-            category, confidence = classify_text(text)
-            results.append({
-                "filename": file_path.name,
-                "category": category,
-                "confidence": round(confidence, 2)
-            })
-        except Exception as e:
-            print(f"Error reading {file_path.name}: {e}")
+    # for file_path in folder.glob("*.*"):
+    #     try:
+    #         text = extract_text(file_path)
+    #         category, confidence = classify_text(text)
+    #         results.append({
+    #             "filename": file_path.name,
+    #             "category": category,
+    #             "confidence": round(confidence, 2)
+    #         })
+    #     except Exception as e:
+    #         print(f"Error reading {file_path.name}: {e}")
 
     filename = "classifications.json"
     with open(filename, "w") as config_file:
