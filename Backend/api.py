@@ -49,11 +49,6 @@ class PostExtractDocs(BaseModel):
 async def ingest_docs(req:ScrapyConfig):
     @celery_app.task
     def run_document_scraper(start_url: str, layers: int=1, get_pdfs: bool=True, rex: str|None=None):
-        name_regex = r"(?<=\/\/)[\w.]*?(?=\.\w*\/\W?)"
-        name:str = re.findall(name_regex, start_url)[0]
-        name:str = name[4:] if name.startswith('www.') else name
-        name:str = name[:-2] if name.endswith('.qc') else name
-        name = name.replace('.','_')
         os.chdir('Backend/Logic/scrapers')
         command = [
             'scrapy', 'crawl',
@@ -65,19 +60,9 @@ async def ingest_docs(req:ScrapyConfig):
         ]
         subprocess.run(command, text=True)
         os.chdir('../../..')
-        return name
-    
-    @celery_app.task
-    def store_scraper_links(name:str):
-        new_links = []
-        with open(f'/scrapy_output/{name}.csv', 'r') as f:
-            for line_number, line in enumerate(f, start=1):
-                if line_number > 1:
-                    new_links.append(line)
-        update_links(name, new_links)
-    
-    (run_document_scraper(req.start_url, layers=req.layers, get_pdfs=req.get_pdfs, rex=req.regex) | store_scraper_links()).apply_async()
-    return 'success'
+        return "crawl start"
+
+    return run_document_scraper(req.start_url, layers=req.layers, get_pdfs=req.get_pdfs, rex=req.regex)
 
 @api_app.post("/extract")
 async def extract_docs(req:PostExtractDocs):
@@ -118,6 +103,7 @@ async def edit_config(req: ScrapyConfig, municipality: str):
         "regex": req.regex,
     })
     return f"updated {municipality}"
+
 @api_app.post("/Frontend/generate-report")
 async def generate_report_endpoint():
     """

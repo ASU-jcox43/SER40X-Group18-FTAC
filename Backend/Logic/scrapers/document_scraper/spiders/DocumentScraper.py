@@ -9,6 +9,7 @@ class DocumentScraperItem(Item):
 class DocumentScraperSpider(scrapy.Spider):
     name = "DocumentScraper"
     allowed_domains: list[str] = []
+    municipality_name: str
     start_urls: list[str] = None
     doc_count: int = 0
     layers: int
@@ -19,6 +20,9 @@ class DocumentScraperSpider(scrapy.Spider):
         super().__init__(**kwargs)
         self.start_urls = [start_url]
         self.allowed_domains = [re.findall(r"(?<=\/\/)[\w.]*?(?=\/\W?)", start_url)[0]]
+        self.municipality_name = re.findall(r"(?<=\/\/)[\w.]*?(?=\.\w*\/\W?)", start_url)[0]
+        self.municipality_name = self.municipality_name[4:] if self.municipality_name.startswith('www.') else self.municipality_name
+        self.municipality_name = self.municipality_name[:-2] if self.municipality_name.endswith('.qc') else self.municipality_name
         self.layers = layers
         self.get_pdfs = get_pdfs
         self.rex = re.compile(rex) if rex else None
@@ -26,7 +30,7 @@ class DocumentScraperSpider(scrapy.Spider):
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         spider = super().from_crawler(crawler, *args, **kwargs)
-        spider.settings.set("FEEDS", {f'/scrapy_output/{spider.allowed_domains[0][:-3]}.csv': {'format': 'csv'}}, priority="spider")
+        spider.settings.set("FEEDS", {f'/scrapy_output/{spider.municipality_name}.csv': {'format': 'csv'}}, priority="spider")
         return spider
     
     def parse(self, response: Response):
