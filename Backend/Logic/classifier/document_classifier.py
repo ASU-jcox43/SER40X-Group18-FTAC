@@ -13,8 +13,6 @@ proper classification based on a set of keywords and how often they appear.
 
 import json
 import re
-from pathlib import Path
-from Backend.Logic.classifier.utils import extract_text
 from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
 
 # Our list of keywords that we can customize when classifying documents in a dictionary
@@ -67,7 +65,7 @@ def classify_text(text):
     return bestCategory, round(confidence, 2)
 
 
-def classify_files(folder_path):
+def classify_files():
     """
     Classify all files in a designated folder into the correct categories.
 
@@ -92,36 +90,26 @@ def classify_files(folder_path):
     """
 
     results = []
-    newResults = []
     docs = getAllExtractions()
     
     for doc in docs:
-        keywords = doc["keyword_contexts"]
-        print("keywords: " + keywords.values())
-        category, confidence = classify_text(keywords)
-        newResults.append({
-            "filename": doc["file"],
+        # flatten keyword_contexts -> text string
+        contexts = []
+        for terms in doc.get("keyword_contexts", {}).values():
+            for arr in terms.values():
+                contexts.extend(arr)
+
+        text = " ".join(contexts)
+
+        category, confidence = classify_text(text)
+
+        results.append({
+            "filename": doc.get("file", "unknown"),
             "category": category,
-            "confidence": round(confidence, 2)
+            "confidence": confidence
         })
     
     print("Finish for loop")
-    folder = Path(folder_path)
-
-    # Here we go through all the files, and run the extract_text function to get their text.
-    # We then run classify_text on that found text to get the category that best matched and
-    # its confidence score, otherwise it gives an error if the file couldn't be read.
-    # for file_path in folder.glob("*.*"):
-    #     try:
-    #         text = extract_text(file_path)
-    #         category, confidence = classify_text(text)
-    #         results.append({
-    #             "filename": file_path.name,
-    #             "category": category,
-    #             "confidence": round(confidence, 2)
-    #         })
-    #     except Exception as e:
-    #         print(f"Error reading {file_path.name}: {e}")
 
     filename = "classifications.json"
     with open(filename, "w") as config_file:
@@ -132,5 +120,4 @@ def classify_files(folder_path):
 
 
 if __name__ == "__main__":
-    # TODO: replace with MongoDB code
-    classify_files("../analysis_ready")
+    classify_files()
