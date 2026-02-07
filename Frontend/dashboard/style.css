@@ -113,7 +113,7 @@ header.floating {
 
 #resultsPanel {
   flex: 5;
-  min-width: 300px;
+  min-width: 440px;
   padding: 1.5rem;
   overflow-y: auto;
   box-shadow: 1px 2px 12px rgba(0,0,0,0.08); /* slight shadow */
@@ -164,6 +164,9 @@ header.floating {
   transition: flex 0.35s ease, min-width 0.35s ease;
 }
 
+.hidden {
+  display: none;
+}
 
 /* Header inside details panel */
 #resultsPanel .panel-header,
@@ -197,7 +200,7 @@ header.floating {
   padding: 1.5rem 2rem;
   overflow-y: auto;
 
-  max-height: 1000px;
+  max-height: calc(100vh - 150px);
   transition: max-height 0.45s ease, opacity 0.25s ease;
 }
 
@@ -222,13 +225,14 @@ header.floating {
 
 
 .detail-section {
-  margin-bottom: 1.25rem;
+  border-bottom: 1px solid #ddd;
 }
 
 .collapse-toggle {
   width: 100%;
   background: none;
   border: none;
+  text-align: left;
   font-size: 0.95rem;
   font-weight: 600;
   padding: 0.5rem 0;
@@ -244,9 +248,7 @@ header.floating {
 
 .collapse-content {
   display: none;
-  padding-top: 0.5rem;
-  font-size: 0.9rem;
-  color: #444;
+  padding: 8px 0;
 }
 
 .detail-section.open .collapse-content {
@@ -254,7 +256,8 @@ header.floating {
 }
 
 .arrow {
-  transition: transform 0.25s ease;
+  display: inline-block;
+  transition: transform 0.2s ease;
 }
 
 .detail-section.open .arrow {
@@ -313,6 +316,12 @@ header.floating {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95rem; /* space between rows */
+}
+
+.table-scroll {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 #jurisdictionTable tbody tr {
@@ -375,6 +384,8 @@ header.floating {
 
 .collapse-content {
   display: none;
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
   padding: 0.5rem 0;
   font-size: 0.9rem;
   color: #444;
@@ -386,6 +397,8 @@ header.floating {
 
 .detail-section.open .collapse-content {
   display: block;
+  max-height: 500px;
+  padding-bottom: 10px;
 }
 
 .detail-section.open .arrow {

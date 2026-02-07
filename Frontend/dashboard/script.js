@@ -24,12 +24,14 @@ function showPanel(panelId) {
 
 // Toggle right panel
 function toggleDetailsPanel() {
-  document.getElementById('detailsPanel').classList.toggle('collapsed');
+  const panel = document.getElementById("detailsPanel").classList.toggle("hidden");
 }
 
 // Toggle individual sections
 function toggleSection(button) {
-  button.closest('.detail-section').classList.toggle('open');
+  const section = button.parentElement;
+  section.classList.toggle('open');
+  //button.closest('.detail-section').classList.toggle('open');
 }
 
 // Header links
@@ -136,6 +138,12 @@ function applyFilters() {
 
 // Show details
 function showDetails(m) {
+  const panel = document.getElementById("detailsPanel");
+  const title = document.querySelector("detailsTitle");
+
+  panel.classList.remove("hidden");
+  title.textContent = municipalityName;
+
   const summary = document.querySelector(".detail-section.open .collapse-content p");
   if (!summary) return;
 

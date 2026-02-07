@@ -90,21 +90,23 @@
                 </select>
             </div>
 
-            <table id="jurisdictionTable">
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th>Municipality</th>
-                        <th>Score</th>
-                        <th>Business Type</th>
-                    </tr>
-                </thead>
-                <tbody id="jurisdictionBody"></tbody>
-            </table>
+            <div class="table-scroll">
+                <table id="jurisdictionTable">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Municipality</th>
+                            <th>Score</th>
+                            <th>Business Type</th>
+                        </tr>
+                    </thead>
+                    <tbody id="jurisdictionBody"></tbody>
+                </table>
+            </div>
         </main>
 
         <!-- Right Details Panel -->
-        <aside id="detailsPanel">
+        <aside id="detailsPanel" class="hidden">
             <div class="panel-header">
                 <span>DETAILS</span>
                 <button class="panel-toggle" onclick="toggleDetailsPanel()">
