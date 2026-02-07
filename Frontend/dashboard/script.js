@@ -24,7 +24,7 @@ function showPanel(panelId) {
 
 // Toggle right panel
 function toggleDetailsPanel() {
-  const panel = document.getElementById("detailsPanel").classList.toggle("hidden");
+  document.getElementById("detailsPanel").classList.toggle("hidden");
 }
 
 // Toggle individual sections
@@ -139,11 +139,14 @@ function applyFilters() {
 // Show details
 function showDetails(m) {
   const panel = document.getElementById("detailsPanel");
-  const title = document.querySelector("detailsTitle");
-
+  // show panel
   panel.classList.remove("hidden");
-  title.textContent = municipalityName;
 
+  // show municipality name in details
+  document.getElementById("municipalityName").textContent = m.city ?? 'Unknown';
+  document.getElementById("municipalityProvince").textContent = getProvinceAbbreviation(m.province);
+  
+  provinceMap[m.province] || "Unknown";
   const summary = document.querySelector(".detail-section.open .collapse-content p");
   if (!summary) return;
 
@@ -151,13 +154,21 @@ function showDetails(m) {
   const indexLabel = m.friendlinessScore?.["Friendliness Index"] ?? 'N/A';
 
   summary.innerText = `
-${m.city ?? 'Unknown'}, ${m.province ?? 'Unknown'}
+    ${m.city ?? 'Unknown'}, ${m.province ?? 'Unknown'}
 
-Friendliness Score: ${score.toFixed(1)}
-Index: ${indexLabel}
+    Friendliness Score: ${score.toFixed(1)}
+    Index: ${indexLabel}
 
-Population: ${m.population?.toLocaleString() ?? 'N/A'}
-Median Income: $${m.income?.toLocaleString() ?? 'N/A'}
-Minimum Wage: ${m.min_wage ?? 'N/A'}
-  `.trim();
+    Population: ${m.population?.toLocaleString() ?? 'N/A'}
+    Median Income: $${m.income?.toLocaleString() ?? 'N/A'}
+    Minimum Wage: ${m.min_wage ?? 'N/A'}
+      `.trim();
+}
+
+function getProvinceAbbreviation(fullName) {
+  // create reverse mapping once
+  const reverseProvinceMap = Object.fromEntries(
+    Object.entries(provinceMap).map(([abbr, full]) => [full.toLowerCase(), abbr])
+  );
+  return reverseProvinceMap[fullName?.toLowerCase()] || "Unknown";
 }

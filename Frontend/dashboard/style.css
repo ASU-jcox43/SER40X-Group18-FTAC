@@ -164,8 +164,12 @@ header.floating {
   transition: flex 0.35s ease, min-width 0.35s ease;
 }
 
-.hidden {
+#detailsPanel.hidden {
   display: none;
+}
+
+#detailsPanel.hidden + * {
+  flex: 0;
 }
 
 /* Header inside details panel */
