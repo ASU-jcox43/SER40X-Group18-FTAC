@@ -78,7 +78,14 @@ function renderTable(data) {
   const tbody = document.getElementById("jurisdictionBody");
   tbody.innerHTML = "";
 
-  data.forEach((m, index) => {
+  // Sort municipalities by score descending (highest score first)
+  const sortedData = [...data].sort((a, b) => {
+    const scoreA = a.friendlinessScore?.Score ?? 0;
+    const scoreB = b.friendlinessScore?.Score ?? 0;
+    return scoreB - scoreA; // highest first
+  });
+
+  sortedData.forEach((m, index) => {
     const row = document.createElement("tr");
 
     const score = m.friendlinessScore?.Score ?? 0;
@@ -87,7 +94,7 @@ function renderTable(data) {
     row.dataset.business = m.fb_type?.trim() ?? '';
 
     row.innerHTML = `
-      <td>${index + 1}</td>
+      <td>${index + 1}</td>   <!-- rank is now based on sorted order -->
       <td>${m.city ?? ''}</td>
       <td class="score">${score.toFixed(1)}</td>
       <td>${capitalize(m.fb_type)}</td>
