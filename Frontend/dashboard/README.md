@@ -34,10 +34,10 @@ dashboard/
 
 Since this project uses **fetch()** to load JSON files, it must be run on a **local server** (cannot be opened directly in the browser as `file://`). You can use Python’s built-in HTTP server.
 
-1. Open a terminal and navigate to the `dashboard/` folder:
+1. Open a terminal and navigate to the `frontend/` folder:
 
 ```bash
-cd path/to/dashboard
+cd path/to/frontend
 
 2. Start the Python HTTP server:
 python3 -m http.server 8000
