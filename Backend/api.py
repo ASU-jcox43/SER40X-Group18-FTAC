@@ -60,9 +60,9 @@ async def ingest_docs(req:ScrapyConfig):
         ]
         subprocess.run(command, text=True)
         os.chdir('../../..')
-        return "crawl start"
+    run_document_scraper(req.start_url, layers=req.layers, get_pdfs=req.get_pdfs, rex=req.regex)
 
-    return run_document_scraper(req.start_url, layers=req.layers, get_pdfs=req.get_pdfs, rex=req.regex)
+    return "crawl start"
 
 @api_app.post("/extract")
 async def extract_docs(req:PostExtractDocs):
@@ -91,7 +91,7 @@ async def search_docs(
 
 @api_app.get("/scrapy_config")
 async def search_configs(municipality: str | None = None):
-    return get_config(municipality)
+    return get_config(10, municipality)
 
 @api_app.put("/scrapy_config")
 async def edit_config(req: ScrapyConfig, municipality: str):

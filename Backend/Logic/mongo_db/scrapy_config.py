@@ -17,5 +17,5 @@ def update_config(sconfig: dict):
     )
 
 # Method to return scrapy config based on city
-def get_config(municipality):
-    return SCRAPY_CONFIG_COLLECTION.find_one({ "_id": municipality } if municipality else {})
+def get_config(num_results:int, municipality: str | None = None) -> list[dict]:
+    return SCRAPY_CONFIG_COLLECTION.find({ "_id": municipality } if municipality else {}).limit(num_results).to_list()

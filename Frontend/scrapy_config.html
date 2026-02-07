@@ -4,17 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configure Web Scraping</title>
+    <style>
+        #container {
+            padding: 0.5em;
+            display: flex;
+        }
+
+        #container > div {
+            padding: 0.2em;
+            flex: 1;
+        }
+
+        ul#municipalitySearchResult {
+            list-style: none;
+        }
+    </style>
 </head>
 <body>
-    <h3>find scrapy configurations by municipality</h3>
-    <form id="searchForm">
-        <input type="text" name="searchInput" id="searchInput">
-        <button type="submit">search</button>
-    </form>
-    <div id="searchResult"></div>
+    <div id="container">
+        <div id="municipalitySearch">
+            <h3>find scrapy configurations by municipality</h3>
+            <form id="searchForm">
+                <input type="text" name="searchInput" id="searchInput">
+                <button type="submit">search</button>
+            </form>
+        </div>
+        <div id="selectedConfig"></div>
+        <div id="municipalityLinkList"></div>
+    </div>
     <script>
         const searchForm = document.getElementById('searchForm');
-        const searchResult = document.getElementById('searchResult');
+        const municipalitySearch = document.getElementById('municipalitySearch');
+        const selectedConfig = document.getElementById('selectedConfig');
+        const municipalityLinkList = document.getElementById('municipalityLinkList');
         document.addEventListener('DOMContentLoaded', () => {
             searchForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -22,45 +44,46 @@
                 const response = await fetch(`http://localhost:8000/scrapy_config?municipality=${input.searchInput.toLowerCase()}`);
                 const responseBody = await response.json();
 
-                while (searchResult.hasChildNodes()) {
-                    searchResult.removeChild(searchResult.firstChild);
-                }
-
-                if (responseBody == null) {
-                    searchResult.textContent = "Municipality not found"
-                }
-                else {
-                    const resultForm = scrapyConfigForm(
-                        responseBody["start_url"],
-                        responseBody["layers"],
-                        responseBody["get_pdfs"],
-                        responseBody["regex"]
-                    )
-
-                    resultForm.addEventListener("submit", async (e) => {
-                        e.preventDefault();
-                        const newConfigInput = Object.fromEntries(new FormData(resultForm));
-                        const response = await fetch(`http://localhost:8000/scrapy_config?municipality=${responseBody["_id"]}`, {
-                            method: 'PUT',
-                            headers: {'Content-type': 'application/json'},
-                            body: JSON.stringify({
-                                start_url: newConfigInput["startUrl"],
-                                layers: newConfigInput["numLayers"],
-                                get_pdfs: ('getPdfs' in newConfigInput) ? true : false,
-                                regex: newConfigInput["regexFilter"]
-                            })
-                        });
-                        confirmation = document.createElement("p1");
-                        confirmation.textContent = "Scrapy config has been changed"
-                        searchResult.appendChild(confirmation)
-                    })
-
-                    searchResult.appendChild(resultForm)
-                }
+                const searchResult = document.getElementById('municipalitySearchResult');
+                if (searchResult != null)
+                    municipalitySearch.removeChild(searchResult);
+                municipalitySearch.appendChild(municipalitySearchResultList('municipalitySearchResult', responseBody));
             })
         })
 
-        function scrapyConfigForm (startUrl = "", layers = 1, getPdfs = true, regex = "", id = "scrapyConfigForm") {
+        function municipalitySearchResultList(resultListId, searchResults) {
+            const municipalitySearchResultList = document.createElement("ul");
+            municipalitySearchResultList.id = resultListId;
+            for (let result of searchResults) {
+                var listItem = document.createElement("li");
+                listItem.textContent = result["_id"];
+                listItem.id = result["_id"];
+                listItem.addEventListener("click", (e) => {
+                    e.preventDefault();
+
+                    while (selectedConfig.hasChildNodes())
+                        selectedConfig.removeChild(selectedConfig.firstChild);
+
+                    selectedConfig.appendChild(scrapyConfigForm(
+                        result["start_url"],
+                        result["layers"],
+                        result["get_pdfs"],
+                        result["regex"],
+                        "scrapyConfigForm"
+                    ));
+
+                    while (municipalityLinkList.hasChildNodes())
+                        municipalityLinkList.removeChild(municipalityLinkList.firstChild);
+
+                    //TODO request links and fill link list
+                });
+                municipalitySearchResultList.appendChild(listItem);
+            }
+
+            return municipalitySearchResultList;
+        }
+
+        function scrapyConfigForm(startUrl = "", layers = 1, getPdfs = true, regex = "", id = "scrapyConfigForm") {
             const resultForm = document.createElement("form");
             resultForm.id = id;
             resultForm.noValidate = true;
@@ -120,6 +143,24 @@
             submitConfigButton.textContent = "change config"
             resultForm.appendChild(submitConfigButton);
             resultForm.appendChild(document.createElement("br"));
+
+            resultForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const newConfigInput = Object.fromEntries(new FormData(resultForm));
+                const response = await fetch(`http://localhost:8000/scrapy_config?municipality=${responseBody["_id"]}`, {
+                    method: 'PUT',
+                    headers: {'Content-type': 'application/json'},
+                    body: JSON.stringify({
+                        start_url: newConfigInput["startUrl"],
+                        layers: newConfigInput["numLayers"],
+                        get_pdfs: ('getPdfs' in newConfigInput) ? true : false,
+                        regex: newConfigInput["regexFilter"]
+                    })
+                });
+                confirmation = document.createElement("p1");
+                confirmation.textContent = "Scrapy config has been changed"
+                selectedConfig.appendChild(confirmation)
+            });
 
             return resultForm;
         }
