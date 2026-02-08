@@ -181,33 +181,72 @@ function applyFilters() {
 }
 
 // Show details
+// Show details
 function showDetails(m) {
   const panel = document.getElementById("detailsPanel");
-  // show panel
   panel.classList.remove("hidden");
 
-  // show municipality name in details
-  document.getElementById("municipalityName").textContent = m.city ?? 'Unknown';
-  document.getElementById("municipalityProvince").textContent = getProvinceAbbreviation(m.province);
-  
-  provinceMap[m.province] || "Unknown";
-  const summary = document.querySelector(".detail-section.open .collapse-content p");
-  if (!summary) return;
+  // Header info
+  document.getElementById("municipalityName").textContent =
+    m.city ?? "Unknown";
 
-  const score = m.friendlinessScore?.Score ?? 0;
-  const indexLabel = m.friendlinessScore?.["Friendliness Index"] ?? 'N/A';
+  document.getElementById("municipalityProvince").textContent =
+    getProvinceAbbreviation(m.province);
 
-  summary.innerText = `
-    ${m.city ?? 'Unknown'}, ${m.province ?? 'Unknown'}
+  /* SUMMARY */
+  const summaryEl = document.querySelector(
+    "#detailsPanel .detail-section:nth-of-type(2) .collapse-content p"
+  );
 
-    Friendliness Score: ${score.toFixed(1)}
-    Index: ${indexLabel}
+  if (summaryEl) {
+    const score = m.friendlinessScore?.Score ?? 0;
+    const indexLabel = m.friendlinessScore?.["Friendliness Index"] ?? "N/A";
 
-    Population: ${m.population?.toLocaleString() ?? 'N/A'}
-    Median Income: $${m.income?.toLocaleString() ?? 'N/A'}
-    Minimum Wage: ${m.min_wage ?? 'N/A'}
-      `.trim();
+    summaryEl.innerText = `
+Friendliness Score: ${score.toFixed(1)}
+Index: ${indexLabel}
+
+Population: ${m.population?.toLocaleString() ?? "N/A"}
+Median Income: $${m.income?.toLocaleString() ?? "N/A"}
+Minimum Wage: ${m.min_wage ?? "N/A"}
+    `.trim();
+  }
+
+  /* KEY REQUIREMENTS */
+  const reqList = document.getElementById("requirementsList");
+  if (reqList) {
+    reqList.innerHTML = "";
+
+    if (m.contacts && m.contacts.length > 0) {
+      m.contacts.forEach(contact => {
+        const li = document.createElement("li");
+        li.textContent = contact.Department;
+        reqList.appendChild(li);
+      });
+    } else {
+      reqList.innerHTML = "<li>No requirements available</li>";
+    }
+  }
+
+  /* SCORE BREAKDOWN */
+  const scoreList = document.getElementById("scoreBreakdownList");
+  if (scoreList) {
+    scoreList.innerHTML = "";
+
+    const breakdown = m.friendlinessScoreBreakdown || {};
+
+    Object.entries(breakdown).forEach(([section, data]) => {
+      const li = document.createElement("li");
+
+      li.innerHTML =
+        `<strong>${section}</strong>: ${data.Percentage} — ${data["Friendliness Index"]}`;
+
+      scoreList.appendChild(li);
+    });
+  }
 }
+
+
 
 function getProvinceAbbreviation(fullName) {
   // create reverse mapping once

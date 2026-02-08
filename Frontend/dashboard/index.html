@@ -122,33 +122,29 @@
 
             <!-- Panel Content/Body -->
             <div class="panel-content">
-                <div class="panel-content">
-                    <div class="detail-section">
-                        <h3>
-                        <span id="municipalityName"></span>,
-                        <span id="municipalityProvince"></span>
-                        </h3>
-                    </div>
+                <div class="detail-section">
+                    <h3>
+                    <span id="municipalityName"></span>,
+                    <span id="municipalityProvince"></span>
+                    </h3>
+                </div>
 
                 <div class="detail-section">
                     <button class="collapse-toggle" onclick="toggleSection(this)">
-                        AI Summary <span class="arrow">▾</span>
+                        Summary <span class="arrow">▾</span>
                     </button>
                     <div class="collapse-content">
-                        <p>This municipality presents a moderate regulatory environment.</p>
+                        <p id="aiSummaryContent"></p>
                     </div>
                 </div>
+
 
                 <div class="detail-section">
                     <button class="collapse-toggle" onclick="toggleSection(this)">
                         Key Requirements <span class="arrow">▾</span>
                     </button>
-                    <div class="collapse-content">
-                        <ul>
-                            <li>Mobile food vendor license</li>
-                            <li>Annual health inspection</li>
-                            <li>Fire safety clearance</li>
-                        </ul>
+                     <div class="collapse-content">
+                        <ul id="requirementsList"></ul>
                     </div>
                 </div>
 
@@ -157,11 +153,7 @@
                         Score Breakdown <span class="arrow">▾</span>
                     </button>
                     <div class="collapse-content">
-                        <ul>
-                            <li>Permit Cost: 60</li>
-                            <li>Approval Time: 85</li>
-                            <li>Flexibility: 70</li>
-                        </ul>
+                        <ul id="scoreBreakdownList"></ul>
                     </div>
                 </div>
             </div>

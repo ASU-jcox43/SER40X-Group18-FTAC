@@ -93,7 +93,8 @@ header.floating {
 
 #filterPanel {
   flex: 2;
-  min-width: 150px;
+  min-width: 175px;
+  max-width: 175px;
   padding: 1.5rem;
   background-color: #fff;
   box-shadow: 1px 2px 12px rgba(0,0,0,0.08); /* slight shadow */
@@ -150,7 +151,7 @@ header.floating {
 /* Header within details panel */
 #detailsPanel {
   flex: 3;
-  min-width: 100px;
+  min-width: 200px;
   padding: 1.5rem;
   background-color: #fff;
   box-shadow: 1px 2px 12px rgba(0,0,0,0.08); /* slight shadow */
@@ -160,7 +161,6 @@ header.floating {
 
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* collapse animation */
   transition: flex 0.35s ease, min-width 0.35s ease;
 }
 
@@ -201,9 +201,8 @@ header.floating {
 
 /* Content container */
 #detailsPanel .panel-content {
-  padding: 1.5rem 2rem;
+  padding: 1.5rem 0.5rem; /* space around content */
   overflow-y: auto;
-
   max-height: calc(100vh - 150px);
   transition: max-height 0.45s ease, opacity 0.25s ease;
 }
