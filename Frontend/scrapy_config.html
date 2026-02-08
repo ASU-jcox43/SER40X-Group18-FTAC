@@ -51,20 +51,21 @@
             })
         })
 
-        function municipalitySearchResultList(resultListId, searchResults) {
+        function municipalitySearchResultList(id, searchResults) {
             const municipalitySearchResultList = document.createElement("ul");
-            municipalitySearchResultList.id = resultListId;
+            municipalitySearchResultList.id = id;
             for (let result of searchResults) {
                 var listItem = document.createElement("li");
                 listItem.textContent = result["_id"];
                 listItem.id = result["_id"];
-                listItem.addEventListener("click", (e) => {
+                listItem.addEventListener("click", async (e) => {
                     e.preventDefault();
 
                     while (selectedConfig.hasChildNodes())
                         selectedConfig.removeChild(selectedConfig.firstChild);
 
                     selectedConfig.appendChild(scrapyConfigForm(
+                        result["_id"],
                         result["start_url"],
                         result["layers"],
                         result["get_pdfs"],
@@ -75,7 +76,10 @@
                     while (municipalityLinkList.hasChildNodes())
                         municipalityLinkList.removeChild(municipalityLinkList.firstChild);
 
-                    //TODO request links and fill link list
+                    const response = await fetch(`http://localhost:8000/scrapy_config/output?municipality=${result["_id"]}`);
+                    const responseBody = await response.json();
+
+                    municipalityLinkList.appendChild(scrapyOutputList(responseBody, result["_id"]));
                 });
                 municipalitySearchResultList.appendChild(listItem);
             }
@@ -83,7 +87,46 @@
             return municipalitySearchResultList;
         }
 
-        function scrapyConfigForm(startUrl = "", layers = 1, getPdfs = true, regex = "", id = "scrapyConfigForm") {
+        function scrapyOutputList(list, municipality, id = "scrapyOutputList") {
+            if (list == null || list.length == 0) {
+                const scrapyOutputList = document.createElement("p");
+                scrapyOutputList.textContent = "no links found";
+                scrapyOutputList.id = id;
+                return scrapyOutputList;
+            }
+
+            const scrapyOutputList = document.createElement("ul");
+            scrapyOutputList.id = id;
+            for (let item of list) {
+                const listItem = document.createElement("li");
+                const listItemAnchor = document.createElement("a");
+                listItemAnchor.textContent = item;
+                listItemAnchor.href = item;
+                listItem.classList.add(id);
+                listItem.appendChild(listItemAnchor);
+
+                const deleteButton = document.createElement("button");
+                deleteButton.textContent = "remove";
+                deleteButton.addEventListener("click", async (e) => {
+                    const response = await fetch(`http://localhost:8000/scrapy_config/output?municipality=${municipality}&link=${item}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-type': 'application/json'
+                        }
+                    });
+
+                    if (await response.ok)
+                        deleteButton.parentElement.remove();
+                });
+
+                listItem.appendChild(deleteButton);
+                scrapyOutputList.appendChild(listItem);
+            }
+
+            return scrapyOutputList;
+        }
+
+        function scrapyConfigForm(municipality, startUrl = "", layers = 1, getPdfs = true, regex = "", id = "scrapyConfigForm") {
             const resultForm = document.createElement("form");
             resultForm.id = id;
             resultForm.noValidate = true;
@@ -147,7 +190,7 @@
             resultForm.addEventListener("submit", async (e) => {
                 e.preventDefault();
                 const newConfigInput = Object.fromEntries(new FormData(resultForm));
-                const response = await fetch(`http://localhost:8000/scrapy_config?municipality=${responseBody["_id"]}`, {
+                const response = await fetch(`http://localhost:8000/scrapy_config?municipality=${municipality}`, {
                     method: 'PUT',
                     headers: {'Content-type': 'application/json'},
                     body: JSON.stringify({
