@@ -34,36 +34,41 @@
 
             <div class="filter-item">
                 <label for="businessType">Business Type</label>
-                <select id="businessType">
-                    <option value="">All</option>
-                    <option value="Food Truck">Food Truck</option>
-                    <option value="Cottage Food">Cottage Food</option>
-                    <option value="Catering">Catering</option>
-                </select>
+                <div class="checkbox-scroll">
+                    <div class="checkbox-group" id="businessType">
+                        <label><input type="checkbox" value="ALL"> ALL</label>
+                        <label><input type="checkbox" value="Food Truck"> Food Truck</label>
+                        <label><input type="checkbox" value="Cottage Food"> Cottage Food</label>
+                        <label><input type="checkbox" value="Catering"> Catering</label>
+                    </div>
+                </div>
             </div>
             
-            <div class="filter-item">
-                <label for="province">Province</label>
-                <select id="province">
-                    <option value="">All</option>
-                    <option value="ON">ON</option>
-                    <option value="AB">AB</option>
-                    <option value="BC">BC</option>
-                    <option value="MB">MB</option>
-                    <option value="NB">NB</option>
-                    <option value="NL">NL</option>
-                    <option value="NS">NS</option>
-                    <option value="PE">PE</option>
-                    <option value="QC">QC</option>
-                    <option value="SK">SK</option>
-                    <option value="YT">YT</option>
-                    <option value="NT">NT</option>
-                    <option value="NU">NU</option>
-                </select>
+           <div class="filter-item">
+                <label>Province</label>
+                <div class="checkbox-scroll">
+                    <div class="checkbox-group" id="province">
+                        <label><input type="checkbox" value="ALL"> ALL</label>
+                        <label><input type="checkbox" value="ON"> ON</label>
+                        <label><input type="checkbox" value="AB"> AB</label>
+                        <label><input type="checkbox" value="BC"> BC</label>
+                        <label><input type="checkbox" value="MB"> MB</label>
+                        <label><input type="checkbox" value="NB"> NB</label>
+                        <label><input type="checkbox" value="NL"> NL</label>
+                        <label><input type="checkbox" value="NS"> NS</label>
+                        <label><input type="checkbox" value="PE"> PE</label>
+                        <label><input type="checkbox" value="QC"> QC</label>
+                        <label><input type="checkbox" value="SK"> SK</label>
+                        <label><input type="checkbox" value="YT"> YT</label>
+                        <label><input type="checkbox" value="NT"> NT</label>
+                        <label><input type="checkbox" value="NU"> NU</label>
+                    </div>
+                </div>
             </div>
 
+
             <div class="filter-item">
-                <label for="minScore">Minimum Score: <span id="minScoreValue">0</span></label>
+                <label for="minScore">Minimum Score: <span id="minScoreValue">50</span></label>
                 <input type="range" id="minScore" min="0" max="100" value="50" 
                     oninput="document.getElementById('minScoreValue')
                     .innerText = this.value">

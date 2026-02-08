@@ -272,13 +272,12 @@ header.floating {
 .filter-item {
   display: flex;
   flex-direction: column;  /* stack label on top of input */
-  margin-bottom: 1.5rem;  /* space between filters */
+  margin-bottom: 0rem;  /* space between filters */
 }
-
 
 .filter-item label {
   margin-top: 2rem;
-  margin-bottom: 0.5rem;   /* space between label and input */
+  margin-bottom: 0.25rem;   /* space between label and input */
   font-family: 'Inter', sans-serif;
   font-size: 0.95rem;
   font-weight: 600;
@@ -290,8 +289,40 @@ header.floating {
   border: 1px solid #e2e2e2;
   border-radius: 6px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 400;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0px; /* no extra gap */
+    max-height: 150px; /* optional scroll if too tall */
+    overflow-y: auto;
+    font-size: 14px;
+    border: 1px solid #ccc;  /* light border for box */
+    border-radius: 6px;      /* rounded corners */
+    background-color: #f9f9f9; /* subtle background */
+    cursor: pointer;         /* pointer on hover */
+    transition: all 0.2s ease;
+}
+
+.checkbox-group {
+  
+  display: flex;
+  flex-direction: column;
+  gap: 2px; /* very small vertical gap */
+  max-height: 150px; /* optional scroll if too tall */
+  overflow-y: auto;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  margin: 0;       /* remove default margin */
+  padding: 0;      /* remove padding */
+  line-height: 1;  /* minimal line height */
+  font-size: 14px; /* optional text size */
 }
 
 /* Jurisdiction Table interaction, Middle Section */
@@ -328,18 +359,21 @@ header.floating {
   min-height: 0;
 }
 
-#jurisdictionTable tbody tr {
+#jurisdictionTable tbody tr { /* entire row hover effect */
   background-color: #fff;
   cursor: pointer;
   transition: all 0.25s ease;
 }
 
-/* td positioning context */
-#jurisdictionTable th,
-#jurisdictionTable td {
+/* th/td positioning context */
+#jurisdictionTable th {
   position: relative;   
-  padding: 0rem 2rem 1.2rem 0; /* top, right, bottom, left */
-  text-align: middle;
+  padding: 0rem 0rem 1rem 0rem; /* top, right, bottom, left */
+  text-align: left;
+}
+
+#jurisdictionTable td {
+  padding: 0rem 1rem 0.5rem 5px; /* top, right, bottom, left */
 }
 
 /* Underline */

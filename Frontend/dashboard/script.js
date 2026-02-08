@@ -107,10 +107,14 @@ function renderTable(data) {
 
 // Apply filters + sorting
 function applyFilters() {
-  const provinceAbbrev = document.getElementById("province").value; // e.g., "ON"
   const minScore = parseFloat(document.getElementById("minScore").value || 0);
-  const businessType = (document.getElementById("businessType").value || '').trim().toLowerCase();
   const sortOrder = document.getElementById("sortOrder").value;
+  // Get selected provinces
+  const provinceAbbrev = Array.from(document.querySelectorAll("#province input:checked"))
+                              .map(cb => cb.value);
+  // Get selected business types
+  const businessType = Array.from(document.querySelectorAll("#businessType input:checked"))
+                            .map(cb => cb.value.toLowerCase());
 
   const tbody = document.getElementById("jurisdictionBody");
   let rows = Array.from(tbody.querySelectorAll("tr"));
@@ -120,9 +124,9 @@ function applyFilters() {
     const rowScore = parseFloat(row.dataset.score) || 0;
     const rowBusiness = (row.dataset.business || '').trim().toLowerCase();
 
-    const matchesProvince = !provinceAbbrev || rowProvince === provinceMap[provinceAbbrev];
     const matchesScore = rowScore >= minScore;
-    const matchesBusiness = !businessType || rowBusiness === businessType;
+    const matchesProvince = !provinceAbbrev.length || provinceAbbrev.includes(rowProvince);
+    const matchesBusiness = !businessType.length || businessType.includes(rowBusiness);
 
     row.style.display = matchesProvince && matchesScore && matchesBusiness ? "" : "none";
   });
