@@ -89,9 +89,12 @@ function renderTable(data) {
     const row = document.createElement("tr");
 
     const score = m.friendlinessScore?.Score ?? 0;
-    row.dataset.province = m.province?.trim() ?? '';
+
+    const provinceAbbrev = getProvinceAbbreviation(m.province); // returns ON, BC, etc.
+
+    row.dataset.province = provinceAbbrev;
     row.dataset.score = score;
-    row.dataset.business = m.fb_type?.trim() ?? '';
+    row.dataset.business = m.fb_type?.trim().toLowerCase() ?? '';
 
     row.innerHTML = `
       <td>${index + 1}</td>   <!-- rank is now based on sorted order -->
@@ -105,46 +108,76 @@ function renderTable(data) {
   });
 }
 
+
+// Handle "ALL" checkboxes
+document.addEventListener("DOMContentLoaded", () => {
+  // Province ALL checkbox
+  const provinceAll = document.querySelector('#province input[value="ALL"]');
+  provinceAll.addEventListener('change', () => {
+    const checked = provinceAll.checked;
+    document.querySelectorAll('#province input:not([value="ALL"])')
+            .forEach(cb => cb.checked = checked);
+  });
+
+  // Business Type ALL checkbox
+  const businessAll = document.querySelector('#businessType input[value="ALL"]');
+  businessAll.addEventListener('change', () => {
+    const checked = businessAll.checked;
+    document.querySelectorAll('#businessType input:not([value="ALL"])')
+            .forEach(cb => cb.checked = checked);
+  });
+});
+
 // Apply filters + sorting
 function applyFilters() {
   const minScore = parseFloat(document.getElementById("minScore").value || 0);
   const sortOrder = document.getElementById("sortOrder").value;
-  // Get selected provinces
-  const provinceAbbrev = Array.from(document.querySelectorAll("#province input:checked"))
-                              .map(cb => cb.value);
-  // Get selected business types
-  const businessType = Array.from(document.querySelectorAll("#businessType input:checked"))
-                            .map(cb => cb.value.toLowerCase());
+
+  // Selected provinces (ignore ALL)
+  const selectedProvinces = Array.from(
+    document.querySelectorAll("#province input:checked:not([value='ALL'])")
+  ).map(cb => cb.value);
+
+  // Selected business types (ignore ALL)
+  const selectedBusiness = Array.from(
+    document.querySelectorAll("#businessType input:checked:not([value='ALL'])")
+  ).map(cb => cb.value.toLowerCase());
 
   const tbody = document.getElementById("jurisdictionBody");
   let rows = Array.from(tbody.querySelectorAll("tr"));
 
+  // Filter rows
   rows.forEach(row => {
     const rowProvince = row.dataset.province || '';
-    const rowScore = parseFloat(row.dataset.score) || 0;
     const rowBusiness = (row.dataset.business || '').trim().toLowerCase();
+    const rowScore = parseFloat(row.dataset.score) || 0;
 
+    // If nothing is checked for a filter, treat it as "match all"
+    const matchesProvince = selectedProvinces.length === 0 || selectedProvinces.includes(rowProvince);
+    const matchesBusiness = selectedBusiness.length === 0 || selectedBusiness.includes(rowBusiness);
     const matchesScore = rowScore >= minScore;
-    const matchesProvince = !provinceAbbrev.length || provinceAbbrev.includes(rowProvince);
-    const matchesBusiness = !businessType.length || businessType.includes(rowBusiness);
 
-    row.style.display = matchesProvince && matchesScore && matchesBusiness ? "" : "none";
+    row.style.display = (matchesProvince && matchesBusiness && matchesScore) ? "" : "none";
   });
 
-  // Sort only visible rows
-  if (sortOrder) {
-    rows = rows.filter(r => r.style.display !== "none");
+  // Re-rank visible rows
+  let visibleRows = rows.filter(r => r.style.display !== "none");
 
-    rows.sort((a, b) => {
+  // Sort visible rows if sortOrder is selected
+  if (sortOrder) {
+    visibleRows.sort((a, b) => {
       const scoreA = parseFloat(a.dataset.score) || 0;
       const scoreB = parseFloat(b.dataset.score) || 0;
       if (sortOrder === "high-to-low") return scoreB - scoreA;
       if (sortOrder === "low-to-high") return scoreA - scoreB;
       return 0;
     });
-
-    rows.forEach(row => tbody.appendChild(row));
   }
+
+  visibleRows.forEach((row, index) => {
+    row.querySelector("td").textContent = index + 1; // update rank
+    tbody.appendChild(row);
+  });
 }
 
 // Show details
