@@ -5,45 +5,67 @@ import json
 from PyPDF2 import PdfReader
 from Backend.Logic.mongo_db.extraction_collection import upsert_extraction
 from Backend.Logic.extraction.extraction_util import cleanText, extractKeywords
+import spacy
+
+nlp = spacy.load("en_core_web_sm")
 
 # Define your keyword categories and terms
 # Category: Terms []
 KEYWORDS = {
-  "webpage": [".gov", ".ca", "municipality", "city of", "regional district"],
-  "checklist": ["checklist", "requirements list", "required documents"],
-  "guide to license": ["guide", "how to apply", "licensing process", "application process"],
-  "bylaws": ["bylaw", "regulation", "municipal code", "ordinance"],
-  "penalties": ["fine", "fee", "penalty", "violation", "infraction"],
-  "provincial business license": ["provincial business license", "provincial permit", "provincial approval", "provincial business name certificate"],
-  "provincial food business license": ["provincial food business license", "food establishment permit", "provincial food vendor license"],
-  "municipal business license": ["municipal business license", "local business permit", "city business license"],
-  "municipal food business license": ["municipal food business license", "mobile food vendor license", "street food vendor license"],
-  "retail license for CPG": ["consumer packaged good", "CPG", "retail goods", "branded retail products"],
-  "curbside vending": ["curbside vending", "street vending", "mobile vending", "sidewalk vending"],
-  "parking fees": ["parking fee", "metered parking", "vending zone", "designated vending area"],
-  "noise bylaws": ["noise", "noise bylaw", "sound regulation", "amplified sound"],
-  "traffic bylaws": ["traffic bylaw", "traffic regulation", "vehicle restriction", "road use", "traffic act"],
-  "operation hours": ["operating hours", "business hours", "hours of operation", "time limit", "maximum duration", "hours at any one time"],
-  "branded consumer goods": ["branding", "branded products", "product labeling", "consumer goods"],
-  "private property operation": ["private property", "private lot", "owner permission", "property consent"],
-  "proximity regulations": ["proximity regulation", "distance restriction", "buffer zone", "proximity limit"],
-  "min distance to restaurant": ["distance to restaurant", "separation from restaurant", "nearby restaurant restriction", "from an open and operating restaurant"],
-  "min distance to food truck": ["distance to other food trucks", "food truck spacing", "vendor proximity"],
-  "non-food service proximity restrictions": ["proximity restriction", "non-food vendor proximity", "distance from other vendors"],
-  "min distance proximity from other business": ["proximity to other business", "distance between vendors"],
-  "num food trucks allowed in geographic area": ["number of food trucks allowed", "maximum food trucks per area", "vendor density limit", "food trucks per block"],
-  "parking locations": ["designated parking", "allowed parking", "approved vending location", "vending area", "public road vending"],
-  "additional private restrictions": ["private restrictions", "additional property rules", "landowner conditions"],
-  "name of local authority": ["local authority", "licensing department", "municipal licensing office", "city clerk", "regulatory agency"],
-  "direct link to authority": ["reach out", "contact", "reach", "office", "call", "email", "phone"],
-  "insurance requirements": ["insurance", "liability coverage", "certificate of insurance", "proof of insurance"],
-  "physical requirements for trucks": ["vehicle requirements", "truck must have", "equipment standards", "vehicle condition", "inspection requirements", "plate number", "license number", "business name", "client's name"],
-  "exterior appearance guidelines": ["paint", "painted", "appearance", "vehicle signage", "branding on truck", "exterior look", "color", "color contrast", "colour", "colour contrast", "identification markings"]
+    "webpage": [".gov", ".ca", "municipality", "city of", "regional district"],
+    "checklist": ["checklist", "requirements list", "required documents"],
+    "guide to license": ["guide", "how to apply", "licensing process", "application process"],
+    "bylaws": ["bylaw", "regulation", "municipal code", "ordinance"],
+    "penalties": ["fine", "fee", "penalty", "violation", "infraction"],
+    "provincial business license": ["provincial business license", "provincial permit", "provincial approval",
+                                    "provincial business name certificate"],
+    "provincial food business license": ["provincial food business license", "food establishment permit",
+                                         "provincial food vendor license"],
+    "municipal business license": ["municipal business license", "local business permit", "city business license"],
+    "municipal food business license": ["municipal food business license", "mobile food vendor license",
+                                        "street food vendor license"],
+    "retail license for CPG": ["consumer packaged good", "CPG", "retail goods", "branded retail products"],
+    "curbside vending": ["curbside vending", "street vending", "mobile vending", "sidewalk vending"],
+    "parking fees": ["parking fee", "metered parking", "vending zone", "designated vending area"],
+    "noise bylaws": ["noise", "noise bylaw", "sound regulation", "amplified sound"],
+    "traffic bylaws": ["traffic bylaw", "traffic regulation", "vehicle restriction", "road use", "traffic act"],
+    "operation hours": ["operating hours", "business hours", "hours of operation", "time limit", "maximum duration",
+                        "hours at any one time"],
+    "branded consumer goods": ["branding", "branded products", "product labeling", "consumer goods"],
+    "private property operation": ["private property", "private lot", "owner permission", "property consent"],
+    "proximity regulations": ["proximity regulation", "distance restriction", "buffer zone", "proximity limit"],
+    "min distance to restaurant": ["distance to restaurant", "separation from restaurant",
+                                   "nearby restaurant restriction", "from an open and operating restaurant"],
+    "min distance to food truck": ["distance to other food trucks", "food truck spacing", "vendor proximity"],
+    "non-food service proximity restrictions": ["proximity restriction", "non-food vendor proximity",
+                                                "distance from other vendors"],
+    "min distance proximity from other business": ["proximity to other business", "distance between vendors"],
+    "num food trucks allowed in geographic area": ["number of food trucks allowed", "maximum food trucks per area",
+                                                   "vendor density limit", "food trucks per block"],
+    "parking locations": ["designated parking", "allowed parking", "approved vending location", "vending area",
+                          "public road vending"],
+    "additional private restrictions": ["private restrictions", "additional property rules", "landowner conditions"],
+    "name of local authority": ["local authority", "licensing department", "municipal licensing office", "city clerk",
+                                "regulatory agency"],
+    "direct link to authority": ["reach out", "contact", "reach", "office", "call", "email", "phone"],
+    "insurance requirements": ["insurance", "liability coverage", "certificate of insurance", "proof of insurance"],
+    "physical requirements for trucks": ["vehicle requirements", "truck must have", "equipment standards",
+                                         "vehicle condition", "inspection requirements", "plate number",
+                                         "license number", "business name", "client's name"],
+    "exterior appearance guidelines": ["paint", "painted", "appearance", "vehicle signage", "branding on truck",
+                                       "exterior look", "color", "color contrast", "colour", "colour contrast",
+                                       "identification markings"]
 }
 
-FILEPATH = abspath(join(dirname( __file__ ),"..", "..", "test documents"))
+FILEPATH = abspath(join(dirname(__file__), "..", "..", "test documents"))
 # TODO: replace with MongoDB code
-SAVEPATH = abspath(join(dirname( __file__ ),"..", "..", "analysis_ready"))
+SAVEPATH = abspath(join(dirname(__file__), "..", "..", "analysis_ready"))
+
+
+def split_sentences(text):
+    doc = nlp(text)
+    return [sent.text.strip() for sent in doc.sents if sent.text.strip()]
+
 
 def extractTXT(filename):
     txtPath = join(FILEPATH, filename)
@@ -58,10 +80,17 @@ def extractTXT(filename):
         return
 
     txtCleaned = cleanText(txtRaw)
+    sentences = split_sentences(txtCleaned)
     txtResults = {}
 
     for category, terms in KEYWORDS.items():
-        txtResults[category] = extractKeywords(txtCleaned, terms)
+        matches = []
+        for sentence in sentences:
+            hits = extractKeywords(sentence, terms)
+            if hits:
+                matches.append({"sentence": sentence, "hits": hits})
+        if matches:
+            txtResults[category] = matches
 
     txtJSON = {
         "file": filename,
@@ -73,7 +102,7 @@ def extractTXT(filename):
     # makedirs(SAVEPATH, exist_ok=True)
     # saveFile = join(SAVEPATH, filename.replace(".txt", ".json"))
     # with open(saveFile, "w", encoding="utf-8") as saveFile:
-        # json.dump(txtJSON, saveFile, indent=2)
+    # json.dump(txtJSON, saveFile, indent=2)
 
     print("Extracted txt file")
 
@@ -96,10 +125,17 @@ def extractPDF(filename):
 
     # Clean and analyze
     pdfCleaned = cleanText(pdfRaw)
+    sentences = split_sentences(pdfCleaned)
     pdfResults = {}
 
     for category, terms in KEYWORDS.items():
-        pdfResults[category] = extractKeywords(pdfCleaned, terms)
+        matches = []
+        for sentence in sentences:
+            hits = extractKeywords(sentence, terms)
+            if hits:
+                matches.append({"sentence": sentence, "hits": hits})
+        if matches:
+            pdfResults[category] = matches
 
     pdfJSON = {
         "file": filename,
@@ -111,7 +147,7 @@ def extractPDF(filename):
     # makedirs(SAVEPATH, exist_ok=True)
     # saveFile = join(SAVEPATH, filename.replace(".pdf", ".json"))
     # with open(saveFile, "w", encoding="utf-8") as saveFile:
-        # json.dump(pdfJSON, saveFile, indent=2)
+    # json.dump(pdfJSON, saveFile, indent=2)
 
     print("Extracted pdf file")
 
@@ -124,6 +160,7 @@ def extract():
             extractTXT(file_name)
         elif file_name.lower().endswith(".pdf"):
             extractPDF(file_name)
+
 
 if __name__ == "__main__":
     extract()
