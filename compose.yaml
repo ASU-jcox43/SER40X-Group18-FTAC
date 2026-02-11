@@ -9,18 +9,23 @@ services:
       - scrapy-output:/scrapy_output
     depends_on:
       - mongodb
+    develop:
+      watch:
+        - action: sync
+          path: ./Backend
+          target: /app/Backend
   nginx:
     container_name: nginx
     image: nginx:latest
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./frontend:/usr/share/nginx/html
+      - ./Frontend:/usr/share/nginx/html
     ports:
       - 80:80
     develop:
       watch:
         - action: sync
-          path: /frontend
+          path: ./Frontend
           target: /usr/share/nginx/html
   mongodb:
     container_name: ftac-mongo
