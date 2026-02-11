@@ -20,7 +20,8 @@ from utils import extract_text
 KEYWORDS = {"Permit Documents": ["permit", "license", "authorization", "inspection"],
             "Financial Documents": ["invoice", "payment", "tax", "taxes"],
             "Legal Documents": ["agreement", "contract", "terms", "bylaw", "law"],
-            "Technical Documents": ["specification", "manual", "design", "requirements"]
+            "Technical Documents": ["specification", "manual", "design", "requirements"],
+            "Licensing Cateogry": ["food", "safety", "fire"]
             }
 
 
