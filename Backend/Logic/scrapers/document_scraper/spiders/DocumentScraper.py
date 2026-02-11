@@ -15,8 +15,9 @@ class DocumentScraperSpider(scrapy.Spider):
     layers: int
     get_pdfs: bool
     rex: str | re.Pattern[str] | None
+    next_page_selector: str | None
 
-    def __init__(self, start_url: str, layers: int, get_pdfs: bool, rex: str | None = None, municipality_name: str | None = None, **kwargs):
+    def __init__(self, start_url: str, layers: int, get_pdfs: bool, rex: str | None = None, next_page_selector: str | None = None, municipality_name: str | None = None, **kwargs):
         super().__init__(**kwargs)
         self.start_urls = [start_url]
         self.allowed_domains = [re.findall(r"(?<=\/\/)[\w.]*?(?=\/\W?)", start_url)[0]]
@@ -33,16 +34,19 @@ class DocumentScraperSpider(scrapy.Spider):
         self.layers = layers
         self.get_pdfs = get_pdfs
         self.rex = re.compile(rex) if rex else None
+        self.next_page_selector = next_page_selector
 
-    @classmethod
-    def from_crawler(cls, crawler, *args, **kwargs):
-        spider = super().from_crawler(crawler, *args, **kwargs)
-        spider.settings.set("FEEDS", {f'/scrapy_output/{spider.municipality_name}.csv': {'format': 'csv'}}, priority="spider")
-        return spider
+    #@classmethod
+    #def from_crawler(cls, crawler, *args, **kwargs):
+    #    spider = super().from_crawler(crawler, *args, **kwargs)
+    #    spider.settings.set("FEEDS", {f'/scrapy_output/{spider.municipality_name}.csv': {'format': 'csv'}}, priority="spider")
+    #    return spider
     
     def parse(self, response: Response):
-        if self.rex is not None:
+        if self.rex:
             self.rex = re.compile(self.rex)
+        if self.next_page_selector:
+            print(f"\nNEXT PAGE {response.css(self.next_page_selector)}\n")
         yield scrapy.Request(response.url, callback=self.parse_step, cb_kwargs=dict(layer=int(self.layers)))
 
     def parse_step(self, response: Response, layer: int):

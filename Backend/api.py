@@ -41,6 +41,7 @@ class ScrapyConfig(BaseModel):
     layers: int
     get_pdfs: bool | str
     regex: str | None = None
+    next_page_selector: str | None = None
 
 class PostExtractDocs(BaseModel):
     urls: list[str] # List of document urls
@@ -51,13 +52,14 @@ async def ingest_docs(req:ScrapyConfig | None = None, municipality: str | None =
         raise HTTPException(status_code=400, detail="please provide exactly one of either config or municipality name.")
     
     @celery_app.task
-    def run_document_scraper(start_url: str, layers: int=1, get_pdfs: bool=True, rex: str|None=None, municipality_name: str | None = None):
+    def run_document_scraper(start_url: str, layers: int=1, get_pdfs: bool=True, rex: str|None=None, next_page_selector: str | None = None, municipality_name: str | None = None):
         command = [
             'scrapy', 'crawl',
             '-a', f'start_url={start_url}',
             '-a', f'layers={layers}',
             '-a', f'get_pdfs={get_pdfs}',
-            '-a', f'rex={rex}'
+            '-a', f'rex={rex}',
+            '-a', f'next_page_selector={next_page_selector}'
         ]
 
         if municipality_name:
@@ -69,7 +71,7 @@ async def ingest_docs(req:ScrapyConfig | None = None, municipality: str | None =
         os.chdir('../../..')
 
     if req:
-        run_document_scraper(req.start_url, layers=req.layers, get_pdfs=req.get_pdfs, rex=req.regex)
+        run_document_scraper(req.start_url, layers=req.layers, get_pdfs=req.get_pdfs, rex=req.regex, next_page_selector=req.next_page_selector)
         return f"crawl started at {req.start_url}"
     
     config:list = get_config(municipality)[0]
