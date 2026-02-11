@@ -11,3 +11,5 @@
 **/friendliness_summary.json
 **/generated_reports
 **/.venv
+**/classifications.json
+**/test_documents
