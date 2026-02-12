@@ -1,28 +1,26 @@
-from comparison_util import getMunicipalityProfiles, readMunicipalityJson, processSelections
+from .comparison_util import getMunicipalityProfiles, processSelections
 
+# Display list of profiles
 def displayProfiles():
-    municipalityPaths = getMunicipalityProfiles()
-    municipalityContent = readMunicipalityJson(municipalityPaths)
-    
-    for i, profileName in enumerate(municipalityContent.keys(), start=1):
-        formatedProfileName = profileName.capitalize().replace("_profile", "")
-        print(f"{i}. {formatedProfileName}")
+    profiles = getMunicipalityProfiles()
+
+    for i, profile in enumerate(profiles, start=1):
+        city = profile["Geographic"]["City"]
+        print(f"{i}. {city}")
         
+# Waits for user's selection of profile
 def getProfileSelections():
-    result = False
-    
-    while result == False:
+    while True:
         print("Choose two profiles to compare")
         
         selection1 = input("First Selection: ")
         selection2 = input("Second Selection: ")
         print()
         
-        result = processSelections(selection1, selection2)
-        
-        if result == False:
-            print("Invalid Selection")
-            print()
+        if processSelections(selection1, selection2):
+            break
+
+        print("Invalid Selection\n")
 
 if __name__ == "__main__":
     displayProfiles()

@@ -1,27 +1,17 @@
 import json
 
 from pathlib import Path
+from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
+from Backend.Logic.mongo_db.scoring_collection import getSummary
 
 # TODO: replace with MongoDB code
-ROOT = Path(__file__).resolve().parents[3]
-FILEPATH = ROOT / "Backend" / "Logic" / "analysis_ready"
-SCORE = ROOT / "Backend" / "Logic" / "scoring" / "friendliness_summary.json"
-OUTPUT = ROOT / "Backend" / "Logic" / "reports" / "generated_reports"
+OUTPUT = Path("Backend/Logic/reports/generated_reports")
 
-def generate_report(file_path, score_path, output_path):
-    # Open the extracted text and scoring files.
-    file_path = Path(file_path)
-    score_path = Path(score_path)
-    output_path = Path(output_path)
+def generate_report(data, scores, output_path):
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(file_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    with open(score_path, "r", encoding="utf-8") as f:
-        scores = json.load(f)
 
     # Get the file name to search for in the score summary.
-    filename = Path(data.get("file", "unnamed file")).with_suffix(".json").name
+    filename = Path(data.get("file", "unnamed file")).stem
 
     score = scores.get(filename, {}).get("foodtruck", "N/A")
 
@@ -78,6 +68,11 @@ def generate_report(file_path, score_path, output_path):
 
 if __name__ == "__main__":
     OUTPUT.mkdir(exist_ok=True)
-    for file_path in FILEPATH.iterdir():
-        output_path = OUTPUT / f"{file_path.stem}_Report.md"
-        generate_report(file_path, SCORE, output_path)
+    
+    docs = getAllExtractions()
+    scores = getSummary()
+    
+    for doc in docs:
+        filename = Path(doc.get("file", "unknown")).stem
+        output_path = OUTPUT / f"{filename}_Report.md"
+        generate_report(doc, scores, output_path)

@@ -1,9 +1,7 @@
-import os, sys
 from os.path import join, abspath, dirname, realpath
-from os import makedirs, listdir
-import json
+from os import listdir
 from PyPDF2 import PdfReader
-from Backend.Logic.mongo_db.extraction_collection import upsert_extraction
+from Backend.Logic.mongo_db.extraction_collection import upsertExtraction
 from Backend.Logic.extraction.extraction_util import cleanText, extractKeywords
 import spacy
 
@@ -56,16 +54,12 @@ KEYWORDS = {
                                        "exterior look", "color", "color contrast", "colour", "colour contrast",
                                        "identification markings"]
 }
-
-FILEPATH = abspath(join(dirname(__file__), "..", "..", "test documents"))
-# TODO: replace with MongoDB code
-SAVEPATH = abspath(join(dirname(__file__), "..", "..", "analysis_ready"))
-
-
 def split_sentences(text):
     doc = nlp(text)
     return [sent.text.strip() for sent in doc.sents if sent.text.strip()]
 
+#TODO: Change to where files need to be stored
+FILEPATH = abspath(join(dirname( __file__ ),"..", "..", "test_documents"))
 
 def extractTXT(filename):
     txtPath = join(FILEPATH, filename)
@@ -97,13 +91,7 @@ def extractTXT(filename):
         "keyword_contexts": txtResults,
     }
 
-    upsert_extraction(txtJSON)
-
-    # makedirs(SAVEPATH, exist_ok=True)
-    # saveFile = join(SAVEPATH, filename.replace(".txt", ".json"))
-    # with open(saveFile, "w", encoding="utf-8") as saveFile:
-    # json.dump(txtJSON, saveFile, indent=2)
-
+    upsertExtraction(txtJSON)
     print("Extracted txt file")
 
 
@@ -142,13 +130,7 @@ def extractPDF(filename):
         "keyword_contexts": pdfResults,
     }
 
-    upsert_extraction(pdfJSON)
-
-    # makedirs(SAVEPATH, exist_ok=True)
-    # saveFile = join(SAVEPATH, filename.replace(".pdf", ".json"))
-    # with open(saveFile, "w", encoding="utf-8") as saveFile:
-    # json.dump(pdfJSON, saveFile, indent=2)
-
+    upsertExtraction(pdfJSON)
     print("Extracted pdf file")
 
 

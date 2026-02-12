@@ -1,14 +1,16 @@
 from typing import Union
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from celery import Celery
+from celery.signals import task_success
 import os
 import subprocess
 from .Logic.scrapers.document_scraper.spiders.DocumentScraper import *
 from .Logic.OCRProcessor.ocr_processor import process_pdfs
 from .Logic.extraction.text_extraction import extract
 from .Logic.mongo_db.scrapy_config import update_config, get_config
+from .Logic.mongo_db.scrapy_output import get_links, remove_link, add_link
 api_app = FastAPI()
 
 from Backend.Logic.reports.report_generator import generate_report
@@ -44,24 +46,40 @@ class PostExtractDocs(BaseModel):
     urls: list[str] # List of document urls
 
 @api_app.post("/ingest-docs")
-async def ingest_docs(req:ScrapyConfig):
+async def ingest_docs(req:ScrapyConfig | None = None, municipality: str | None = None):
+    if bool(req) == bool(municipality):
+        raise HTTPException(status_code=400, detail="please provide exactly one of either config or municipality name.")
+    
     @celery_app.task
-    def run_document_scraper(start_url: str, layers: int=1, get_pdfs: bool=True, rex: str|None=None):
-        name_regex = r"(?<=.)\w*(?=\.ca\W)"
-        output_path = f'{re.findall(name_regex, start_url)[0]}.csv'
-        os.chdir('Backend/Logic/scrapers')
+    def run_document_scraper(start_url: str, layers: int=1, get_pdfs: bool=True, rex: str|None=None, municipality_name: str | None = None):
         command = [
             'scrapy', 'crawl',
             '-a', f'start_url={start_url}',
             '-a', f'layers={layers}',
             '-a', f'get_pdfs={get_pdfs}',
-            '-a', f'rex={rex}',
-            'DocumentScraper'
+            '-a', f'rex={rex}'
         ]
+
+        if municipality_name:
+            command.extend(['-a', f'municipality_name={municipality_name}'])
+        command.append('DocumentScraper')
+        
+        os.chdir('Backend/Logic/scrapers')
         subprocess.run(command, text=True)
         os.chdir('../../..')
-        return output_path
-    return run_document_scraper(req.start_url, layers=req.layers, get_pdfs=req.get_pdfs, rex=req.regex)
+
+    if req:
+        run_document_scraper(req.start_url, layers=req.layers, get_pdfs=req.get_pdfs, rex=req.regex)
+        return f"crawl started at {req.start_url}"
+    
+    config:list = get_config(municipality)[0]
+
+    if config == []:
+        raise HTTPException(status_code=404, detail="municipality not found")
+
+    run_document_scraper(start_url=config["start_url"], layers=config["layers"], get_pdfs=config["get_pdfs"], rex=config["regex"], municipality_name=municipality)
+
+    return "crawl start"
 
 @api_app.post("/extract")
 async def extract_docs(req:PostExtractDocs):
@@ -90,7 +108,7 @@ async def search_docs(
 
 @api_app.get("/scrapy_config")
 async def search_configs(municipality: str | None = None):
-    return get_config(municipality)
+    return get_config(municipality, num_results=10)
 
 @api_app.put("/scrapy_config")
 async def edit_config(req: ScrapyConfig, municipality: str):
@@ -102,6 +120,16 @@ async def edit_config(req: ScrapyConfig, municipality: str):
         "regex": req.regex,
     })
     return f"updated {municipality}"
+
+@api_app.get("/scrapy_config/output")
+async def get_scrapy_output(municipality: str):
+    return get_links(municipality)
+
+@api_app.delete("/scrapy_config/output")
+async def remove_scrapy_link(municipality: str, link: str):
+    remove_link(municipality,link)
+    return f"removed {link} from {municipality}"
+
 @api_app.post("/Frontend/generate-report")
 async def generate_report_endpoint():
     """
