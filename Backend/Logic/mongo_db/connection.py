@@ -1,4 +1,7 @@
+import os
 from pymongo import MongoClient
 
-CLIENT = MongoClient("mongodb://ftac-mongo:27017")
-DB = CLIENT.get_database("ftac")
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+
+CLIENT = MongoClient(MONGO_URI)
+DB = CLIENT.get_database("CapstoneDB")

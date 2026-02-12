@@ -9,7 +9,7 @@
 **/visualizeTest
 **/profiles
 **/friendliness_summary.json
+**/classifications.json
 **/generated_reports
 **/.venv
-**/classifications.json
 **/test_documents
