@@ -4,6 +4,7 @@ from PyPDF2 import PdfReader
 from Backend.Logic.mongo_db.extraction_collection import upsertExtraction
 from Backend.Logic.extraction.extraction_util import cleanText, extractKeywords
 import spacy
+import re
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -54,12 +55,31 @@ KEYWORDS = {
                                        "exterior look", "color", "color contrast", "colour", "colour contrast",
                                        "identification markings"]
 }
+
+
 def split_sentences(text):
     doc = nlp(text)
     return [sent.text.strip() for sent in doc.sents if sent.text.strip()]
 
-#TODO: Change to where files need to be stored
-FILEPATH = abspath(join(dirname( __file__ ),"..", "..", "test_documents"))
+
+# TODO: Change to where files need to be stored
+FILEPATH = abspath(join(dirname(__file__), "..", "..", "test_documents"))
+
+DISTANCE_RE = re.compile(
+    r'(\d+(?:\.\d+)?)\s*(?:linear|horizontal|vertical|approx(?:\.|imately)?|about)?\s*'
+    r'(m|meter|meters|metre|metres|km|kilometer|kilometers|kilometre|kilometres)\b',
+    re.IGNORECASE)
+
+# TODO: Add all other RE layers for the other categories
+
+def extract_distance(sentence):
+    matches = DISTANCE_RE.findall(sentence)
+    if not matches:
+        return None
+    values = []
+    for value, unit in matches:
+        values.append({"value": float(value), "unit": unit.lower()})
+    return values
 
 def extractTXT(filename):
     txtPath = join(FILEPATH, filename)
@@ -82,7 +102,17 @@ def extractTXT(filename):
         for sentence in sentences:
             hits = extractKeywords(sentence, terms)
             if hits:
-                matches.append({"sentence": sentence, "hits": hits})
+                re_data = {}
+                if category in ["min distance to restaurant", "min distance to food truck", "proximity regulations",
+                                "non-food service proximity restrictions",
+                                "min distance proximity from other business"]:
+                    distance = extract_distance(sentence)
+                    if distance:
+                        re_data["distance"] = distance
+                entry = {"sentence": sentence, "hits": hits}
+                if re_data:
+                    entry["regex"] = re_data
+                matches.append(entry)
         if matches:
             txtResults[category] = matches
 
@@ -121,7 +151,17 @@ def extractPDF(filename):
         for sentence in sentences:
             hits = extractKeywords(sentence, terms)
             if hits:
-                matches.append({"sentence": sentence, "hits": hits})
+                re_data = {}
+                if category in ["min distance to restaurant", "min distance to food truck", "proximity regulations",
+                                "non-food service proximity restrictions",
+                                "min distance proximity from other business"]:
+                    distance = extract_distance(sentence)
+                    if distance:
+                        re_data["distance"] = distance
+                entry = {"sentence": sentence, "hits": hits}
+                if re_data:
+                    entry["regex"] = re_data
+                matches.append(entry)
         if matches:
             pdfResults[category] = matches
 

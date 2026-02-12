@@ -1,5 +1,3 @@
-import json
-
 from pathlib import Path
 from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
 from Backend.Logic.mongo_db.scoring_collection import getSummary
