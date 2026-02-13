@@ -59,7 +59,7 @@ KEYWORDS = {
 
 def split_sentences(text):
     doc = nlp(text)
-    return [sent.text.strip() for sent in doc.sents if sent.text.strip()]
+    return [sent for sent in doc.sents if sent.text.strip()]
 
 
 # TODO: Change to where files need to be stored
@@ -69,6 +69,14 @@ DISTANCE_RE = re.compile(
     r'(\d+(?:\.\d+)?)\s*(?:linear|horizontal|vertical|approx(?:\.|imately)?|about)?\s*'
     r'(m|meter|meters|metre|metres|km|kilometer|kilometers|kilometre|kilometres)\b',
     re.IGNORECASE)
+
+DISTANCE_WORDS = {"within": "within",
+                  "no closer than": "minimum",
+                  "at least": "minimum",
+                  "no less than": "minimum",
+                  "from": "from",
+                  "of": "of"}
+
 
 # TODO: Add all other RE layers for the other categories
 
@@ -80,6 +88,49 @@ def extract_distance(sentence):
     for value, unit in matches:
         values.append({"value": float(value), "unit": unit.lower()})
     return values
+
+
+def distance_criteria(sentence):
+    distances = extract_distance(sentence.text)
+    if not distances:
+        return None
+    text = sentence.text.lower()
+
+    if "shall not" in text or "must not" in text:
+        meaning = "prohibited"
+    elif "shall" in text or "must" in text:
+        meaning = "required"
+    else:
+        meaning = "unknown"
+
+    relations = None
+    for key in ["within", "from", "of", "no closer than", "at least"]:
+        if key in text:
+            relations = key
+            break
+
+    subject = None
+    for token in sentence:
+        if token.dep_ in ("nsubj", "nsubjpass"):
+            subject = token.text
+            break
+
+    action = None
+    for token in sentence:
+        if token.pos_ == "VERB":
+            action = token.lemma_
+            break
+
+    return {
+        "criteria": "distance_restriction",
+        "distances": distances,
+        "relations": relations,
+        "subject": subject,
+        "action": action,
+        "meaning": meaning,
+        "source": sentence.text
+    }
+
 
 def extractTXT(filename):
     txtPath = join(FILEPATH, filename)
@@ -100,16 +151,16 @@ def extractTXT(filename):
     for category, terms in KEYWORDS.items():
         matches = []
         for sentence in sentences:
-            hits = extractKeywords(sentence, terms)
+            hits = extractKeywords(sentence.text, terms)
             if hits:
                 re_data = {}
                 if category in ["min distance to restaurant", "min distance to food truck", "proximity regulations",
                                 "non-food service proximity restrictions",
                                 "min distance proximity from other business"]:
-                    distance = extract_distance(sentence)
-                    if distance:
-                        re_data["distance"] = distance
-                entry = {"sentence": sentence, "hits": hits}
+                    distance_rule = distance_criteria(sentence)
+                    if distance_rule:
+                        re_data["distance_criteria"] = distance_rule
+                entry = {"sentence": sentence.text, "hits": hits}
                 if re_data:
                     entry["regex"] = re_data
                 matches.append(entry)
@@ -149,16 +200,16 @@ def extractPDF(filename):
     for category, terms in KEYWORDS.items():
         matches = []
         for sentence in sentences:
-            hits = extractKeywords(sentence, terms)
+            hits = extractKeywords(sentence.text, terms)
             if hits:
                 re_data = {}
                 if category in ["min distance to restaurant", "min distance to food truck", "proximity regulations",
                                 "non-food service proximity restrictions",
                                 "min distance proximity from other business"]:
-                    distance = extract_distance(sentence)
-                    if distance:
-                        re_data["distance"] = distance
-                entry = {"sentence": sentence, "hits": hits}
+                    distance_rule = distance_criteria(sentence)
+                    if distance_rule:
+                        re_data["distance_criteria"] = distance_rule
+                entry = {"sentence": sentence.text, "hits": hits}
                 if re_data:
                     entry["regex"] = re_data
                 matches.append(entry)
