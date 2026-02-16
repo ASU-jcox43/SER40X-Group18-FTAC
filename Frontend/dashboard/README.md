@@ -54,7 +54,7 @@ Works on modern browsers (Chrome, Firefox, Edge).
 
 
 TODOs
-[] Fix filters being applied 
-[] Ranks are not updating based on sorting 
-[] Add some color to the scores
-[] Ensure details panel shows proper information
+[] Add drag and drop files for upload
+[] update dependencies for uploading files
+[] Setup a progress bar 
+[] Update a list of uploaded files made 
