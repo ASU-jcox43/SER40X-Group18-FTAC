@@ -8,34 +8,42 @@
 </head>
 <body>
   <!-- Top Bar -->
-    <header>
-        <nav class="header-nav">
-            <img src="assets/ftacLogo.png" alt="FTAC Logo" class="nav-logo">
+  <header>
+    <nav class="header-nav">
+      <img src="assets/ftacLogo.png" alt="FTAC Logo" class="nav-logo">
 
-            <a href="#" onclick="showPanel('about')">About</a>
-            <a href="index.html" data-external="">Dashboard</a>
-            <a href="#" onclick="showPanel('municipalities')">Municipalities</a>
-            <a href="../generate_report.html" data-external>Reports</a>
-            <a href="#" onclick="showPanel('ai')">AI Analysis</a>
+      <a href="#" onclick="showPanel('about')">About</a>
+      <a href="index.html" data-external="">Dashboard</a>
+      <a href="#" onclick="showPanel('municipalities')">Municipalities</a>
+      <a href="../generate_report.html" data-external>Reports</a>
+      <a href="#" onclick="showPanel('ai')">AI Analysis</a>
 
-            <!-- Current Page: Do not navigate-->
-            <a href="#" onclick="showPanel('files')">Files</a>
-        </nav>
-    </header>
+      <!-- Current Page: Do not Navigate-->
+      <a href="#" onclick="showPanel('files')">Files</a>
+    </nav>
+  </header>
 
-    <h2>Upload a PDF File</h2>
-  <form action="/upload" method="POST" enctype="multipart/form-data">
-    <input 
-      type="file" 
-      name="pdfFile" 
-      accept="application/pdf"
-      required
+  <h2>Upload a PDF File</h2>
+
+    <form id="uploadForm" enctype="multipart/form-data">
+    <input
+        type="file"
+        id="pdfInput"
+        name="pdfFile"
+        accept="application/pdf"
+        required
     >
-    
-    <br><br>
-    
-    <button type="submit">Upload PDF</button>
-  </form>
+
+    <p id="fileName"></p>
+
+    <button type="submit" id="uploadBtn" disabled>
+        Upload PDF
+    </button>
+    </form>
+
+    <p id="status"></p>
+
+<script src="script.js"></script>
 
 </body>
 </html>
