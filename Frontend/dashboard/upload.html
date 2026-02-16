@@ -3,11 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <title>Upload PDF</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="images/ftacLogo.png" type="image/png">
 </head>
 <body>
+  <!-- Top Bar -->
+    <header>
+        <nav class="header-nav">
+            <img src="assets/ftacLogo.png" alt="FTAC Logo" class="nav-logo">
 
-  <h2>Upload a PDF File</h2>
+            <a href="#" onclick="showPanel('about')">About</a>
+            <a href="index.html" data-external="">Dashboard</a>
+            <a href="#" onclick="showPanel('municipalities')">Municipalities</a>
+            <a href="../generate_report.html" data-external>Reports</a>
+            <a href="#" onclick="showPanel('ai')">AI Analysis</a>
 
+            <!-- Current Page: Do not navigate-->
+            <a href="#" onclick="showPanel('files')">Files</a>
+        </nav>
+    </header>
+
+    <h2>Upload a PDF File</h2>
   <form action="/upload" method="POST" enctype="multipart/form-data">
     <input 
       type="file" 
