@@ -246,8 +246,6 @@ Minimum Wage: ${m.min_wage ?? "N/A"}
   }
 }
 
-
-
 function getProvinceAbbreviation(fullName) {
   // create reverse mapping once
   const reverseProvinceMap = Object.fromEntries(
@@ -255,3 +253,58 @@ function getProvinceAbbreviation(fullName) {
   );
   return reverseProvinceMap[fullName?.toLowerCase()] || "Unknown";
 }
+
+/* Upload PDF functionality */
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("uploadForm");
+  if (!form) return; // prevents running on non-upload pages
+
+  const input = document.getElementById("pdfInput");
+  const uploadBtn = document.getElementById("uploadBtn");
+  const status = document.getElementById("status");
+  const fileName = document.getElementById("fileName");
+
+  input.addEventListener("change", () => {
+    const file = input.files[0];
+
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      status.textContent = "Only PDF files are allowed.";
+      input.value = "";
+      uploadBtn.disabled = true;
+      fileName.textContent = "";
+      return;
+    }
+
+    fileName.textContent = "Selected: " + file.name;
+    status.textContent = "";
+    uploadBtn.disabled = false;
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    status.textContent = "Uploading...";
+
+    try {
+      const response = await fetch("/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      if (response.ok) {
+        status.textContent = "Upload successful!";
+        form.reset();
+        uploadBtn.disabled = true;
+        fileName.textContent = "";
+      } else {
+        status.textContent = "Upload failed.";
+      }
+    } catch {
+      status.textContent = "Server error.";
+    }
+  });
+});
+
