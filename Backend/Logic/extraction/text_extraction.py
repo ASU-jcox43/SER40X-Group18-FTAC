@@ -78,7 +78,7 @@ DISTANCE_WORDS = {"within": "within",
                   "of": "of"}
 
 
-# TODO: Add all other RE layers for the other categories
+# TODO: Add all other RE layers for the other categories and extractions.
 
 def extract_distance(sentence):
     matches = DISTANCE_RE.findall(sentence)
@@ -88,6 +88,45 @@ def extract_distance(sentence):
     for value, unit in matches:
         values.append({"value": float(value), "unit": unit.lower()})
     return values
+
+
+DISTANCE_WEIGHTS = {"shall": 0.2, "must": 0.2, "shall not": 0.3,
+                    "must not": 0.3, "within": 0.2, "no closer than": 0.3,
+                    "at least": 0.2, "minimum": 0.2, "distance": 0.2,
+                    "restricted": 0.3, "prohibited": 0.3, "cannot": 0.2}
+
+
+def distance_context_score(text):
+    score = 0.0
+    lower = text.lower()
+    for keyword, weight in DISTANCE_WEIGHTS.items():
+        if keyword in lower:
+            score += weight
+    return min(score, 1.0)
+
+
+def distance_modality(sentence):
+    modals = {"shall", "must", "may"}
+    for word in sentence:
+        if word.text.lower() in modals:
+            return 0.2
+    return 0.0
+
+
+def distance_negation(sentence):
+    negations = {"except", "unless", "not applicable"}
+    for word in sentence:
+        if word.text.lower() in negations:
+            return -0.3
+    return 0.0
+
+
+def distance_confidence(sentence):
+    score = 0.4
+    score += distance_context_score(sentence.text)
+    score += distance_modality(sentence)
+    score += distance_negation(sentence)
+    return round(max(0, 0, min(score, 1.0)), 2)
 
 
 def distance_criteria(sentence):
@@ -121,6 +160,8 @@ def distance_criteria(sentence):
             action = token.lemma_
             break
 
+    confidence = distance_confidence(sentence)
+
     return {
         "criteria": "distance_restriction",
         "distances": distances,
@@ -128,6 +169,7 @@ def distance_criteria(sentence):
         "subject": subject,
         "action": action,
         "meaning": meaning,
+        "confidence": confidence,
         "source": sentence.text
     }
 
