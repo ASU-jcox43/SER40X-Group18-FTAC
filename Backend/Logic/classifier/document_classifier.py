@@ -12,7 +12,6 @@ proper classification based on a set of keywords and how often they appear.
 
 
 import os
-import json
 from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
 from Backend.Logic.mongo_db.classification_collection import upsertClassification
 
@@ -143,16 +142,7 @@ def classify_files():
             "Top Categories": top_categories,
             "confidence": confidence
         }
-    
-        os.makedirs(FILE_DIR, exist_ok=True)
-
-        # Create safe filename
-        base_filename = doc.get("file", "unknown")
-        name_without_ext = os.path.splitext(base_filename)[0]
-        output_filename = f"{name_without_ext}_classification.json"
-
-        output_path = os.path.join(FILE_DIR, output_filename)
-
+        
         upsertClassification(result)
 
 
