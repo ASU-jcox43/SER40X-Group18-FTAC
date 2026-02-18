@@ -37,9 +37,9 @@ celery_app = Celery(
 )
 
 class ScrapyConfig(BaseModel):
-    start_url: str
-    layers: int
-    get_pdfs: bool | str
+    start_url: str | None = None
+    layers: int | None = None
+    get_pdfs: bool | str | None = None
     regex: str | None = None
     next_page_selector: str | None = None
 
@@ -47,40 +47,23 @@ class PostExtractDocs(BaseModel):
     urls: list[str] # List of document urls
 
 @api_app.post("/ingest-docs")
-async def ingest_docs(req:ScrapyConfig | None = None, municipality: str | None = None):
-    if bool(req) == bool(municipality):
-        raise HTTPException(status_code=400, detail="please provide exactly one of either config or municipality name.")
-    
+async def ingest_docs(municipality: str):
     @celery_app.task
-    def run_document_scraper(start_url: str, layers: int=1, get_pdfs: bool=True, rex: str|None=None, next_page_selector: str | None = None, municipality_name: str | None = None):
-        command = [
-            'scrapy', 'crawl',
-            '-a', f'start_url={start_url}',
-            '-a', f'layers={layers}',
-            '-a', f'get_pdfs={get_pdfs}',
-            '-a', f'rex={rex}',
-            '-a', f'next_page_selector={next_page_selector}'
-        ]
+    def run_document_scraper(municipality_name: str):
+        config:dict = get_config(municipality_name)[0]
 
-        if municipality_name:
-            command.extend(['-a', f'municipality_name={municipality_name}'])
-        command.append('DocumentScraper')
+        if config == []:
+            raise HTTPException(status_code=404, detail="municipality not found")
         
+        command = ['scrapy', 'crawl']
+        args = [f'{k}={config[k]}' for k in config.keys()]
+        command.extend([x for a in args for x in ('-a', a)])
+        command.append('DocumentScraper')
         os.chdir('Backend/Logic/scrapers')
         subprocess.run(command, text=True)
         os.chdir('../../..')
 
-    if req:
-        run_document_scraper(req.start_url, layers=req.layers, get_pdfs=req.get_pdfs, rex=req.regex, next_page_selector=req.next_page_selector)
-        return f"crawl started at {req.start_url}"
-    
-    config:list = get_config(municipality)[0]
-
-    if config == []:
-        raise HTTPException(status_code=404, detail="municipality not found")
-
-    run_document_scraper(start_url=config["start_url"], layers=config["layers"], get_pdfs=config["get_pdfs"], rex=config["regex"], municipality_name=municipality)
-
+    run_document_scraper(municipality)
     return "crawl start"
 
 @api_app.post("/extract")
@@ -114,13 +97,7 @@ async def search_configs(municipality: str | None = None):
 
 @api_app.put("/scrapy_config")
 async def edit_config(req: ScrapyConfig, municipality: str):
-    update_config({
-        "_id": municipality,
-        "start_url": req.start_url,
-        "layers": req.layers,
-        "get_pdfs": req.get_pdfs,
-        "regex": req.regex,
-    })
+    update_config(municipality,req.model_dump(exclude_unset=True))
     return f"updated {municipality}"
 
 @api_app.get("/scrapy_config/output")

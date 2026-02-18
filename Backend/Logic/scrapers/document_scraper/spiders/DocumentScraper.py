@@ -46,7 +46,7 @@ class DocumentScraperSpider(scrapy.Spider):
         if self.rex:
             self.rex = re.compile(self.rex)
         if self.next_page_selector:
-            print(f"\nNEXT PAGE {response.css(self.next_page_selector)}\n")
+            print(f"\n({self.next_page_selector}) NEXT PAGE {response.xpath(self.next_page_selector).getall()}")
         yield scrapy.Request(response.url, callback=self.parse_step, cb_kwargs=dict(layer=int(self.layers)))
 
     def parse_step(self, response: Response, layer: int):
