@@ -14,9 +14,8 @@ from pathlib import Path
 import PyPDF2
 import docx
 import json
-import re
 
-
+# TODO: Might not need, text_extraction already extracts text and moves to extraction collection
 def extract_text(file_path: Path) -> str:
     """
     Extracts text from either a .txt, .pdf, or .docx file.
