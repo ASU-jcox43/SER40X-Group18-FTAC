@@ -55,7 +55,6 @@ KEYWORDS = {
     ]
 }
 
-
 def classify_text(text):
     """
     Classify a string of text into a category and confidence rating based on matches to keywords.
@@ -145,7 +144,6 @@ def classify_files():
             "confidence": confidence
         }
     
-        FILE_DIR = "Backend/Logic/classifier/classifications"
         os.makedirs(FILE_DIR, exist_ok=True)
 
         # Create safe filename
@@ -156,11 +154,6 @@ def classify_files():
         output_path = os.path.join(FILE_DIR, output_filename)
 
         upsertClassification(result)
-        
-        with open(output_path, "w") as config_file:
-            json.dump(result, config_file, indent=2)
-    
-        print(json.dumps(result, indent=2))
 
 
 if __name__ == "__main__":
