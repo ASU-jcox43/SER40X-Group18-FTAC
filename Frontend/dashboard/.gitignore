@@ -1,3 +1,12 @@
+# Node dependencies
 node_modules/
+
+# Uploaded files (don't commit PDFs)
 uploads/
+
+# Environment variables
 .env
+
+# Optional OS/Editor files
+.DS_Store
+Thumbs.db
