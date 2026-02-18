@@ -5,6 +5,137 @@
   <title>Upload PDF</title>
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="images/ftacLogo.png" type="image/png">
+  <style>
+    /* Drag-and-drop area */
+    .drop-area {
+        max-width: 700px;
+        border: 2px dashed #000000;
+        border-radius: 10px;
+        padding: 40px;
+        text-align: center;
+        font-family: 'Work Sans', sans-serif;
+        color: #000000;
+        margin: 0 auto 10px; /* top & bottom 0, bottom 10px, auto left/right centers it */
+        transition: background-color 0.3s;
+    }
+
+    .drop-area.dragover {
+        background-color: #e0f0ed;
+    }
+
+    /* Progress bar */
+    #progressContainer {
+        width: 100%;
+        background-color: #ddd;
+        border-radius: 5px;
+        margin-top: 10px;
+        height: 20px;
+        display: none;
+    }
+
+    #progressBar {
+        width: 0%;
+        height: 100%;
+        background-color: #254441;
+        border-radius: 5px;
+        text-align: center;
+        color: white;
+        font-weight: bold;
+    }
+
+    #uploadedFiles {
+        margin-top: 20px;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 0;
+    }
+
+    #uploadedFiles li {
+        list-style: none;
+        background-color: #f5f5f5; /* light gray background */
+        margin: 8px 0;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: 'Work Sans', sans-serif;
+        color: #254441;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    #uploadedFiles li:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    #uploadedFiles li button {
+        background-color: #254441;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+
+    #uploadedFiles li button:hover {
+        background-color: #1b3330;
+    }
+
+
+    /* Center upload button and file name */
+    .upload-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 15px;
+        gap: 10px; /* space between text and button */
+    }
+
+    #uploadBtn {
+        padding: 10px 25px;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        background-color: #254441;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    #uploadBtn:disabled {
+        background-color: #888;
+        cursor: not-allowed;
+    }
+
+    #uploadBtn:hover:not(:disabled) {
+        background-color: #1b3330;
+    }
+
+    #fileName {
+        font-weight: bold;
+        color: #254441;
+        text-align: center;
+    }
+
+   .uploaded-title {
+        margin-left: 40px; 
+        color: #000000;    
+        font-weight: bold;
+    }
+
+    .upload-pdf-title {
+        margin-left: 40px; 
+        color: #000000;    
+        font-weight: bold; 
+    }
+
+
+  </style>
 </head>
 <body>
   <!-- Top Bar -->
@@ -23,27 +154,30 @@
     </nav>
   </header>
 
-  <h2>Upload a PDF File</h2>
+  <h2 class="upload-pdf-title">Upload a PDF File</h2>
 
-    <form id="uploadForm" enctype="multipart/form-data">
-    <input
-        type="file"
-        id="pdfInput"
-        name="pdfFile"
-        accept="application/pdf"
-        required
-    >
+    <!-- Drag & Drop Area -->
+    <div id="dropArea" class="drop-area">
+    Drag & Drop PDF here
+    <br>or<br>
+    <input type="file" id="pdfInput" name="pdfFile" accept="application/pdf" required>
+    </div>
 
+    <!-- Centered container for selected file and upload button -->
+    <div class="upload-container">
     <p id="fileName"></p>
+    <button type="button" id="uploadBtn" disabled>Upload PDF</button>
+    </div>
 
-    <button type="submit" id="uploadBtn" disabled>
-        Upload PDF
-    </button>
-    </form>
+    <div id="progressContainer">
+    <div id="progressBar">0%</div>
+    </div>
 
     <p id="status"></p>
 
-<script src="script.js"></script>
+    <h3 class="uploaded-title">Uploaded PDFs:</h3>
+    <ul id="uploadedFiles"></ul>
 
+  <script src="script.js"></script>
 </body>
 </html>

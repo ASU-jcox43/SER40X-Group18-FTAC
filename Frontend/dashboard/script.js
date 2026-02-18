@@ -254,57 +254,129 @@ function getProvinceAbbreviation(fullName) {
   return reverseProvinceMap[fullName?.toLowerCase()] || "Unknown";
 }
 
-/* Upload PDF functionality */
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("uploadForm");
-  if (!form) return; // prevents running on non-upload pages
-
-  const input = document.getElementById("pdfInput");
+  const dropArea = document.getElementById("dropArea");
+  const pdfInput = document.getElementById("pdfInput");
   const uploadBtn = document.getElementById("uploadBtn");
-  const status = document.getElementById("status");
   const fileName = document.getElementById("fileName");
+  const status = document.getElementById("status");
+  const progressContainer = document.getElementById("progressContainer");
+  const progressBar = document.getElementById("progressBar");
+  const uploadedFiles = document.getElementById("uploadedFiles");
+  
+  let selectedFile = null;
 
-  input.addEventListener("change", () => {
-    const file = input.files[0];
-
-    if (!file) return;
-
-    if (file.type !== "application/pdf") {
-      status.textContent = "Only PDF files are allowed.";
-      input.value = "";
-      uploadBtn.disabled = true;
-      fileName.textContent = "";
-      return;
-    }
-
-    fileName.textContent = "Selected: " + file.name;
-    status.textContent = "";
-    uploadBtn.disabled = false;
+  // --- Drag & Drop ---
+  ["dragenter", "dragover"].forEach(eventName => {
+    dropArea.addEventListener(eventName, e => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropArea.classList.add("dragover");
+    });
   });
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  ["dragleave", "drop"].forEach(eventName => {
+    dropArea.addEventListener(eventName, e => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropArea.classList.remove("dragover");
+    });
+  });
 
-    const formData = new FormData(form);
+  dropArea.addEventListener("drop", e => {
+    const files = e.dataTransfer.files;
+    if (files.length && files[0].type === "application/pdf") {
+      selectedFile = files[0];
+      pdfInput.files = files; // sync input
+      fileName.textContent = `Selected file: ${selectedFile.name}`;
+      uploadBtn.disabled = false;
+      status.textContent = "";
+    } else {
+      status.textContent = "❌ Only PDF files are allowed";
+      selectedFile = null;
+      pdfInput.value = "";
+      uploadBtn.disabled = true;
+    }
+  });
+
+  // --- File input selection ---
+  pdfInput.addEventListener("change", () => {
+    if (pdfInput.files.length > 0) {
+      selectedFile = pdfInput.files[0];
+      fileName.textContent = `Selected file: ${selectedFile.name}`;
+      uploadBtn.disabled = false;
+      status.textContent = "";
+    }
+  });
+
+  // --- Upload button ---
+  uploadBtn.addEventListener("click", async () => {
+    if (!selectedFile) return;
+
+    const formData = new FormData();
+    formData.append("pdfFile", selectedFile);
+
     status.textContent = "Uploading...";
+    progressContainer.style.display = "block";
+    progressBar.style.width = "0%";
+    progressBar.textContent = "0%";
 
     try {
-      const response = await fetch("/upload", {
-        method: "POST",
-        body: formData
-      });
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/upload");
 
-      if (response.ok) {
-        status.textContent = "Upload successful!";
-        form.reset();
-        uploadBtn.disabled = true;
-        fileName.textContent = "";
-      } else {
-        status.textContent = "Upload failed.";
-      }
-    } catch {
-      status.textContent = "Server error.";
+      xhr.upload.onprogress = e => {
+        if (e.lengthComputable) {
+          const percent = Math.round((e.loaded / e.total) * 100);
+          progressBar.style.width = percent + "%";
+          progressBar.textContent = percent + "%";
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          status.textContent = "✅ Upload successful!";
+          uploadBtn.disabled = true;
+          fileName.textContent = "";
+          pdfInput.value = "";
+          selectedFile = null;
+          progressContainer.style.display = "none";
+          listUploadedFiles();
+        } else {
+          status.textContent = "❌ Upload failed";
+        }
+      };
+
+      xhr.onerror = () => {
+        status.textContent = "❌ Server error";
+      };
+
+      xhr.send(formData);
+    } catch (err) {
+      status.textContent = "❌ Upload error";
     }
   });
-});
 
+  // --- List uploaded files ---
+  async function listUploadedFiles() {
+    uploadedFiles.innerHTML = "";
+    try {
+      const res = await fetch("/files");
+      const files = await res.json();
+      files.forEach(f => {
+        const li = document.createElement("li");
+        const link = document.createElement("a");
+        link.href = `/uploads/${f}`;
+        link.textContent = f;
+        link.target = "_blank";
+        li.appendChild(link);
+        uploadedFiles.appendChild(li);
+      });
+    } catch {
+      uploadedFiles.innerHTML = "<li>No uploaded files found</li>";
+    }
+  }
+
+  // Initial load
+  listUploadedFiles();
+});
