@@ -37,6 +37,10 @@ def score_categories(text, category: str, model: dict[str, str]):
     pattern = model.get(category)
     if not pattern:
         return False
+    if isinstance(text, dict):
+        text = text.get("sentence")
+    if not isinstance(text, str):
+        return False
     return bool(re.search(pattern, text, re.IGNORECASE))
 
 
@@ -57,12 +61,14 @@ def score_json_data(data: dict, model: dict[str, str]):
     keyword_sentences = flatdict.FlatDict(data.get("keyword_contexts", {}), delimiter='/')
 
     matched_keywords = []
+    matched_sentences = {}
     for sentence_list in keyword_sentences.keys():
         keyword = sentence_list.split('/')[0]
         if keyword not in matched_keywords and isinstance(keyword_sentences[sentence_list], list):
-            paragraph = reduce(lambda x, y: f"{x} {y}", keyword_sentences[sentence_list])
-            if score_categories(paragraph, keyword, model):
+            sentences = keyword_sentences[sentence_list]
+            if any(score_categories(sentence, keyword, model) for sentence in sentences):
                 matched_keywords.append(keyword)
+                matched_sentences[keyword] = [sentence for sentence in sentences if score_categories(sentence, keyword, model)]
     return round((len(matched_keywords) / len(model.keys())) * 100, 2)
 
 
