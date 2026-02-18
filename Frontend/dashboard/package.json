@@ -1,0 +1,17 @@
+{
+  "name": "dashboard",
+  "version": "1.0.0",
+  "description": "Municipality dashboard for analyzing food truck friendliness scores across Canadian cities.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "multer": "^2.0.2"
+  }
+}
