@@ -11,9 +11,10 @@ proper classification based on a set of keywords and how often they appear.
 """
 
 
+import os
 import json
-import re
 from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
+from Backend.Logic.mongo_db.classification_collection import upsertClassification
 
 # Our list of keywords that we can customize when classifying documents in a dictionary
 KEYWORDS = {
@@ -87,7 +88,7 @@ def classify_text(text):
             scores[category] = count
 
     if not scores:
-        return "N/A", 0.0
+        return ["N/A"], 0.0
 
     # We pick the top categories in scores based on number of matches,
     # and calculate our confidence rate based on the number of matches vs the total number of terms
@@ -124,10 +125,10 @@ def classify_files():
         FileNotFoundError: an error occurred trying to read a file.
     """
 
-    results = []
     docs = getAllExtractions()
     
     for doc in docs:
+        result = []
         # flatten keyword_contexts -> text string
         contexts = []
         for terms in doc.get("keyword_contexts", {}).values():
@@ -138,18 +139,28 @@ def classify_files():
 
         top_categories, confidence = classify_text(text)
 
-        results.append({
+        result = {
             "filename": doc.get("file", "unknown"),
             "Top Categories": top_categories,
             "confidence": confidence
-        })
+        }
     
-    filename = "Backend/Logic/classifier/classifications.json"
-    with open(filename, "w") as config_file:
-        json.dump(results, config_file, indent=2)
+        FILE_DIR = "Backend/Logic/classifier/classifications"
+        os.makedirs(FILE_DIR, exist_ok=True)
+
+        # Create safe filename
+        base_filename = doc.get("file", "unknown")
+        name_without_ext = os.path.splitext(base_filename)[0]
+        output_filename = f"{name_without_ext}_classification.json"
+
+        output_path = os.path.join(FILE_DIR, output_filename)
+
+        upsertClassification(result)
+        
+        with open(output_path, "w") as config_file:
+            json.dump(result, config_file, indent=2)
     
-    print(json.dumps(results, indent=2))
-    return results
+        print(json.dumps(result, indent=2))
 
 
 if __name__ == "__main__":
