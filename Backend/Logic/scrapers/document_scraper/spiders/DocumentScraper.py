@@ -14,10 +14,10 @@ class DocumentScraperSpider(scrapy.Spider):
     doc_count: int = 0
     layers: int
     get_pdfs: bool
-    rex: str | re.Pattern[str] | None
-    next_page_selector: str | None
+    regex: str | re.Pattern[str] | None
+    xpath: str | None
 
-    def __init__(self, start_url: str, layers: int, get_pdfs: bool, rex: str | None = None, next_page_selector: str | None = None, municipality_name: str | None = None, **kwargs):
+    def __init__(self, start_url: str, layers: int, get_pdfs: bool, regex: str | None = None, xpath: str | None = None, municipality_name: str | None = None, **kwargs):
         super().__init__(**kwargs)
         self.start_urls = [start_url]
         self.allowed_domains = [re.findall(r"(?<=\/\/)[\w.]*?(?=\/\W?)", start_url)[0]]
@@ -33,23 +33,13 @@ class DocumentScraperSpider(scrapy.Spider):
         
         self.layers = layers
         self.get_pdfs = get_pdfs
-        self.rex = re.compile(rex) if rex else None
-        self.next_page_selector = next_page_selector
-
-    #@classmethod
-    #def from_crawler(cls, crawler, *args, **kwargs):
-    #    spider = super().from_crawler(crawler, *args, **kwargs)
-    #    spider.settings.set("FEEDS", {f'/scrapy_output/{spider.municipality_name}.csv': {'format': 'csv'}}, priority="spider")
-    #    return spider
+        self.regex = re.compile(regex) if regex else None
+        self.xpath = xpath
     
     def parse(self, response: Response):
-        if self.rex:
-            self.rex = re.compile(self.rex)
-        if self.next_page_selector:
-            print(f"\n({self.next_page_selector}) NEXT PAGE {response.xpath(self.next_page_selector).getall()}")
-        yield scrapy.Request(response.url, callback=self.parse_step, cb_kwargs=dict(layer=int(self.layers)))
+        yield scrapy.Request(response.url, callback=self._parse_step, cb_kwargs=dict(layer=int(self.layers)))
 
-    def parse_step(self, response: Response, layer: int):
+    def _parse_step(self, response, layer: int):
         # Check the URL and yield it if it is a PDF.
         # You will know when you are visiting a PDF when you get a response body that starts with '%PDF-' 
         if response.body.startswith(b'%PDF-') or (layer == 0 and not self.get_pdfs):
@@ -57,6 +47,17 @@ class DocumentScraperSpider(scrapy.Spider):
             yield DocumentScraperItem(url=response.url)
         elif layer > 0:
             links = response.xpath('//@href').getall()
-            for link in links:
-                if not (self.rex is not None and self.rex.search(link) is None):
-                    yield scrapy.Request(response.urljoin(link), callback=self.parse_step, cb_kwargs=dict(layer=layer - 1))
+            yield scrapy.Request(response.url, callback=self._request_next_links, cb_kwargs=dict(links=links, layer=layer, decrease_layer=True))
+
+            if self.xpath:
+                next_page_links = response.xpath(self.xpath).getall()
+                yield scrapy.Request(response.url, callback=self._request_next_links, cb_kwargs=dict(links=next_page_links, layer=layer, decrease_layer=False))
+    
+    def _request_next_links(self, response, links: list[str], layer: int, decrease_layer: bool):
+        for link in links:
+            if not self.regex or self.regex.search(link):
+                print(f'Match = {link}')
+                try:
+                    yield scrapy.Request(response.urljoin(link), callback=self._parse_step, cb_kwargs=dict(layer=layer - (1 if decrease_layer else 0)))
+                except ValueError:
+                    print(f'invalid link skipped: "{link}"')

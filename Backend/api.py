@@ -2,8 +2,7 @@ from typing import Union
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from celery import Celery
-from celery.signals import task_success
+#from celery import Celery
 import os
 import subprocess
 from .Logic.scrapers.document_scraper.spiders.DocumentScraper import *
@@ -30,27 +29,25 @@ api_app.add_middleware(
     allow_headers=["*"],
 )
 
-celery_app = Celery(
-    "worker",
-    broker="redis://localhost:6379/0",
-    backend="redis://localhost:6379/0"
-)
+#celery_app = Celery("worker",broker="redis://localhost:6379/0",backend="redis://localhost:6379/0")
 
 class ScrapyConfig(BaseModel):
     start_url: str | None = None
     layers: int | None = None
     get_pdfs: bool | str | None = None
     regex: str | None = None
-    next_page_selector: str | None = None
+    xpath: str | None = None
 
 class PostExtractDocs(BaseModel):
     urls: list[str] # List of document urls
 
 @api_app.post("/ingest-docs")
 async def ingest_docs(municipality: str):
-    @celery_app.task
+    #@celery_app.task
     def run_document_scraper(municipality_name: str):
         config:dict = get_config(municipality_name)[0]
+        config['municipality_name'] = config['_id']
+        config.pop('_id')
 
         if config == []:
             raise HTTPException(status_code=404, detail="municipality not found")
@@ -59,6 +56,7 @@ async def ingest_docs(municipality: str):
         args = [f'{k}={config[k]}' for k in config.keys()]
         command.extend([x for a in args for x in ('-a', a)])
         command.append('DocumentScraper')
+        print(f"command = {command}")
         os.chdir('Backend/Logic/scrapers')
         subprocess.run(command, text=True)
         os.chdir('../../..')
