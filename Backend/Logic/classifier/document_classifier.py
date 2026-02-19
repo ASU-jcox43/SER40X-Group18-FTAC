@@ -11,8 +11,9 @@ proper classification based on a set of keywords and how often they appear.
 """
 
 import re
+from Backend.Logic.classifier.utils import check_for_conflicts
 from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
-from Backend.Logic.mongo_db.classification_collection import upsertClassification
+from Backend.Logic.mongo_db.classification_collection import upsertClassification, getAllClassifications
 
 # Our list of keywords that we can customize when classifying documents in a dictionary
 KEYWORDS = {
@@ -23,14 +24,13 @@ KEYWORDS = {
         "ordinance": 3,
         "section": 1,
         "penalty": 2,
-        "fine": 2,
+        "fine": 3,
         "enforcement": 2,
         "compliance": 2,
         "amend": 2,
         "repeal": 2,
         "supersede": 3,
     },
-
     "Licensing": {
         "license": 2,
         "licence": 2,
@@ -43,7 +43,6 @@ KEYWORDS = {
         "inspection required": 3,
         "approval": 1,
     },
-
     "Zoning": {
         "zoning": 3,
         "zone": 2,
@@ -56,7 +55,6 @@ KEYWORDS = {
         "noise": 1,
         "district": 2,
     },
-
     "Food Safety": {
         "food safety": 3,
         "public health": 2,
@@ -69,7 +67,6 @@ KEYWORDS = {
         "sanitary": 2,
         "health officer": 3,
     },
-
     "Risk and Fire": {
         "fire code": 3,
         "propane": 3,
@@ -81,7 +78,6 @@ KEYWORDS = {
         "gas line": 3,
         "fire department": 3,
     },
-
     "General": {
         "overview": 1,
         "information": 1,
@@ -90,6 +86,11 @@ KEYWORDS = {
         "requirements": 1,
         "process": 1,
     }
+}
+
+CITIES = {
+    "Toronto", "Ottawa", "Vancouver", "Montreal", "Calgary",
+    "Edmonton", "Winnipeg", "Quebec City", "Halifax", "Victoria"
 }
 
 def classify_text(text):
@@ -138,7 +139,6 @@ def classify_text(text):
     # We pick the top categories in scores based on number of matches,
     # and calculate our confidence rate based on the number of matches vs the total number of terms
     sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-    print(sorted_scores)
     
     max_score = sorted_scores[0][1]
     
@@ -188,9 +188,9 @@ def classify_files():
         text = " ".join(contexts)
 
         top_categories, confidence = classify_text(text)
-
+        filename = doc.get("file", "unkown")
         result = {
-            "filename": doc.get("file", "unknown"),
+            "filename": filename,
             "Top Categories": top_categories,
             "confidence": confidence
         }

@@ -9,3 +9,6 @@ def upsertClassification(file: dict):
         {"$set": file},
         upsert=True
     )
+    
+def getAllClassifications():
+    return list(CLASSIFICATION_COLLECTION.find({}, {"_id": 0})) # get all documents in collection and exlude _id, cast as json
