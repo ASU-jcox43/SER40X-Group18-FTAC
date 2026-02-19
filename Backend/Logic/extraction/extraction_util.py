@@ -20,6 +20,7 @@ def extractKeywords(text, keywords):
         sentences = re.split(r"(?<=[.!?])\s+", para)
         for sentence in sentences:
             sentence_lower = sentence.lower()
+            # Split sentences into words to compare with keywords
             for keyword in keywords:
                 if keyword.lower() in sentence_lower:
                     keyword_context[keyword].append(sentence.strip())
