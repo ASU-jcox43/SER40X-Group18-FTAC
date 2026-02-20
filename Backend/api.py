@@ -1,8 +1,7 @@
 from typing import Union
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-#from celery import Celery
 import os
 import subprocess
 from .Logic.scrapers.document_scraper.spiders.DocumentScraper import *
@@ -42,26 +41,27 @@ class PostExtractDocs(BaseModel):
     urls: list[str] # List of document urls
 
 @api_app.post("/ingest-docs")
-async def ingest_docs(municipality: str):
-    #@celery_app.task
-    def run_document_scraper(municipality_name: str):
-        config:dict = get_config(municipality_name)[0]
+async def ingest_docs(municipality: str, background_tasks: BackgroundTasks):
+    config:dict
+
+    try:
+        config = get_config(municipality)[0]
         config['municipality_name'] = config['_id']
         config.pop('_id')
-
-        if config == []:
-            raise HTTPException(status_code=404, detail="municipality not found")
-        
+    except IndexError:
+        raise HTTPException(status_code=404, detail="municipality not found")
+    
+    def run_document_scraper(config: dict):
         command = ['scrapy', 'crawl']
-        args = [f'{k}={config[k]}' for k in config.keys()]
+        args = [f'{k}={int(config[k]) if isinstance(config[k], bool) else config[k]}' for k in config.keys()]
         command.extend([x for a in args for x in ('-a', a)])
         command.append('DocumentScraper')
-        print(f"command = {command}")
+        print(f'command = {command}')
         os.chdir('Backend/Logic/scrapers')
         subprocess.run(command, text=True)
         os.chdir('../../..')
 
-    run_document_scraper(municipality)
+    background_tasks.add_task(run_document_scraper, config)
     return "crawl start"
 
 @api_app.post("/extract")
