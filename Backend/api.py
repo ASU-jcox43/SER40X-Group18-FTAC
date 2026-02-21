@@ -9,8 +9,6 @@ from .Logic.OCRProcessor.ocr_processor import process_pdfs
 from .Logic.extraction.text_extraction import extract
 from .Logic.mongo_db.scrapy_config import update_config, get_config
 from .Logic.mongo_db.scrapy_output import get_links, remove_link, add_link
-api_app = FastAPI()
-
 from Backend.Logic.reports.report_generator import generate_report
 from pathlib import Path
 from fastapi.responses import FileResponse
@@ -19,6 +17,18 @@ import tempfile
 from fastapi import Body
 from fastapi.responses import StreamingResponse
 from io import BytesIO
+from contextlib import asynccontextmanager
+import logging
+
+logger = logging.getLogger("app")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # execute this before application startup
+    yield
+    # execute this after application finishes
+
+api_app = FastAPI(lifespan=lifespan)
 
 api_app.add_middleware(
     CORSMiddleware,
@@ -28,14 +38,17 @@ api_app.add_middleware(
     allow_headers=["*"],
 )
 
-#celery_app = Celery("worker",broker="redis://localhost:6379/0",backend="redis://localhost:6379/0")
-
-class ScrapyConfig(BaseModel):
-    start_url: str | None = None
-    layers: int | None = None
-    get_pdfs: bool | str | None = None
+class ScrapyFilter(BaseModel):
     regex: str | None = None
     xpath: str | None = None
+
+class ScrapyConfig(BaseModel):
+    start_urls: list[str] | None = None
+    allowed_domains: list[str] | None = None
+    layers: int | None = None
+    get_pdfs: bool | None = None
+    layer_filter: ScrapyFilter | None = None
+    next_page_filter: ScrapyFilter | None = None
 
 class PostExtractDocs(BaseModel):
     urls: list[str] # List of document urls
@@ -53,10 +66,11 @@ async def ingest_docs(municipality: str, background_tasks: BackgroundTasks):
     
     def run_document_scraper(config: dict):
         command = ['scrapy', 'crawl']
-        args = [f'{k}={int(config[k]) if isinstance(config[k], bool) else config[k]}' for k in config.keys()]
-        command.extend([x for a in args for x in ('-a', a)])
+        #args = [f'{k}={int(config[k]) if isinstance(config[k], bool) else config[k]}' for k in config.keys()]
+        #command.extend([x for a in args for x in ('-a', a)])
+        command.extend(['-a', f'config={str(config)}'])
         command.append('DocumentScraper')
-        print(f'command = {command}')
+        logger.info(f'command = {command}')
         os.chdir('Backend/Logic/scrapers')
         subprocess.run(command, text=True)
         os.chdir('../../..')
