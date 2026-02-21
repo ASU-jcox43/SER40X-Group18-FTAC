@@ -17,9 +17,9 @@ class DocumentScraperSpider(scrapy.Spider):
     municipality_name: str
     layers: int
     get_pdfs: bool
-    layer_filter_regex: str | None = None
+    layer_filter_regex: str | re.Pattern[str] | None = None
     layer_filter_xpath: str | None = None
-    next_page_filter_regex: str | None = None
+    next_page_filter_regex: str | re.Pattern[str] | None = None
     next_page_filter_xpath: str | None = None
     doc_count: int = 0
 
@@ -59,10 +59,14 @@ class DocumentScraperSpider(scrapy.Spider):
 
         if config.get('layer_filter'):
             self.layer_filter_regex = config.get('layer_filter').get('regex')
+            if self.layer_filter_regex:
+                self.layer_filter_regex = re.compile(self.layer_filter_regex)
             self.layer_filter_xpath = config.get('layer_filter').get('xpath')
         
         if config.get('next_page_filter'):
             self.next_page_filter_regex = config.get('next_page_filter').get('regex')
+            if self.next_page_filter_regex:
+                self.next_page_filter_regex = re.compile(self.next_page_filter_regex)
             self.next_page_filter_xpath = config.get('next_page_filter').get('xpath')
     
     def parse(self, response: Response):
