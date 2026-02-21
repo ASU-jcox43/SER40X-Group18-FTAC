@@ -11,9 +11,9 @@ proper classification based on a set of keywords and how often they appear.
 """
 
 import re
-from Backend.Logic.classifier.utils import check_for_conflicts
+from Backend.Logic.classifier.utils import checkForConflicts
 from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
-from Backend.Logic.mongo_db.classification_collection import upsertClassification, getAllClassifications
+from Backend.Logic.mongo_db.classification_collection import upsertClassification
 
 # Our list of keywords that we can customize when classifying documents in a dictionary
 KEYWORDS = {
@@ -200,3 +200,4 @@ def classify_files():
 
 if __name__ == "__main__":
     classify_files()
+    checkForConflicts()
