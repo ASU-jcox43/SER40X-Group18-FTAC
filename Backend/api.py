@@ -7,8 +7,9 @@ import subprocess
 from .Logic.scrapers.document_scraper.spiders.DocumentScraper import *
 from .Logic.OCRProcessor.ocr_processor import process_pdfs
 from .Logic.extraction.text_extraction import extract
-from .Logic.mongo_db.scrapy_config import update_config, get_config
-from .Logic.mongo_db.scrapy_output import get_links, remove_link, add_link
+from .Logic.mongo_db.scrapy_config import update_config, get_config, get_daily_document_update
+from .Logic.mongo_db.scrapy_output import get_links, remove_link
+from .Logic.mongo_db.connection import CLIENT
 from Backend.Logic.reports.report_generator import generate_report
 from pathlib import Path
 from fastapi.responses import FileResponse
@@ -17,18 +18,26 @@ import tempfile
 from fastapi import Body
 from fastapi.responses import StreamingResponse
 from io import BytesIO
-from contextlib import asynccontextmanager
-import logging
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.jobstores.mongodb import MongoDBJobStore
+from apscheduler.triggers.cron import CronTrigger
 
-logger = logging.getLogger("app")
+def run_document_scraper(*municipalities):
+    configs: list[dict] = [get_config(m)[0] for m in municipalities] # TODO make this only do 1 database query
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # execute this before application startup
-    yield
-    # execute this after application finishes
+    os.chdir('Backend/Logic/scrapers')
+    for config in configs:
+        config['municipality_name'] = config['_id']
+        config.pop('_id')
+        subprocess.Popen(['scrapy', 'crawl', '-a', f'config={str(config)}', 'DocumentScraper'], text=True)
+    os.chdir('../../..')
 
-api_app = FastAPI(lifespan=lifespan)
+jobstores = {'mongo': MongoDBJobStore(client=CLIENT, database='ftac', collection='cronjobs')}
+scheduler = BackgroundScheduler(jobstores=jobstores)
+#scheduler.add_job(run_document_scraper, CronTrigger(hour=0, minute=0), args=get_daily_document_update())
+scheduler.start()
+
+api_app = FastAPI()
 
 api_app.add_middleware(
     CORSMiddleware,
@@ -55,27 +64,10 @@ class PostExtractDocs(BaseModel):
 
 @api_app.post("/ingest-docs")
 async def ingest_docs(municipality: str, background_tasks: BackgroundTasks):
-    config:dict
-
-    try:
-        config = get_config(municipality)[0]
-        config['municipality_name'] = config['_id']
-        config.pop('_id')
-    except IndexError:
+    if get_config(municipality) == []:
         raise HTTPException(status_code=404, detail="municipality not found")
     
-    def run_document_scraper(config: dict):
-        command = ['scrapy', 'crawl']
-        #args = [f'{k}={int(config[k]) if isinstance(config[k], bool) else config[k]}' for k in config.keys()]
-        #command.extend([x for a in args for x in ('-a', a)])
-        command.extend(['-a', f'config={str(config)}'])
-        command.append('DocumentScraper')
-        logger.info(f'command = {command}')
-        os.chdir('Backend/Logic/scrapers')
-        subprocess.run(command, text=True)
-        os.chdir('../../..')
-
-    background_tasks.add_task(run_document_scraper, config)
+    background_tasks.add_task(run_document_scraper, municipality)
     return "crawl start"
 
 @api_app.post("/extract")

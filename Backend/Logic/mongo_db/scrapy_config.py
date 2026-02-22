@@ -1,4 +1,5 @@
 from .connection import DB
+from datetime import date
 
 SCRAPY_CONFIG_COLLECTION = DB["scrapy_config"]
 
@@ -13,3 +14,8 @@ def update_config(municipality: str, sconfig: dict):
 # Method to return scrapy config based on city
 def get_config(municipality: str | None = None, num_results:int = 1) -> list[dict]:
     return SCRAPY_CONFIG_COLLECTION.find({ "_id": municipality } if municipality else {}).limit(num_results).to_list()
+
+def get_daily_document_update() -> list[str]:
+    return SCRAPY_CONFIG_COLLECTION.find({
+        {"update_at": {"$elemMatch": {"$eq": date.today()}}}
+    }).distinct("_id")

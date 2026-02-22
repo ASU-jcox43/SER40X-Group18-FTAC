@@ -44,7 +44,6 @@ class DocumentScraperSpider(scrapy.Spider):
         logging.getLogger('pymongo.command').setLevel(logging.WARNING)
         logging.getLogger('pymongo.serverSelection').setLevel(logging.WARNING)
 
-        print(f'\n\n{type(config['get_pdfs'])} {config['get_pdfs']}\n\n')
         self.start_urls.extend(config['start_urls'])
 
         if config.get('allowed_domains'):
