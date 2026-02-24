@@ -19,7 +19,7 @@ asyncio
 celery[redis]
 pdf2image
 pdfminer
-
+apscheduler
 # Core numerical and image processing
 Pillow
 
