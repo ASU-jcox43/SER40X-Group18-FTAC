@@ -13,17 +13,17 @@ nlp = spacy.load("en_core_web_sm")
 KEYWORDS = {
     "webpage": [".gov", ".ca", "municipality", "city of", "regional district"],
     "checklist": ["checklist", "requirements list", "required documents"],
-    "guide to license": ["guide", "how to apply", "licensing process", "application process"],
+    "guide to license": ["guide", "how to apply", "licensing process", "application process"],  # covered
     "bylaws": ["bylaw", "regulation", "municipal code", "ordinance"],
     "penalties": ["fine", "fee", "penalty", "violation", "infraction"],
-    "provincial business license": ["provincial business license", "provincial permit", "provincial approval",
+    "provincial business license": ["provincial business license", "provincial permit", "provincial approval", # covered
                                     "provincial business name certificate"],
-    "provincial food business license": ["provincial food business license", "food establishment permit",
+    "provincial food business license": ["provincial food business license", "food establishment permit", # covered
                                          "provincial food vendor license"],
-    "municipal business license": ["municipal business license", "local business permit", "city business license"],
-    "municipal food business license": ["municipal food business license", "mobile food vendor license",
+    "municipal business license": ["municipal business license", "local business permit", "city business license"], # covered
+    "municipal food business license": ["municipal food business license", "mobile food vendor license", # covered
                                         "street food vendor license"],
-    "retail license for CPG": ["consumer packaged good", "CPG", "retail goods", "branded retail products"],
+    "retail license for CPG": ["consumer packaged good", "CPG", "retail goods", "branded retail products"], # covered
     "curbside vending": ["curbside vending", "street vending", "mobile vending", "sidewalk vending"],
     "parking fees": ["parking fee", "metered parking", "vending zone", "designated vending area"],
     "noise bylaws": ["noise", "noise bylaw", "sound regulation", "amplified sound"],
@@ -32,13 +32,13 @@ KEYWORDS = {
                         "hours at any one time"],
     "branded consumer goods": ["branding", "branded products", "product labeling", "consumer goods"],
     "private property operation": ["private property", "private lot", "owner permission", "property consent"],
-    "proximity regulations": ["proximity regulation", "distance restriction", "buffer zone", "proximity limit"],
-    "min distance to restaurant": ["distance to restaurant", "separation from restaurant",
+    "proximity regulations": ["proximity regulation", "distance restriction", "buffer zone", "proximity limit"], # covered
+    "min distance to restaurant": ["distance to restaurant", "separation from restaurant", # covered
                                    "nearby restaurant restriction", "from an open and operating restaurant"],
-    "min distance to food truck": ["distance to other food trucks", "food truck spacing", "vendor proximity"],
-    "non-food service proximity restrictions": ["proximity restriction", "non-food vendor proximity",
+    "min distance to food truck": ["distance to other food trucks", "food truck spacing", "vendor proximity"], # covered
+    "non-food service proximity restrictions": ["proximity restriction", "non-food vendor proximity", # covered
                                                 "distance from other vendors"],
-    "min distance proximity from other business": ["proximity to other business", "distance between vendors"],
+    "min distance proximity from other business": ["proximity to other business", "distance between vendors"], # covered
     "num food trucks allowed in geographic area": ["number of food trucks allowed", "maximum food trucks per area",
                                                    "vendor density limit", "food trucks per block"],
     "parking locations": ["designated parking", "allowed parking", "approved vending location", "vending area",
@@ -69,6 +69,11 @@ DISTANCE_RE = re.compile(
     r'(\d+(?:\.\d+)?)\s*(?:linear|horizontal|vertical|approx(?:\.|imately)?|about)?\s*'
     r'(m|meter|meters|metre|metres|km|kilometer|kilometers|kilometre|kilometres)\b',
     re.IGNORECASE)
+LICENSE_RE = re.compile(
+    r'(provincial|municipal|city|local)?\s*'
+    r'(business|food)?\s*'
+    r'(license|licence|permit|approval|certificate)',
+    re.IGNORECASE)
 
 DISTANCE_WORDS = {"within": "within",
                   "no closer than": "minimum",
@@ -77,8 +82,55 @@ DISTANCE_WORDS = {"within": "within",
                   "from": "from",
                   "of": "of"}
 
+LICENSE_WORDS = {
+    "provincial_business": [
+        "provincial business license",
+        "provincial business licence",
+        "provincial permit",
+        "provincial approval",
+        "business name certificate"
+    ],
+    "provincial_food": [
+        "provincial food business license",
+        "provincial food business licence",
+        "food establishment permit",
+        "food vendor license",
+        "food vendor licence"
+    ],
+    "municipal_business": [
+        "municipal business license",
+        "municipal business licence",
+        "city business license",
+        "city business licence",
+        "local business permit"
+    ],
+    "municipal_food": [
+        "municipal food business license",
+        "municipal food business licence",
+        "mobile food vendor license",
+        "mobile food vendor licence",
+        "street food vendor license",
+        "street food vendor licence"
+    ]
+}
+
 
 # TODO: Add all other RE layers for the other categories and extractions.
+def extract_license(sentence):
+    text = sentence.lower()
+    found = []
+    for license_type, phrases in LICENSE_WORDS.items():
+        for phrase in phrases:
+            if phrase in text:
+                found.append(license_type)
+                break
+    if not found and LICENSE_RE.search(text):
+        found.append("other_license")
+    if found:
+        return list(set(found))
+    else:
+        return None
+
 
 def extract_distance(sentence):
     matches = DISTANCE_RE.findall(sentence)
@@ -94,6 +146,18 @@ DISTANCE_WEIGHTS = {"shall": 0.2, "must": 0.2, "shall not": 0.3,
                     "must not": 0.3, "within": 0.2, "no closer than": 0.3,
                     "at least": 0.2, "minimum": 0.2, "distance": 0.2,
                     "restricted": 0.3, "prohibited": 0.3, "cannot": 0.2}
+LICENSE_WEIGHTS = {"shall": 0.3, "must": 0.3, "required": 0.3, "mandatory": 0.3,
+                   "condition of approval": 0.2, "prior to operating": 0.2,
+                   "before operating": 0.2, "required to obtain": 0.3}
+
+
+def license_context_score(text):
+    score = 0.0
+    lower = text.lower()
+    for keyword, weight in LICENSE_WEIGHTS.items():
+        if keyword in lower:
+            score += weight
+    return min(score, 1.0)
 
 
 def distance_context_score(text):
@@ -105,7 +169,7 @@ def distance_context_score(text):
     return min(score, 1.0)
 
 
-def distance_modality(sentence):
+def modality(sentence):
     modals = {"shall", "must", "may"}
     for word in sentence:
         if word.text.lower() in modals:
@@ -113,20 +177,69 @@ def distance_modality(sentence):
     return 0.0
 
 
-def distance_negation(sentence):
-    negations = {"except", "unless", "not applicable"}
-    for word in sentence:
-        if word.text.lower() in negations:
+def negation(sentence):
+    negations = {"except", "unless", "not applicable", "not required", "exempt", "exemption", "does not require"}
+    lower = sentence.text.lower()
+    for negation in negations:
+        if negation in lower:
             return -0.3
     return 0.0
+
+
+def license_confidence(sentence):
+    score = 0.4
+    score += license_context_score(sentence.text)
+    score += modality(sentence)
+    score += negation(sentence)
+    return round(max(0, min(score, 1.0)), 2)
 
 
 def distance_confidence(sentence):
     score = 0.4
     score += distance_context_score(sentence.text)
-    score += distance_modality(sentence)
-    score += distance_negation(sentence)
-    return round(max(0, 0, min(score, 1.0)), 2)
+    score += modality(sentence)
+    score += negation(sentence)
+    return round(max(0, min(score, 1.0)), 2)
+
+
+def license_criteria(sentence):
+    licenses = extract_license(sentence.text)
+    if not licenses:
+        return None
+    text = sentence.text.lower()
+
+    if "shall not" in text or "must not" in text or "not required" in text:
+        meaning = "not_required"
+    elif "shall" in text or "must" in text or "required" in text:
+        meaning = "required"
+    elif "may" in text:
+        meaning = "optional"
+    else:
+        meaning = "unknown"
+
+    subject = None
+    for token in sentence:
+        if token.dep_ in ("nsubj", "nsubjpass"):
+            subject = token.text
+            break
+
+    action = None
+    for token in sentence:
+        if token.pos_ == "VERB":
+            action = token.lemma_
+            break
+
+    confidence = license_confidence(sentence)
+
+    return {
+        "criteria": "license_requirement",
+        "license_types": licenses,
+        "meaning": meaning,
+        "subject": subject,
+        "action": action,
+        "confidence": confidence,
+        "source": sentence.text
+    }
 
 
 def distance_criteria(sentence):
@@ -196,6 +309,12 @@ def extractTXT(filename):
             hits = extractKeywords(sentence.text, terms)
             if hits:
                 re_data = {}
+                if category in ["provincial business license", "provincial food business license",
+                                "municipal business license", "municipal food business license",
+                                "retail license for CPG"]:
+                    license_rule = license_criteria(sentence)
+                    if license_rule:
+                        re_data["license_criteria"] = license_rule
                 if category in ["min distance to restaurant", "min distance to food truck", "proximity regulations",
                                 "non-food service proximity restrictions",
                                 "min distance proximity from other business"]:
@@ -245,6 +364,12 @@ def extractPDF(filename):
             hits = extractKeywords(sentence.text, terms)
             if hits:
                 re_data = {}
+                if category in ["provincial business license", "provincial food business license",
+                                "municipal business license", "municipal food business license",
+                                "retail license for CPG"]:
+                    license_rule = license_criteria(sentence)
+                    if license_rule:
+                        re_data["license_criteria"] = license_rule
                 if category in ["min distance to restaurant", "min distance to food truck", "proximity regulations",
                                 "non-food service proximity restrictions",
                                 "min distance proximity from other business"]:
