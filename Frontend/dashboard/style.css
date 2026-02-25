@@ -104,6 +104,7 @@ header.floating {
   border-bottom: 1px solid #e2e2e2;
   border-radius: 10px;
   margin: 0.1rem;
+  overflow: hidden;
 }
 
 #filterPanel .apply-filters {
@@ -162,6 +163,7 @@ header.floating {
   display: flex;
   flex-direction: column;
   transition: flex 0.35s ease, min-width 0.35s ease;
+  overflow: hidden;
 }
 
 #detailsPanel.hidden {
@@ -180,11 +182,13 @@ header.floating {
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 2rem;
-  border-bottom: 1px solid #eaeaea;
+  border-bottom: 1px solid #3a6560;
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
-  margin-bottom: 0.1rem;
-  color: #203a82;
+  margin: -1.5rem -1.5rem 0.1rem -1.5rem;
+  background-color: #254441;
+  color: #fff;
+  border-radius: 10px 10px 0 0;
 }
 
 /* ── Panel toggle button ────────────────────────────────────────────────── */
@@ -193,12 +197,12 @@ header.floating {
   border: none;
   cursor: pointer;
   font-size: 1rem;
-  color: #555;
+  color: #fff;
   transition: color 0.2s ease;
 }
 
 .panel-toggle:hover {
-  color: #203a82;
+  color: #a8c5c1;
 }
 
 /* ── Details panel content ──────────────────────────────────────────────── */

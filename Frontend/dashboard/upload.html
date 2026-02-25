@@ -38,7 +38,9 @@
       font-family: 'Poppins', sans-serif;
       font-weight: 600;
       font-size: 1.1rem;
-      color: #203a82;
+      color: #fff;
+      background-color: #254441;
+      border-radius: 10px 10px 0 0;
     }
 
     /* ── Inner body padding ─────────────────────────────────────── */
@@ -60,21 +62,21 @@
 
     /* ── Drag-and-drop area ─────────────────────────────────────── */
     .drop-area {
-      border: 2px dashed #c5cfe8;
+      border: 2px dashed #a8bfbd;
       border-radius: 10px;
       padding: 2.5rem 2rem;
       text-align: center;
       font-family: 'Inter', sans-serif;
       font-size: 0.95rem;
       color: #666;
-      background-color: #f7f9ff;
+      background-color: #f7faf9;
       transition: background-color 0.25s, border-color 0.25s;
       cursor: pointer;
     }
 
     .drop-area.dragover {
-      background-color: #eaf0ff;
-      border-color: #203a82;
+      background-color: #e6efee;
+      border-color: #254441;
     }
 
     .drop-area input[type="file"] {
@@ -96,7 +98,7 @@
       font-family: 'Inter', sans-serif;
       font-size: 0.9rem;
       font-weight: 500;
-      color: #203a82;
+      color: #254441;
     }
 
     #uploadBtn {
@@ -106,18 +108,18 @@
       font-weight: 500;
       border: none;
       border-radius: 6px;
-      background-color: #203a82;
+      background-color: #254441;
       color: #fff;
       cursor: pointer;
       transition: background-color 0.2s;
     }
 
     #uploadBtn:hover:not(:disabled) {
-      background-color: #162a5e;
+      background-color: #1b3330;
     }
 
     #uploadBtn:disabled {
-      background-color: #aab2c8;
+      background-color: #9db5b2;
       cursor: not-allowed;
     }
 
@@ -134,7 +136,7 @@
     #progressBar {
       width: 0%;
       height: 100%;
-      background-color: #203a82;
+      background-color: #254441;
       border-radius: 5px;
       text-align: center;
       color: #fff;
@@ -180,7 +182,7 @@
     }
 
     #uploadedFiles li:hover {
-      background-color: #f5f7ff;
+      background-color: #f2f6f5;
     }
 
     #uploadedFiles li .file-name {
@@ -191,7 +193,7 @@
 
     #uploadedFiles li .file-icon {
       font-size: 1rem;
-      color: #203a82;
+      color: #5c7a76;
     }
 
     #uploadedFiles li button {
