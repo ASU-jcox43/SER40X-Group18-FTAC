@@ -1,46 +1,49 @@
-/* Apply to the whole page */
+/* ── Google Fonts ───────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+
+/* ── Base ───────────────────────────────────────────────────────────────── */
 body {
-  font-family: 'Poppins', sans-serif;
-  font-size: 16px;       /* base font size */
-  line-height: 1.5;      /* clean spacing between lines */
-  color: #333;           /* neutral dark text */
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
   margin: 0;
   padding: 0;
-  
   background: linear-gradient(to bottom, #5c7a76 70%, #c7c2bc 100%);
 }
 
-/* Header styles */
+/* ── Header ─────────────────────────────────────────────────────────────── */
 header {
-  background-color: #fdfbf8; /* cream colored */
+  background-color: #fdfbf8;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 3rem 0.75rem 0.75rem; /* top, right, bottom, left */
-  box-shadow: 1px 2px 12px rgba(0,0,0,0.08); /* slight shadow */
+  padding: 0.75rem 3rem 0.75rem 0.75rem;
+  box-shadow: 1px 2px 12px rgba(0,0,0,0.08);
   border-bottom: 1px solid #e2e2e2;
-  border-radius: 30px; 
-  margin: 0.5rem 0.5rem 1rem 0.5rem; /* top, right, bottom, left */
+  border-radius: 30px;
+  margin: 0.5rem 0.5rem 1rem 0.5rem;
 }
 
 header.floating {
   border-radius: 12px;
-  margin: 1rem 2rem; /* inset from edges */
+  margin: 1rem 2rem;
 }
 
-/* Navigation container */
+/* ── Navigation ─────────────────────────────────────────────────────────── */
 .header-nav {
   display: flex;
   justify-content: space-between;
-  flex: 1;             
-  max-width: none;    
+  flex: 1;
+  max-width: none;
   margin-left: 2rem;
-  margin-right: 2rem;  
-  gap: 2rem;           
-  align-items: flex-end
+  margin-right: 2rem;
+  gap: 2rem;
+  align-items: flex-end;
 }
 
 .header-nav a {
+  font-family: 'Poppins', sans-serif;
   text-decoration: none;
   color: #555;
   font-weight: 500;
@@ -49,12 +52,10 @@ header.floating {
   transition: color 0.2s;
 }
 
-/* Highlight on hover */
 .header-nav a:hover {
   color: #203a82;
 }
 
-/* underline effect on hover */
 .header-nav a::after {
   content: '';
   position: absolute;
@@ -71,33 +72,35 @@ header.floating {
 }
 
 .nav-logo {
-  height: 70px; /* logo size */
+  height: 70px;
   margin-right: 1rem;
 }
 
+/* ── Page visibility ────────────────────────────────────────────────────── */
 .page {
-  display: none; /* hide all pages by default */
+  display: none;
 }
 
 .page.active {
-  display: flex; /* or block/flex depending on layout */
+  display: flex;
 }
 
-
+/* ── Dashboard layout ───────────────────────────────────────────────────── */
 #dashboardPage {
-    display: flex;
-    gap: 1rem;
-    height: calc(100vh - 100px); 
-    padding: 1rem 2rem;
+  display: flex;
+  gap: 1rem;
+  height: calc(100vh - 100px);
+  padding: 1rem 2rem;
 }
 
+/* ── Filter panel ───────────────────────────────────────────────────────── */
 #filterPanel {
   flex: 2;
   min-width: 175px;
   max-width: 175px;
   padding: 1.5rem;
   background-color: #fff;
-  box-shadow: 1px 2px 12px rgba(0,0,0,0.08); /* slight shadow */
+  box-shadow: 1px 2px 12px rgba(0,0,0,0.08);
   border-bottom: 1px solid #e2e2e2;
   border-radius: 10px;
   margin: 0.1rem;
@@ -112,24 +115,24 @@ header.floating {
   font-weight: 400;
 }
 
+/* ── Results panel ──────────────────────────────────────────────────────── */
 #resultsPanel {
   flex: 5;
   min-width: 440px;
   padding: 1.5rem;
   overflow-y: auto;
-  box-shadow: 1px 2px 12px rgba(0,0,0,0.08); /* slight shadow */
+  box-shadow: 1px 2px 12px rgba(0,0,0,0.08);
   border-bottom: 1px solid #e2e2e2;
   border-radius: 10px;
   margin: 0.1rem;
-
   display: flex;
   flex-direction: column;
   overflow: hidden;
   background-color: #fff;
 }
 
-/* Panel heading */
 #resultsPanel .panel-title {
+  font-family: 'Poppins', sans-serif;
   font-size: 1.25rem;
   font-weight: 600;
   color: #203a82;
@@ -137,7 +140,6 @@ header.floating {
   border-bottom: 1px solid #eaeaea;
 }
 
-/* Table container padding */
 #resultsPanel table {
   width: 100%;
   border-collapse: separate;
@@ -147,18 +149,16 @@ header.floating {
   font-size: 0.95rem;
 }
 
-
-/* Header within details panel */
+/* ── Details panel ──────────────────────────────────────────────────────── */
 #detailsPanel {
   flex: 3;
   min-width: 200px;
   padding: 1.5rem;
   background-color: #fff;
-  box-shadow: 1px 2px 12px rgba(0,0,0,0.08); /* slight shadow */
+  box-shadow: 1px 2px 12px rgba(0,0,0,0.08);
   border-bottom: 1px solid #e2e2e2;
   border-radius: 10px;
   margin: 0.1rem;
-
   display: flex;
   flex-direction: column;
   transition: flex 0.35s ease, min-width 0.35s ease;
@@ -172,20 +172,21 @@ header.floating {
   flex: 0;
 }
 
-/* Header inside details panel */
+/* ── Shared panel header ────────────────────────────────────────────────── */
 #resultsPanel .panel-header,
 #filterPanel .panel-header,
-#detailsPanel .panel-header{
+#detailsPanel .panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 2rem;
   border-bottom: 1px solid #eaeaea;
+  font-family: 'Poppins', sans-serif;
   font-weight: 600;
   margin-bottom: 0.1rem;
 }
 
-/* Collapse button */
+/* ── Panel toggle button ────────────────────────────────────────────────── */
 .panel-toggle {
   background: none;
   border: none;
@@ -199,21 +200,19 @@ header.floating {
   color: #203a82;
 }
 
-/* Content container */
+/* ── Details panel content ──────────────────────────────────────────────── */
 #detailsPanel .panel-content {
-  padding: 1.5rem 0.5rem; /* space around content */
+  padding: 1.5rem 0.5rem;
   overflow-y: auto;
   max-height: calc(100vh - 150px);
   transition: max-height 0.45s ease, opacity 0.25s ease;
 }
 
-/* Entire panel collapsed */
 #detailsPanel.collapsed {
   flex: 0.6;
   min-width: 60px;
 }
 
-/* Hide content when collapsed */
 #detailsPanel.collapsed .panel-content {
   max-height: 0;
   opacity: 0;
@@ -221,13 +220,13 @@ header.floating {
   padding-bottom: 0;
 }
 
-/* Rotate arrow */
 #detailsPanel.collapsed .panel-header .arrow {
   transform: rotate(-90deg);
 }
 
-
+/* ── Detail sections ────────────────────────────────────────────────────── */
 .detail-section {
+  margin-bottom: 1rem;
   border-bottom: 1px solid #ddd;
 }
 
@@ -236,176 +235,7 @@ header.floating {
   background: none;
   border: none;
   text-align: left;
-  font-size: 0.95rem;
-  font-weight: 600;
-  padding: 0.5rem 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-}
-
-.collapse-toggle:hover {
-  color: #203a82;
-}
-
-.collapse-content {
-  display: none;
-  padding: 8px 0;
-}
-
-.detail-section.open .collapse-content {
-  display: block;
-}
-
-.arrow {
-  display: inline-block;
-  transition: transform 0.2s ease;
-}
-
-.detail-section.open .arrow {
-  transform: rotate(180deg);
-}
-
-/* Ensure each filter label + input is vertical */
-.filter-item {
-  display: flex;
-  flex-direction: column;  /* stack label on top of input */
-  margin-bottom: 0rem;  /* space between filters */
-}
-
-.filter-item label {
-  margin-top: 2rem;
-  margin-bottom: 0.25rem;   /* space between label and input */
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-.filter-item select,
-.filter-item input {
-  padding: 0.25rem;
-  border: 1px solid #e2e2e2;
-  border-radius: 6px;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 400;
-}
-
-.checkbox-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0px; /* no extra gap */
-    max-height: 150px; /* optional scroll if too tall */
-    overflow-y: auto;
-    font-size: 14px;
-    border: 1px solid #ccc;  /* light border for box */
-    border-radius: 6px;      /* rounded corners */
-    background-color: #f9f9f9; /* subtle background */
-    cursor: pointer;         /* pointer on hover */
-    transition: all 0.2s ease;
-}
-
-.checkbox-group {
-  
-  display: flex;
-  flex-direction: column;
-  gap: 2px; /* very small vertical gap */
-  max-height: 150px; /* optional scroll if too tall */
-  overflow-y: auto;
-}
-
-.checkbox-group label {
-  display: flex;
-  align-items: center;
-  margin: 0;       /* remove default margin */
-  padding: 0;      /* remove padding */
-  line-height: 1;  /* minimal line height */
-  font-size: 14px; /* optional text size */
-}
-
-/* Jurisdiction Table interaction, Middle Section */
-#resultsPanel .results-controls {
-  display: flex;
-  align-items: center;
-  gap: 1rem;                       /* space between label and select */
-  padding: 2rem 1rem 0rem 2rem; /* top, right, bottom, left */
-  margin-bottom: 0.5rem;             /* spacing below controls */
-  border-radius: 8px;               /* rounded corners */
   font-family: 'Poppins', sans-serif;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.results-controls select{
-  padding: 0.25rem;
-  border: 1px solid #e2e2e2;
-  border-radius: 6px;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 400;
-}
-
-#jurisdictionTable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.95rem; /* space between rows */
-}
-
-.table-scroll {
-  overflow-y: auto;
-  flex: 1;
-  min-height: 0;
-}
-
-#jurisdictionTable tbody tr { /* entire row hover effect */
-  background-color: #fff;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-/* th/td positioning context */
-#jurisdictionTable th {
-  position: relative;   
-  padding: 0rem 0rem 1rem 0rem; /* top, right, bottom, left */
-  text-align: left;
-}
-
-#jurisdictionTable td {
-  padding: 0rem 1rem 0.5rem 5px; /* top, right, bottom, left */
-}
-
-/* Underline */
-#jurisdictionTable tbody tr td::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0;      
-  width: 0;
-  height: 2px;
-  background-color: #000;
-}
-
-/* Animate underline on row hover */
-#jurisdictionTable tbody tr:hover td::after {
-  width: 100%;
-}
-
-/* Subtle row hover */
-#jurisdictionTable tbody tr:hover {
-  background-color: rgba(0, 0, 0, 0.02);
-}
-
-
-/* Detail sections, Right Panel */
-.detail-section {
-  margin-bottom: 1rem;
-}
-
-.collapse-toggle {
-  width: 100%;
-  background: none;
-  border: none;
   font-size: 0.95rem;
   font-weight: 600;
   padding: 0.5rem 0;
@@ -424,11 +254,13 @@ header.floating {
   overflow: hidden;
   transition: max-height 0.35s ease, opacity 0.25s ease;
   padding: 0.5rem 0;
+  font-family: 'Inter', sans-serif;
   font-size: 0.9rem;
   color: #444;
 }
 
 .arrow {
+  display: inline-block;
   transition: transform 0.25s ease;
 }
 
@@ -440,4 +272,127 @@ header.floating {
 
 .detail-section.open .arrow {
   transform: rotate(180deg);
+}
+
+/* ── Filter items ───────────────────────────────────────────────────────── */
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0rem;
+}
+
+.filter-item label {
+  margin-top: 2rem;
+  margin-bottom: 0.25rem;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.filter-item select,
+.filter-item input {
+  padding: 0.25rem;
+  border: 1px solid #e2e2e2;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 150px;
+  overflow-y: auto;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+}
+
+/* ── Results controls ───────────────────────────────────────────────────── */
+#resultsPanel .results-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem 1rem 0rem 2rem;
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.results-controls select {
+  padding: 0.25rem;
+  border: 1px solid #e2e2e2;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 400;
+}
+
+/* ── Jurisdiction table ─────────────────────────────────────────────────── */
+#jurisdictionTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+}
+
+.table-scroll {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+#jurisdictionTable tbody tr {
+  background-color: #fff;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+#jurisdictionTable th {
+  position: relative;
+  padding: 0rem 0rem 1rem 0rem;
+  text-align: left;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+}
+
+#jurisdictionTable td {
+  padding: 0rem 1rem 0.5rem 5px;
+  font-family: 'Inter', sans-serif;
+}
+
+#jurisdictionTable tbody tr td::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 2px;
+  background-color: #000;
+}
+
+#jurisdictionTable tbody tr:hover td::after {
+  width: 100%;
+}
+
+#jurisdictionTable tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.02);
 }

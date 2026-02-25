@@ -5,178 +5,345 @@
   <title>Upload PDF</title>
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="images/ftacLogo.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    /* Drag-and-drop area */
+    /* ── Page layout ───────────────────────────────────────────── */
+    #filesPage {
+      display: flex;
+      justify-content: center;
+      padding: 1.5rem 2rem;
+      min-height: calc(100vh - 100px);
+    }
+
+    /* ── Main card container ───────────────────────────────────── */
+    .files-container {
+      width: 100%;
+      max-width: 780px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 1px 2px 12px rgba(0, 0, 0, 0.08);
+      border-bottom: 1px solid #e2e2e2;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Panel header (matches dashboard panel-header) ─────────── */
+    .files-container .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 2rem;
+      border-bottom: 1px solid #eaeaea;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #203a82;
+    }
+
+    /* ── Inner body padding ─────────────────────────────────────── */
+    .files-body {
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* ── Section label ──────────────────────────────────────────── */
+    .section-label {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.75rem;
+    }
+
+    /* ── Drag-and-drop area ─────────────────────────────────────── */
     .drop-area {
-        max-width: 700px;
-        border: 2px dashed #000000;
-        border-radius: 10px;
-        padding: 40px;
-        text-align: center;
-        font-family: 'Work Sans', sans-serif;
-        color: #000000;
-        margin: 0 auto 10px; /* top & bottom 0, bottom 10px, auto left/right centers it */
-        transition: background-color 0.3s;
+      border: 2px dashed #c5cfe8;
+      border-radius: 10px;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      color: #666;
+      background-color: #f7f9ff;
+      transition: background-color 0.25s, border-color 0.25s;
+      cursor: pointer;
     }
 
     .drop-area.dragover {
-        background-color: #e0f0ed;
+      background-color: #eaf0ff;
+      border-color: #203a82;
     }
 
-    /* Progress bar */
-    #progressContainer {
-        width: 100%;
-        background-color: #ddd;
-        border-radius: 5px;
-        margin-top: 10px;
-        height: 20px;
-        display: none;
+    .drop-area input[type="file"] {
+      margin-top: 0.75rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
     }
 
-    #progressBar {
-        width: 0%;
-        height: 100%;
-        background-color: #254441;
-        border-radius: 5px;
-        text-align: center;
-        color: white;
-        font-weight: bold;
-    }
-
-    #uploadedFiles {
-        margin-top: 20px;
-        max-width: 700px;
-        margin-left: auto;
-        margin-right: auto;
-        padding: 0;
-    }
-
-    #uploadedFiles li {
-        list-style: none;
-        background-color: #f5f5f5; /* light gray background */
-        margin: 8px 0;
-        padding: 12px 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-family: 'Work Sans', sans-serif;
-        color: #254441;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    #uploadedFiles li:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    }
-
-    #uploadedFiles li button {
-        background-color: #254441;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: background-color 0.3s;
-    }
-
-    #uploadedFiles li button:hover {
-        background-color: #1b3330;
-    }
-
-
-    /* Center upload button and file name */
-    .upload-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-top: 15px;
-        gap: 10px; /* space between text and button */
-    }
-
-    #uploadBtn {
-        padding: 10px 25px;
-        font-size: 16px;
-        border: none;
-        border-radius: 5px;
-        background-color: #254441;
-        color: white;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-
-    #uploadBtn:disabled {
-        background-color: #888;
-        cursor: not-allowed;
-    }
-
-    #uploadBtn:hover:not(:disabled) {
-        background-color: #1b3330;
+    /* ── Upload controls row ────────────────────────────────────── */
+    .upload-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
     }
 
     #fileName {
-        font-weight: bold;
-        color: #254441;
-        text-align: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #203a82;
     }
 
-   .uploaded-title {
-        margin-left: 40px; 
-        color: #000000;    
-        font-weight: bold;
+    #uploadBtn {
+      padding: 0.4rem 1.25rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border: none;
+      border-radius: 6px;
+      background-color: #203a82;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.2s;
     }
 
-    .upload-pdf-title {
-        margin-left: 40px; 
-        color: #000000;    
-        font-weight: bold; 
+    #uploadBtn:hover:not(:disabled) {
+      background-color: #162a5e;
     }
 
+    #uploadBtn:disabled {
+      background-color: #aab2c8;
+      cursor: not-allowed;
+    }
 
+    /* ── Progress bar ───────────────────────────────────────────── */
+    #progressContainer {
+      width: 100%;
+      background-color: #e8eaf0;
+      border-radius: 5px;
+      margin-top: 0.75rem;
+      height: 18px;
+      display: none;
+    }
+
+    #progressBar {
+      width: 0%;
+      height: 100%;
+      background-color: #203a82;
+      border-radius: 5px;
+      text-align: center;
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 600;
+      line-height: 18px;
+      transition: width 0.3s ease;
+    }
+
+    #status {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      color: #555;
+      margin-top: 0.5rem;
+    }
+
+    /* ── Uploaded files list (single container, no per-item boxes) */
+    .uploaded-section {
+      padding-top: 0;
+    }
+
+    #uploadedFiles {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+    }
+
+    #uploadedFiles li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1.25rem;
+      font-size: 0.9rem;
+      color: #333;
+      border-top: 1px solid #eaeaea;
+      transition: background-color 0.2s;
+    }
+
+    #uploadedFiles li:first-child {
+      border-top: none;
+    }
+
+    #uploadedFiles li:hover {
+      background-color: #f5f7ff;
+    }
+
+    #uploadedFiles li .file-name {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    #uploadedFiles li .file-icon {
+      font-size: 1rem;
+      color: #203a82;
+    }
+
+    #uploadedFiles li button {
+      background: none;
+      border: 1px solid #e2e2e2;
+      border-radius: 6px;
+      padding: 0.2rem 0.65rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      color: #555;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    #uploadedFiles li button:hover {
+      border-color: #c0392b;
+      color: #c0392b;
+    }
+
+    .empty-state {
+      padding: 1.25rem;
+      text-align: center;
+      font-size: 0.88rem;
+      color: #aaa;
+      font-family: 'Inter', sans-serif;
+    }
   </style>
 </head>
 <body>
-  <!-- Top Bar -->
+
+  <!-- ── Top Bar ───────────────────────────────────────────────── -->
   <header>
     <nav class="header-nav">
       <img src="assets/ftacLogo.png" alt="FTAC Logo" class="nav-logo">
-
       <a href="#" onclick="showPanel('about')">About</a>
       <a href="index.html" data-external="">Dashboard</a>
       <a href="#" onclick="showPanel('municipalities')">Municipalities</a>
       <a href="generate_report.html" data-external>Reports</a>
       <a href="#" onclick="showPanel('ai')">AI Analysis</a>
-
-      <!-- Current Page: Do not Navigate-->
       <a href="#" onclick="showPanel('files')">Files</a>
     </nav>
   </header>
 
-  <h2 class="upload-pdf-title">Upload a PDF File</h2>
+  <!-- ── Page body ─────────────────────────────────────────────── -->
+  <div id="filesPage">
+    <div class="files-container">
 
-    <!-- Drag & Drop Area -->
-    <div id="dropArea" class="drop-area">
-    Drag & Drop PDF here
-    <br>or<br>
-    <input type="file" id="pdfInput" name="pdfFile" accept="application/pdf" required>
-    </div>
+      <!-- Panel header -->
+      <div class="panel-header">
+        File Manager
+      </div>
 
-    <!-- Centered container for selected file and upload button -->
-    <div class="upload-container">
-    <p id="fileName"></p>
-    <button type="button" id="uploadBtn" disabled>Upload PDF</button>
-    </div>
+      <div class="files-body">
 
-    <div id="progressContainer">
-    <div id="progressBar">0%</div>
-    </div>
+        <!-- Upload section -->
+        <div>
+          <p class="section-label">Upload a PDF File</p>
 
-    <p id="status"></p>
+          <div id="dropArea" class="drop-area">
+            Drag &amp; drop a PDF here<br>or<br>
+            <input type="file" id="pdfInput" name="pdfFile" accept="application/pdf" required>
+          </div>
 
-    <h3 class="uploaded-title">Uploaded PDFs:</h3>
-    <ul id="uploadedFiles"></ul>
+          <div class="upload-controls">
+            <button type="button" id="uploadBtn" disabled>Upload PDF</button>
+            <span id="fileName"></span>
+          </div>
+
+          <div id="progressContainer">
+            <div id="progressBar">0%</div>
+          </div>
+          <p id="status"></p>
+        </div>
+
+        <!-- Uploaded files section -->
+        <div class="uploaded-section" style="border-top: 1px solid #eaeaea; padding-top: 1.5rem;">
+          <p class="section-label">Uploaded PDFs</p>
+          <ul id="uploadedFiles">
+            <li class="empty-state" id="emptyState">No files uploaded yet.</li>
+          </ul>
+        </div>
+
+      </div><!-- /.files-body -->
+    </div><!-- /.files-container -->
+  </div><!-- /#filesPage -->
+
+  <script>
+    const dropArea   = document.getElementById('dropArea');
+    const pdfInput   = document.getElementById('pdfInput');
+    const uploadBtn  = document.getElementById('uploadBtn');
+    const fileNameEl = document.getElementById('fileName');
+    const fileList   = document.getElementById('uploadedFiles');
+    const emptyState = document.getElementById('emptyState');
+
+    // Enable button when file chosen via picker
+    pdfInput.addEventListener('change', () => {
+      if (pdfInput.files.length) {
+        fileNameEl.textContent = pdfInput.files[0].name;
+        uploadBtn.disabled = false;
+      }
+    });
+
+    // Drag-and-drop events
+    ['dragenter', 'dragover'].forEach(e => dropArea.addEventListener(e, ev => {
+      ev.preventDefault(); dropArea.classList.add('dragover');
+    }));
+    ['dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, ev => {
+      ev.preventDefault(); dropArea.classList.remove('dragover');
+    }));
+    dropArea.addEventListener('drop', ev => {
+      const file = ev.dataTransfer.files[0];
+      if (file && file.type === 'application/pdf') {
+        pdfInput.files = ev.dataTransfer.files;
+        fileNameEl.textContent = file.name;
+        uploadBtn.disabled = false;
+      }
+    });
+
+    // Upload button — adds file to list
+    uploadBtn.addEventListener('click', () => {
+      const file = pdfInput.files[0];
+      if (!file) return;
+
+      // Remove empty state
+      if (emptyState) emptyState.remove();
+
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <span class="file-name">
+          <span class="file-icon">📄</span>
+          ${file.name}
+        </span>
+        <button onclick="this.closest('li').remove(); checkEmpty()">Remove</button>
+      `;
+      fileList.appendChild(li);
+
+      // Reset
+      pdfInput.value = '';
+      fileNameEl.textContent = '';
+      uploadBtn.disabled = true;
+    });
+
+    function checkEmpty() {
+      if (!fileList.querySelector('li:not(#emptyState)')) {
+        const msg = document.createElement('li');
+        msg.id = 'emptyState';
+        msg.className = 'empty-state';
+        msg.textContent = 'No files uploaded yet.';
+        fileList.appendChild(msg);
+      }
+    }
+  </script>
 
   <script src="script.js"></script>
 </body>
