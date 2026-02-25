@@ -7,7 +7,7 @@ import subprocess
 from .Logic.scrapers.document_scraper.spiders.DocumentScraper import *
 from .Logic.OCRProcessor.ocr_processor import process_pdfs
 from .Logic.extraction.text_extraction import extract
-from .Logic.mongo_db.scrapy_config import update_config, get_config, get_daily_document_update
+from .Logic.mongo_db.scrapy_config import update_config, get_config_list, get_daily_document_update
 from .Logic.mongo_db.scrapy_output import get_links, remove_link
 from .Logic.mongo_db.connection import CLIENT
 from Backend.Logic.reports.report_generator import generate_report
@@ -23,7 +23,7 @@ from apscheduler.jobstores.mongodb import MongoDBJobStore
 from apscheduler.triggers.cron import CronTrigger
 
 def run_document_scraper(*municipalities):
-    configs: list[dict] = [get_config(m)[0] for m in municipalities] # TODO make this only do 1 database query
+    configs: list[dict] = [get_config_list(m)[0] for m in municipalities] # TODO make this only do 1 database query
 
     os.chdir('Backend/Logic/scrapers')
     for config in configs:
@@ -64,7 +64,7 @@ class PostExtractDocs(BaseModel):
 
 @api_app.post("/ingest-docs")
 async def ingest_docs(municipality: str, background_tasks: BackgroundTasks):
-    if get_config(municipality) == []:
+    if get_config_list(municipality) == []:
         raise HTTPException(status_code=404, detail="municipality not found")
     
     background_tasks.add_task(run_document_scraper, municipality)
@@ -96,8 +96,8 @@ async def search_docs(
     ]
 
 @api_app.get("/scrapy_config")
-async def search_configs(municipality: str | None = None):
-    return get_config(municipality, num_results=10)
+async def search_configs():
+    return get_config_list(50)
 
 @api_app.put("/scrapy_config")
 async def edit_config(req: ScrapyConfig, municipality: str):
