@@ -11,19 +11,21 @@ nlp = spacy.load("en_core_web_sm")
 # Define your keyword categories and terms
 # Category: Terms []
 KEYWORDS = {
-    "webpage": [".gov", ".ca", "municipality", "city of", "regional district"],
+    "webpage": [".gov", ".ca", "municipality", "city of", "regional district"],  # covered
     "checklist": ["checklist", "requirements list", "required documents"],
     "guide to license": ["guide", "how to apply", "licensing process", "application process"],  # covered
     "bylaws": ["bylaw", "regulation", "municipal code", "ordinance"],
     "penalties": ["fine", "fee", "penalty", "violation", "infraction"],
-    "provincial business license": ["provincial business license", "provincial permit", "provincial approval", # covered
+    "provincial business license": ["provincial business license", "provincial permit", "provincial approval",
+                                    # covered
                                     "provincial business name certificate"],
-    "provincial food business license": ["provincial food business license", "food establishment permit", # covered
+    "provincial food business license": ["provincial food business license", "food establishment permit",  # covered
                                          "provincial food vendor license"],
-    "municipal business license": ["municipal business license", "local business permit", "city business license"], # covered
-    "municipal food business license": ["municipal food business license", "mobile food vendor license", # covered
+    "municipal business license": ["municipal business license", "local business permit", "city business license"],
+    # covered
+    "municipal food business license": ["municipal food business license", "mobile food vendor license",  # covered
                                         "street food vendor license"],
-    "retail license for CPG": ["consumer packaged good", "CPG", "retail goods", "branded retail products"], # covered
+    "retail license for CPG": ["consumer packaged good", "CPG", "retail goods", "branded retail products"],  # covered
     "curbside vending": ["curbside vending", "street vending", "mobile vending", "sidewalk vending"],
     "parking fees": ["parking fee", "metered parking", "vending zone", "designated vending area"],
     "noise bylaws": ["noise", "noise bylaw", "sound regulation", "amplified sound"],
@@ -32,21 +34,24 @@ KEYWORDS = {
                         "hours at any one time"],
     "branded consumer goods": ["branding", "branded products", "product labeling", "consumer goods"],
     "private property operation": ["private property", "private lot", "owner permission", "property consent"],
-    "proximity regulations": ["proximity regulation", "distance restriction", "buffer zone", "proximity limit"], # covered
-    "min distance to restaurant": ["distance to restaurant", "separation from restaurant", # covered
+    "proximity regulations": ["proximity regulation", "distance restriction", "buffer zone", "proximity limit"],
+    # covered
+    "min distance to restaurant": ["distance to restaurant", "separation from restaurant",  # covered
                                    "nearby restaurant restriction", "from an open and operating restaurant"],
-    "min distance to food truck": ["distance to other food trucks", "food truck spacing", "vendor proximity"], # covered
-    "non-food service proximity restrictions": ["proximity restriction", "non-food vendor proximity", # covered
+    "min distance to food truck": ["distance to other food trucks", "food truck spacing", "vendor proximity"],
+    # covered
+    "non-food service proximity restrictions": ["proximity restriction", "non-food vendor proximity",  # covered
                                                 "distance from other vendors"],
-    "min distance proximity from other business": ["proximity to other business", "distance between vendors"], # covered
+    "min distance proximity from other business": ["proximity to other business", "distance between vendors"],
+    # covered
     "num food trucks allowed in geographic area": ["number of food trucks allowed", "maximum food trucks per area",
                                                    "vendor density limit", "food trucks per block"],
     "parking locations": ["designated parking", "allowed parking", "approved vending location", "vending area",
                           "public road vending"],
     "additional private restrictions": ["private restrictions", "additional property rules", "landowner conditions"],
     "name of local authority": ["local authority", "licensing department", "municipal licensing office", "city clerk",
-                                "regulatory agency"],
-    "direct link to authority": ["reach out", "contact", "reach", "office", "call", "email", "phone"],
+                                "regulatory agency"],  # covered
+    "direct link to authority": ["reach out", "contact", "reach", "office", "call", "email", "phone"],  # covered
     "insurance requirements": ["insurance", "liability coverage", "certificate of insurance", "proof of insurance"],
     "physical requirements for trucks": ["vehicle requirements", "truck must have", "equipment standards",
                                          "vehicle condition", "inspection requirements", "plate number",
@@ -74,13 +79,27 @@ LICENSE_RE = re.compile(
     r'(business|food)?\s*'
     r'(license|licence|permit|approval|certificate)',
     re.IGNORECASE)
-
-DISTANCE_WORDS = {"within": "within",
-                  "no closer than": "minimum",
-                  "at least": "minimum",
-                  "no less than": "minimum",
-                  "from": "from",
-                  "of": "of"}
+WEBPAGE_RE = re.compile(
+    r'https?://[^\s)"]+|'
+    r'\b[\w\-]+\.(?:gov|gov\.ca|ca)\b|'
+    r'\b(city of|municipality of|regional district of)\s+[A-Z][a-zA-Z\s]+',
+    re.IGNORECASE)
+AUTHORITY_NAME_RE = re.compile(
+    r'local authority|'
+    r'licensing department|'
+    r'municipal licensing office|'
+    r'city clerk|'
+    r'regulatory agency|'
+    r'department of [A-Za-z\s]+|'
+    r'[A-Z][a-zA-Z\s]+ (Department|Office|Authority|Division)',
+    re.IGNORECASE)
+AUTHORITY_CONTACT_RE = re.compile(
+    r'\b(contact|reach out to|reach|call|email|phone)\b|'
+    r'\bfor more information\b|'
+    r'\bvisit\b.*\bwebsite\b|'
+    r'\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b|'
+    r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b',
+    re.IGNORECASE)
 
 LICENSE_WORDS = {
     "provincial_business": [
@@ -114,8 +133,52 @@ LICENSE_WORDS = {
     ]
 }
 
+AUTHORITY_WORDS = {
+    "authority_name": [
+        "local authority",
+        "licensing department",
+        "municipal licensing office",
+        "city clerk",
+        "regulatory agency",
+        "department",
+        "office",
+        "authority",
+        "division"
+    ],
+    "authority_contact": [
+        "contact",
+        "reach out",
+        "call",
+        "email",
+        "phone",
+        "for more information",
+        "inquiries"
+    ],
+    "authority_web": [
+        "website",
+        "webpage",
+        ".gov",
+        ".ca",
+        "online"
+    ]
+}
+
 
 # TODO: Add all other RE layers for the other categories and extractions.
+def extract_authority(sentence):
+    text = sentence.lower()
+    found = []
+    for authority_type, phrases in AUTHORITY_WORDS.items():
+        for phrase in phrases:
+            if phrase in text:
+                found.append(authority_type)
+                break
+    if found:
+        return list(set(found))
+    else:
+        return None
+
+
 def extract_license(sentence):
     text = sentence.lower()
     found = []
@@ -149,6 +212,18 @@ DISTANCE_WEIGHTS = {"shall": 0.2, "must": 0.2, "shall not": 0.3,
 LICENSE_WEIGHTS = {"shall": 0.3, "must": 0.3, "required": 0.3, "mandatory": 0.3,
                    "condition of approval": 0.2, "prior to operating": 0.2,
                    "before operating": 0.2, "required to obtain": 0.3}
+AUTHORITY_WEIGHTS = {"contact": 0.2, "reach out": 0.2, "licensing department": 0.3,
+                     "city clerk": 0.3, "website": 0.2, ".gov": 0.3,
+                     "email": 0.2, "phone": 0.2, "calling": 0.2, "line": 0.2}
+
+
+def authority_context_score(text):
+    score = 0.0
+    lower = text.lower()
+    for keyword, weight in AUTHORITY_WEIGHTS.items():
+        if keyword in lower:
+            score += weight
+    return min(score, 1.0)
 
 
 def license_context_score(text):
@@ -186,6 +261,14 @@ def negation(sentence):
     return 0.0
 
 
+def authority_confidence(sentence):
+    score = 0.4
+    score += authority_context_score(sentence.text)
+    score += modality(sentence)
+    score += negation(sentence)
+    return round(max(0, min(score, 1.0)), 2)
+
+
 def license_confidence(sentence):
     score = 0.4
     score += license_context_score(sentence.text)
@@ -200,6 +283,34 @@ def distance_confidence(sentence):
     score += modality(sentence)
     score += negation(sentence)
     return round(max(0, min(score, 1.0)), 2)
+
+
+def authority_criteria(sentence):
+    authority = extract_authority(sentence.text)
+    if not authority:
+        return None
+    text = sentence.text.lower()
+
+    if (".gov" in text or ".ca" in text) and "@" not in text:
+        meaning = "link"
+    elif "@" in text or "email" in text:
+        meaning = "email address"
+    elif "local" in text or "department" in text or "office" in text:
+        meaning = "government"
+    elif re.search(r"\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b", text):
+        meaning = "phone number"
+    else:
+        meaning = "unknown"
+
+    confidence = authority_confidence(sentence)
+
+    return {
+        "criteria": "authority_contact",
+        "authority_type": authority,
+        "meaning": meaning,
+        "confidence": confidence,
+        "source": sentence.text
+    }
 
 
 def license_criteria(sentence):
@@ -309,6 +420,10 @@ def extractTXT(filename):
             hits = extractKeywords(sentence.text, terms)
             if hits:
                 re_data = {}
+                if category in ["webpage", "direct link to authority", "name of local authority"]:
+                    authority_rule = authority_criteria(sentence)
+                    if authority_rule:
+                        re_data["authority_criteria"] = authority_rule
                 if category in ["provincial business license", "provincial food business license",
                                 "municipal business license", "municipal food business license",
                                 "retail license for CPG"]:
@@ -364,6 +479,10 @@ def extractPDF(filename):
             hits = extractKeywords(sentence.text, terms)
             if hits:
                 re_data = {}
+                if category in ["webpage", "direct link to authority", "name of local authority"]:
+                    authority_rule = authority_criteria(sentence)
+                    if authority_rule:
+                        re_data["authority_criteria"] = authority_rule
                 if category in ["provincial business license", "provincial food business license",
                                 "municipal business license", "municipal food business license",
                                 "retail license for CPG"]:
