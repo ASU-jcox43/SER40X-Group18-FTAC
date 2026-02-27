@@ -13,9 +13,9 @@ nlp = spacy.load("en_core_web_sm")
 KEYWORDS = {
     "webpage": [".gov", ".ca", "municipality", "city of", "regional district"],  # covered
     "checklist": ["checklist", "requirements list", "required documents"],
-    "guide to license": ["guide", "how to apply", "licensing process", "application process"],  # covered
+    "guide to license": ["guide", "how to apply", "licensing process", "application process"],
     "bylaws": ["bylaw", "regulation", "municipal code", "ordinance"],
-    "penalties": ["fine", "fee", "penalty", "violation", "infraction"],
+    "penalties": ["fine", "fee", "penalty", "violation", "infraction"], # covered
     "provincial business license": ["provincial business license", "provincial permit", "provincial approval",
                                     # covered
                                     "provincial business name certificate"],
@@ -28,11 +28,11 @@ KEYWORDS = {
     "retail license for CPG": ["consumer packaged good", "CPG", "retail goods", "branded retail products"],  # covered
     "curbside vending": ["curbside vending", "street vending", "mobile vending", "sidewalk vending"],
     "parking fees": ["parking fee", "metered parking", "vending zone", "designated vending area"],
-    "noise bylaws": ["noise", "noise bylaw", "sound regulation", "amplified sound"],
+    "noise bylaws": ["noise", "noise bylaw", "sound regulation", "amplified sound"], # covered
     "traffic bylaws": ["traffic bylaw", "traffic regulation", "vehicle restriction", "road use", "traffic act"],
     "operation hours": ["operating hours", "business hours", "hours of operation", "time limit", "maximum duration",
-                        "hours at any one time"],
-    "branded consumer goods": ["branding", "branded products", "product labeling", "consumer goods"],
+                        "hours at any one time"], # covered
+    "branded consumer goods": ["branding", "branded products", "product labeling", "consumer goods"], # covered
     "private property operation": ["private property", "private lot", "owner permission", "property consent"],
     "proximity regulations": ["proximity regulation", "distance restriction", "buffer zone", "proximity limit"],
     # covered
@@ -45,14 +45,14 @@ KEYWORDS = {
     "min distance proximity from other business": ["proximity to other business", "distance between vendors"],
     # covered
     "num food trucks allowed in geographic area": ["number of food trucks allowed", "maximum food trucks per area",
-                                                   "vendor density limit", "food trucks per block"],
+                                                   "vendor density limit", "food trucks per block"], # covered
     "parking locations": ["designated parking", "allowed parking", "approved vending location", "vending area",
                           "public road vending"],
     "additional private restrictions": ["private restrictions", "additional property rules", "landowner conditions"],
     "name of local authority": ["local authority", "licensing department", "municipal licensing office", "city clerk",
                                 "regulatory agency"],  # covered
     "direct link to authority": ["reach out", "contact", "reach", "office", "call", "email", "phone"],  # covered
-    "insurance requirements": ["insurance", "liability coverage", "certificate of insurance", "proof of insurance"],
+    "insurance requirements": ["insurance", "liability coverage", "certificate of insurance", "proof of insurance"], # covered
     "physical requirements for trucks": ["vehicle requirements", "truck must have", "equipment standards",
                                          "vehicle condition", "inspection requirements", "plate number",
                                          "license number", "business name", "client's name"],
@@ -100,6 +100,47 @@ AUTHORITY_CONTACT_RE = re.compile(
     r'\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b|'
     r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b',
     re.IGNORECASE)
+TIME_RE = re.compile(
+    r'(\d+(?:\.\d+)?)\s*(hour|hours|hr|hrs|minute|minutes)\b',
+    re.IGNORECASE)
+CURRENCY_RE = re.compile(
+    r'\$\s?\d+(?:,\d{3})*(?:\.d{2})?',
+    re.IGNORECASE)
+
+OPERATIONAL_WORDS = {
+    "hours": [
+        "operating hours",
+        "business hours",
+        "hours of operation",
+        "time limit",
+        "maximum duration"
+    ],
+    "noise": [
+        "noise",
+        "sound",
+        "amplified sound",
+        "noise bylaw"
+    ],
+    "insurance": [
+        "insurance",
+        "liability coverage",
+        "certificate of insurance",
+        "proof of insurance"
+    ],
+    "penalty": [
+        "fine",
+        "penalty",
+        "violation",
+        "infraction",
+        "fee"
+    ],
+    "branding": [
+        "branding",
+        "product labeling",
+        "branded products",
+        "consumer goods"
+    ]
+}
 
 LICENSE_WORDS = {
     "provincial_business": [
@@ -165,6 +206,20 @@ AUTHORITY_WORDS = {
 
 
 # TODO: Add all other RE layers for the other categories and extractions.
+def extract_operational(sentence):
+    text = sentence.lower()
+    found = []
+    for operational_type, phrases in OPERATIONAL_WORDS.items():
+        for phrase in phrases:
+            if phrase in text:
+                found.append(operational_type)
+                break
+    if found:
+        return list(set(found))
+    else:
+        return None
+
+
 def extract_authority(sentence):
     text = sentence.lower()
     found = []
@@ -215,7 +270,21 @@ LICENSE_WEIGHTS = {"shall": 0.3, "must": 0.3, "required": 0.3, "mandatory": 0.3,
 AUTHORITY_WEIGHTS = {"contact": 0.2, "reach out": 0.2, "licensing department": 0.3,
                      "city clerk": 0.3, "website": 0.2, ".gov": 0.3,
                      "email": 0.2, "phone": 0.2, "calling": 0.2, "line": 0.2}
+OPERATIONAL_WEIGHTS = {"shall": 0.3, "must": 0.2, "shall not": 0.3,
+                       "must not": 0.3, "prohibited": 0.3, "operating hours": 0.3,
+                       "hours of operation": 0.3, "time limit": 0.3, "noise": 0.3,
+                       "amplified sound": 0.3, "sound regulation": 0.3, "insurance": 0.3,
+                       "liability coverage": 0.3, "certificate of insurance": 0.3, "fine": 0.3,
+                       "penalty": 0.3, "violation": 0.3, "infraction": 0.3,
+                       "may": 0.1, "permitted": 0.1}
 
+def operational_context_score(text):
+    score = 0.0
+    lower = text.lower()
+    for keyword, weight in OPERATIONAL_WEIGHTS.items():
+        if keyword in lower:
+            score += weight
+    return min(score, 1.0)
 
 def authority_context_score(text):
     score = 0.0
@@ -261,6 +330,13 @@ def negation(sentence):
     return 0.0
 
 
+def operational_confidence(sentence):
+    score = 0.4
+    score += operational_context_score(sentence.text)
+    score += modality(sentence)
+    score += negation(sentence)
+    return round(max(0, min(score, 1.0)), 2)
+
 def authority_confidence(sentence):
     score = 0.4
     score += authority_context_score(sentence.text)
@@ -283,6 +359,55 @@ def distance_confidence(sentence):
     score += modality(sentence)
     score += negation(sentence)
     return round(max(0, min(score, 1.0)), 2)
+
+
+def operational_criteria(sentence):
+    operational = extract_operational(sentence.text)
+    if not operational:
+        return None
+    text = sentence.text.lower()
+
+    if "shall not" in text or "must not" in text or "prohibited" in text:
+        meaning = "prohibited"
+    elif "shall" in text or "must" in text or "required" in text:
+        meaning = "required"
+    elif "may" in text or "permitted" in text:
+        meaning = "optional"
+    else:
+        meaning = "unknown"
+
+    confidence = operational_confidence(sentence)
+
+    times = TIME_RE.findall(sentence.text)
+    fines = CURRENCY_RE.findall(sentence.text)
+
+    if times or fines:
+        confidence += 0.2
+        confidence = round(max(0, min(confidence, 1.0)), 2)
+
+    subject = None
+    for token in sentence:
+        if token.dep_ in ("nsubj", "nsubjpass"):
+            subject = token.text
+            break
+
+    action = None
+    for token in sentence:
+        if token.pos_ == "VERB":
+            action = token.lemma_
+            break
+
+    return {
+        "criteria": "operational_rule",
+        "operational_types": operational,
+        "meaning": meaning,
+        "subject": subject,
+        "action": action,
+        "time_constraints": times if times else None,
+        "financial_penalties": fines if fines else None,
+        "confidence": confidence,
+        "source": sentence.text
+    }
 
 
 def authority_criteria(sentence):
@@ -420,6 +545,11 @@ def extractTXT(filename):
             hits = extractKeywords(sentence.text, terms)
             if hits:
                 re_data = {}
+                if category in ["penalties", "noise bylaws", "operation hours", "insurance requirements",
+                                "branded consumer goods"]:
+                    operational_rule = operational_criteria(sentence)
+                    if operational_rule:
+                        re_data["operational_criteria"] = operational_rule
                 if category in ["webpage", "direct link to authority", "name of local authority"]:
                     authority_rule = authority_criteria(sentence)
                     if authority_rule:
@@ -479,6 +609,11 @@ def extractPDF(filename):
             hits = extractKeywords(sentence.text, terms)
             if hits:
                 re_data = {}
+                if category in ["penalties", "noise bylaws", "operational hours", "insurance requirements",
+                                "branded consumer goods"]:
+                    operational_rule = operational_criteria(sentence)
+                    if operational_rule:
+                        re_data["operational_criteria"] = operational_rule
                 if category in ["webpage", "direct link to authority", "name of local authority"]:
                     authority_rule = authority_criteria(sentence)
                     if authority_rule:
