@@ -1,5 +1,5 @@
 from collections import defaultdict
-from Backend.Logic.mongo_db.classification_collection import getAllClassifications
+from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
 
 CANADIAN_CITIES = [
     "Toronto", "Ottawa", "Vancouver", "Montreal", "Calgary",
@@ -7,35 +7,21 @@ CANADIAN_CITIES = [
 ]
 
 def checkForConflicts():
-    files = getAllClassifications()
+    files = getAllExtractions()
     
     cityGroups = defaultdict(list)
     
     for file in files:
-        city = extractCityFromFilename(file.get("filename"))
+        city = extractCityFromFilename(file.get("file"))
         print("City extracted: " + city)
         
         # Get 
         if city != "unkown":
             cityGroups[city].append(file)
             
-    # Now compare only documents in the same city
-    for city, documents in cityGroups.items():
-        print(f"\nChecking conflicts for {city}")
-        
-        # Compare every document against every other document in same city
-        for i in range(len(documents)):
-            for j in range(i + 1, len(documents)):
-                doc1 = documents[i]
-                doc2 = documents[j]
-
-                conflicts = check_for_conflicts(doc1, doc2)
-
-                if conflicts:
-                    print(f"\nConflict between:")
-                    print(f" - {doc1['filename']}")
-                    print(f" - {doc2['filename']}")
-                    print(f"Conflicts found: {conflicts}")
+    # TODO: Finish checking for conflicts
+    
+    
         
 def extractCityFromFilename(filename):
     filenameLower = filename.lower()
@@ -44,3 +30,11 @@ def extractCityFromFilename(filename):
             return city
     
     return "unknown"
+
+# TODO: Figure out a way to flag conflicts
+def flagConflicts():
+    pass
+
+# TODO: Figure out a way to organize data extracted from text
+def collectData():
+    pass

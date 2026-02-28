@@ -111,27 +111,38 @@ def classify_text(text):
         Example:
             [Permit Documents, 0.75].
     """
-    lowercase = text.lower()
-    words = re.findall(r"\b\w+\b", lowercase)
+    sentences = re.split(r'(?<=[.!?])\s+', text)
+    
     scores = {}
+    keywordContexts = {}
 
     # for each category and keyword in our keywords list,
     # we score the number of matches we found looking through the text
     # if we don't find anything, we leave it blank (N/A) with a confidence of 0.0
     for category, keywords in KEYWORDS.items():
-        total_score = 0
+        totalScore = 0
 
         for term, weight in keywords.items():
-            # If term is multi-word phrase
-            if " " in term:
-                count = lowercase.count(term)
-            else:
-                count = words.count(term)
+            matches = []
+            for sentence in sentences:
+                if term.lower() in sentence.lower():
+                    matches.append(sentence.strip())
+                    
+            count = len(matches)
+            
+            if count > 0:
+                totalScore += count * weight
+                
+                if category not in keywordContexts:
+                    keywordContexts[category] = {}
+                    
+                keywordContexts[category][term] = matches
 
-            total_score += count * weight
-
-        if total_score > 0:
-            scores[category] = total_score
+        if totalScore > 0:
+            scores[category] = totalScore
+        
+        if category in keywordContexts:
+            print(f"{category}: {scores[category]}")
 
     if not scores:
         return ["N/A"], 0.0
@@ -144,17 +155,17 @@ def classify_text(text):
     
     top_categories = [ # Only include categories that are close to the top score
         category for category, score in sorted_scores
-        if score >= max_score * 0.7
+        if score >= max_score * 0.3
     ]
     
     confidence = max_score / sum(scores.values())
     
-    return top_categories, round(confidence, 2)
+    return top_categories, round(confidence, 2), keywordContexts
 
-
+# TODO: Update markdown
 def classify_files():
     """
-    Classify all files in a designated folder into the correct categories.
+    Classify all files in a MongoDB Database into the correct categories.
 
     This function goes through all the files in the extraction collection in the MongoDB Database
 
@@ -170,9 +181,6 @@ def classify_files():
                 Licensing
                 ],
             confidence: 0.87]
-
-    Raises:
-        FileNotFoundError: an error occurred trying to read a file.
     """
 
     docs = getAllExtractions()
@@ -187,12 +195,14 @@ def classify_files():
 
         text = " ".join(contexts)
 
-        top_categories, confidence = classify_text(text)
+        print(f"{doc.get("file", "unkown")}")
+        top_categories, confidence, context = classify_text(text)
         filename = doc.get("file", "unkown")
         result = {
             "filename": filename,
             "Top Categories": top_categories,
-            "confidence": confidence
+            "Confidence": confidence,
+            "Keywords": context
         }
         
         upsertClassification(result)
