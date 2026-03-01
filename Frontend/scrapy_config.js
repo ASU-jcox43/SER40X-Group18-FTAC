@@ -131,6 +131,30 @@ function scrapyOutputList(list, municipality, id = "scrapyOutputList", maxLinkLe
 
     const scrapyOutputList = document.createElement("ul");
     scrapyOutputList.id = id;
+
+    const exportButtonListItem = document.createElement("li");
+    const exportAnchor = document.createElement("a");
+    const exportButton = document.createElement("button");
+
+    exportButtonListItem.classList.add(id);
+    exportAnchor.href = `http://localhost:8000/scrapy_config/export_output?municipality=${municipality}`;
+    exportAnchor.download = `${municipality}.csv`
+    exportButton.textContent = "export list";
+
+    exportAnchor.appendChild(exportButton);
+    exportButtonListItem.appendChild(exportAnchor);
+
+    /**exportButton.addEventListener("click", async (e) => {
+        const response = await fetch(`http://localhost:8000/scrapy_config/export_output?municipality=${municipality}`, {
+            method: 'GET',
+            headers: {
+                'Content-type': 'application/json'
+            }
+        });
+    });*/
+
+    scrapyOutputList.appendChild(exportButtonListItem);
+
     for (let item of list) {
         const listItem = document.createElement("li");
         const listItemAnchor = document.createElement("a");

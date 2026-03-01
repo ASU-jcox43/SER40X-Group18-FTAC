@@ -113,6 +113,21 @@ async def remove_scrapy_link(municipality: str, link: str):
     remove_link(municipality,link)
     return f"removed {link} from {municipality}"
 
+@api_app.get("/scrapy_config/export_output")
+async def export_scrapy_output(municipality: str):
+    def item_stream():
+        items:list[str] = get_links(municipality)
+        for i in items:
+            yield f"{i}\n"
+
+    return StreamingResponse(
+        item_stream(),
+        media_type="text/plain",
+        headers={
+            "Content-Disposition": f"attachment; filename={municipality}.csv"
+        }
+    )
+
 @api_app.post("/Frontend/generate-report")
 async def generate_report_endpoint():
     """
