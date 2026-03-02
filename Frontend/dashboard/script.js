@@ -31,7 +31,6 @@ function toggleDetailsPanel() {
 function toggleSection(button) {
   const section = button.parentElement;
   section.classList.toggle('open');
-  //button.closest('.detail-section').classList.toggle('open');
 }
 
 // Header links
@@ -55,7 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Fetch all municipalities listed in index.json
     const requests = indexData.municipalities.map(file =>
-      fetch(`testdata/${file}`).then(res => res.json()) // remove extra .json if present
+      fetch(`testdata/${file}`).then(res => res.json())
     );
 
     municipalities = await Promise.all(requests);
@@ -82,22 +81,21 @@ function renderTable(data) {
   const sortedData = [...data].sort((a, b) => {
     const scoreA = a.friendlinessScore?.Score ?? 0;
     const scoreB = b.friendlinessScore?.Score ?? 0;
-    return scoreB - scoreA; // highest first
+    return scoreB - scoreA;
   });
 
   sortedData.forEach((m, index) => {
     const row = document.createElement("tr");
 
     const score = m.friendlinessScore?.Score ?? 0;
-
-    const provinceAbbrev = getProvinceAbbreviation(m.province); // returns ON, BC, etc.
+    const provinceAbbrev = getProvinceAbbreviation(m.province);
 
     row.dataset.province = provinceAbbrev;
     row.dataset.score = score;
     row.dataset.business = m.fb_type?.trim().toLowerCase() ?? '';
 
     row.innerHTML = `
-      <td>${index + 1}</td>   <!-- rank is now based on sorted order -->
+      <td>${index + 1}</td>
       <td>${m.city ?? ''}</td>
       <td class="score">${score.toFixed(1)}</td>
       <td>${capitalize(m.fb_type)}</td>
@@ -107,7 +105,6 @@ function renderTable(data) {
     tbody.appendChild(row);
   });
 }
-
 
 // Handle "ALL" checkboxes
 document.addEventListener("DOMContentLoaded", () => {
@@ -152,7 +149,6 @@ function applyFilters() {
     const rowBusiness = (row.dataset.business || '').trim().toLowerCase();
     const rowScore = parseFloat(row.dataset.score) || 0;
 
-    // If nothing is checked for a filter, treat it as "match all"
     const matchesProvince = selectedProvinces.length === 0 || selectedProvinces.includes(rowProvince);
     const matchesBusiness = selectedBusiness.length === 0 || selectedBusiness.includes(rowBusiness);
     const matchesScore = rowScore >= minScore;
@@ -175,23 +171,19 @@ function applyFilters() {
   }
 
   visibleRows.forEach((row, index) => {
-    row.querySelector("td").textContent = index + 1; // update rank
+    row.querySelector("td").textContent = index + 1;
     tbody.appendChild(row);
   });
 }
 
-// Show details
 // Show details
 function showDetails(m) {
   const panel = document.getElementById("detailsPanel");
   panel.classList.remove("hidden");
 
   // Header info
-  document.getElementById("municipalityName").textContent =
-    m.city ?? "Unknown";
-
-  document.getElementById("municipalityProvince").textContent =
-    getProvinceAbbreviation(m.province);
+  document.getElementById("municipalityName").textContent = m.city ?? "Unknown";
+  document.getElementById("municipalityProvince").textContent = getProvinceAbbreviation(m.province);
 
   /* SUMMARY */
   const summaryEl = document.querySelector(
@@ -237,23 +229,22 @@ Minimum Wage: ${m.min_wage ?? "N/A"}
 
     Object.entries(breakdown).forEach(([section, data]) => {
       const li = document.createElement("li");
-
-      li.innerHTML =
-        `<strong>${section}</strong>: ${data.Percentage} — ${data["Friendliness Index"]}`;
-
+      li.innerHTML = `<strong>${section}</strong>: ${data.Percentage} — ${data["Friendliness Index"]}`;
       scoreList.appendChild(li);
     });
   }
 }
 
 function getProvinceAbbreviation(fullName) {
-  // create reverse mapping once
   const reverseProvinceMap = Object.fromEntries(
     Object.entries(provinceMap).map(([abbr, full]) => [full.toLowerCase(), abbr])
   );
   return reverseProvinceMap[fullName?.toLowerCase()] || "Unknown";
 }
 
+// ─────────────────────────────────────────────
+// PDF UPLOAD — US213 / Task#226
+// ─────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
   const dropArea = document.getElementById("dropArea");
   const pdfInput = document.getElementById("pdfInput");
@@ -263,8 +254,48 @@ document.addEventListener("DOMContentLoaded", () => {
   const progressContainer = document.getElementById("progressContainer");
   const progressBar = document.getElementById("progressBar");
   const uploadedFiles = document.getElementById("uploadedFiles");
-  
+
   let selectedFile = null;
+
+  // --- Shared PDF validation helper ---
+  function validatePDF(file) {
+    if (!file) {
+      return { valid: false, message: "❌ No file selected." };
+    }
+    if (file.type !== "application/pdf") {
+      return {
+        valid: false,
+        message: `❌ "${file.name}" was refused — only PDF files are accepted (received: ${file.type || "unknown type"}).`
+      };
+    }
+    if (file.size === 0) {
+      return {
+        valid: false,
+        message: `❌ "${file.name}" was refused — file is empty.`
+      };
+    }
+    return { valid: true, message: "" };
+  }
+
+  // --- Shared handler for accepted / rejected files ---
+  function handleFileSelection(file) {
+    const result = validatePDF(file);
+
+    if (result.valid) {
+      selectedFile = file;
+      fileName.textContent = `Selected file: ${selectedFile.name}`;
+      uploadBtn.disabled = false;
+      status.textContent = "";
+      status.className = "";
+    } else {
+      selectedFile = null;
+      pdfInput.value = "";
+      uploadBtn.disabled = true;
+      fileName.textContent = "";
+      status.textContent = result.message;
+      status.className = "error";
+    }
+  }
 
   // --- Drag & Drop ---
   ["dragenter", "dragover"].forEach(eventName => {
@@ -284,29 +315,14 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   dropArea.addEventListener("drop", e => {
-    const files = e.dataTransfer.files;
-    if (files.length && files[0].type === "application/pdf") {
-      selectedFile = files[0];
-      pdfInput.files = files; // sync input
-      fileName.textContent = `Selected file: ${selectedFile.name}`;
-      uploadBtn.disabled = false;
-      status.textContent = "";
-    } else {
-      status.textContent = "❌ Only PDF files are allowed";
-      selectedFile = null;
-      pdfInput.value = "";
-      uploadBtn.disabled = true;
-    }
+    const file = e.dataTransfer.files[0];
+    handleFileSelection(file);
   });
 
   // --- File input selection ---
   pdfInput.addEventListener("change", () => {
-    if (pdfInput.files.length > 0) {
-      selectedFile = pdfInput.files[0];
-      fileName.textContent = `Selected file: ${selectedFile.name}`;
-      uploadBtn.disabled = false;
-      status.textContent = "";
-    }
+    const file = pdfInput.files[0];
+    handleFileSelection(file);
   });
 
   // --- Upload button ---
@@ -317,6 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
     formData.append("pdfFile", selectedFile);
 
     status.textContent = "Uploading...";
+    status.className = "";
     progressContainer.style.display = "block";
     progressBar.style.width = "0%";
     progressBar.textContent = "0%";
@@ -336,6 +353,7 @@ document.addEventListener("DOMContentLoaded", () => {
       xhr.onload = () => {
         if (xhr.status === 200) {
           status.textContent = "✅ Upload successful!";
+          status.className = "";
           uploadBtn.disabled = true;
           fileName.textContent = "";
           pdfInput.value = "";
@@ -343,17 +361,20 @@ document.addEventListener("DOMContentLoaded", () => {
           progressContainer.style.display = "none";
           listUploadedFiles();
         } else {
-          status.textContent = "❌ Upload failed";
+          status.textContent = "❌ Upload failed — server returned an error.";
+          status.className = "error";
         }
       };
 
       xhr.onerror = () => {
-        status.textContent = "❌ Server error";
+        status.textContent = "❌ Server error — please try again.";
+        status.className = "error";
       };
 
       xhr.send(formData);
     } catch (err) {
-      status.textContent = "❌ Upload error";
+      status.textContent = "❌ Upload error — please try again.";
+      status.className = "error";
     }
   });
 
