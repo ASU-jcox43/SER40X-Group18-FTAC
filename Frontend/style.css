@@ -47,3 +47,7 @@ ul#municipalitySearchResult, ul#scrapyOutputList {
     max-width: 40%;
     flex: 4;
 }
+
+.innerFormDict, .innerFormList {
+    padding-left: 2em;
+}

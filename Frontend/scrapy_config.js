@@ -46,79 +46,104 @@ function municipalitySearchResultList(id, searchResults) {
 }
 
 function configFormField(key, value, addLabel = true) {
-    const field = document.createElement("div");
+    const field = {}
 
     if (addLabel) {
         const label = document.createElement("label");
         label.for = key;
-        label.textContent = key;
-        field.appendChild(label);
+        const keys = key.split('.');
+        label.textContent = keys[keys.length - 1];
+        field.label = label;
     }
 
-    const input = document.createElement("input");
-    input.id = key;
-    input.name = key;
-
-    switch (typeof value) {
-        case 'boolean':
-            input.type = "checkbox";
-            input.checked = value;
-            break;
-        case 'number':
-            input.type = "number";
-            input.value = value;
-            break;
-        case 'string':
-            input.type = "text";
-            input.value = value;
-            break;
-        default:
-            break;
-    }
-
-    if (value == null) {
-        input.type = "text";
-        field.appendChild(input);
-    }
-    else if (Array.isArray(value)) {
+    if (Array.isArray(value)) {
         const innerForm = document.createElement("div");
-        innerForm.style.paddingLeft = '2em'
+        innerForm.classList.add('innerFormList');
 
         for (var i = 0; i < value.length; i++) {
-            innerForm.appendChild(configFormField(`${key}_${i}`,value[i], addLabel=false));
+            innerForm.appendChild(configFormField(`${key}#${i}`,value[i], addLabel=false).input);
+            innerForm.appendChild(document.createElement("br"));
         }
         
-        field.appendChild(innerForm);
+        field.input = innerForm;
     }
-    else if (typeof value === "object") {
+    else if (value != null && typeof value == "object") {
         const innerForm = document.createElement("div");
-        innerForm.style.paddingLeft = '2em'
+        innerForm.classList.add('innerFormDict');
         entries = Object.entries(value);
 
         for (const [innerKey, innerValue] of entries) {
-            innerForm.appendChild(configFormField(innerKey, innerValue, addLabel=true));
+            const innerField = configFormField(`${key}.${innerKey}`, innerValue, addLabel=true);
+            innerForm.appendChild(innerField.label);
+            innerForm.appendChild(innerField.input);
+            innerForm.appendChild(document.createElement("br"));
         }
 
-        field.appendChild(innerForm);
+        field.input = innerForm;
     }
     else {
-        field.appendChild(input);
-    }
+        const input = document.createElement("input");
+        input.name = key;
 
-    field.appendChild(document.createElement("br"));
+        switch (typeof value) {
+            case 'boolean':
+                input.type = "checkbox";
+                input.checked = value;
+                break;
+            case 'number':
+                input.type = "number";
+                input.value = value;
+                break;
+            default: // strings and null
+                input.type = "text";
+                input.value = value || "";
+                break;
+        }
+
+        field.input = input;
+    }
 
     return field;
 }
 
 function configForm(values, id = "scrapyConfigForm") {
-    const resultForm = document.createElement("form");
-    resultForm.id = id;
-    resultForm.noValidate = true;
+    const newConfigForm = document.createElement("form");
+    newConfigForm.id = id;
+    newConfigForm.noValidate = true;
     const valuesCopy = structuredClone(values);
     delete valuesCopy._id;
-    resultForm.appendChild(configFormField(values._id, valuesCopy, addLabel=true))
 
-    return resultForm;
+    const rootField = configFormField(values._id, valuesCopy, addLabel=true);
+    newConfigForm.appendChild(rootField.label);
+    newConfigForm.appendChild(rootField.input);
+
+    const submitConfigButton = document.createElement("button");
+    submitConfigButton.type = "submit"
+    submitConfigButton.textContent = "save config"
+    newConfigForm.appendChild(submitConfigButton);
+    newConfigForm.appendChild(document.createElement("br"));
+
+    newConfigForm.addEventListener("submit", async (e) => {
+        nest(newConfigForm);
+        e.preventDefault();
+        const response = await fetch(`http://localhost:8000/scrapy_config?municipality=${values._id}`, {
+            method: 'PUT',
+            headers: {'Content-type': 'application/json'},
+            body: ""
+        });
+        confirmation = document.createElement("p1");
+        confirmation.textContent = "Scrapy config has been changed"
+        selectedConfig.appendChild(confirmation)
+    });
+
+    return newConfigForm;
+}
+
+function nest(form) {
+    const innerForms = form.querySelectorAll(`#${form.id} > div.innerFormDict`);
+    const inputs = form.querySelectorAll(`#${form.id} > input`);
+    console.log(innerForms);
+    console.log(inputs);
 }
 
 function scrapyOutputList(list, municipality, id = "scrapyOutputList", maxLinkLength = 50) {
@@ -143,15 +168,6 @@ function scrapyOutputList(list, municipality, id = "scrapyOutputList", maxLinkLe
 
     exportAnchor.appendChild(exportButton);
     exportButtonListItem.appendChild(exportAnchor);
-
-    /**exportButton.addEventListener("click", async (e) => {
-        const response = await fetch(`http://localhost:8000/scrapy_config/export_output?municipality=${municipality}`, {
-            method: 'GET',
-            headers: {
-                'Content-type': 'application/json'
-            }
-        });
-    });*/
 
     scrapyOutputList.appendChild(exportButtonListItem);
 

@@ -55,7 +55,7 @@ class ScrapyConfig(BaseModel):
     start_urls: list[str] | None = None
     allowed_domains: list[str] | None = None
     layers: int | None = None
-    get_pdfs: bool | None = None
+    get_pdfs: bool | None = False
     layer_filter: ScrapyFilter | None = None
     next_page_filter: ScrapyFilter | None = None
 
