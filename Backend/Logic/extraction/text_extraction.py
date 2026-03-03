@@ -12,9 +12,9 @@ nlp = spacy.load("en_core_web_sm")
 # Category: Terms []
 KEYWORDS = {
     "webpage": [".gov", ".ca", "municipality", "city of", "regional district"],  # covered
-    "checklist": ["checklist", "requirements list", "required documents"],
-    "guide to license": ["guide", "how to apply", "licensing process", "application process"],
-    "bylaws": ["bylaw", "regulation", "municipal code", "ordinance"],
+    "checklist": ["checklist", "requirements list", "required documents"], # TODO
+    "guide to license": ["guide", "how to apply", "licensing process", "application process"], # TODO
+    "bylaws": ["bylaw", "regulation", "municipal code", "ordinance"], # TODO
     "penalties": ["fine", "fee", "penalty", "violation", "infraction"], # covered
     "provincial business license": ["provincial business license", "provincial permit", "provincial approval",
                                     # covered
@@ -26,14 +26,14 @@ KEYWORDS = {
     "municipal food business license": ["municipal food business license", "mobile food vendor license",  # covered
                                         "street food vendor license"],
     "retail license for CPG": ["consumer packaged good", "CPG", "retail goods", "branded retail products"],  # covered
-    "curbside vending": ["curbside vending", "street vending", "mobile vending", "sidewalk vending"],
-    "parking fees": ["parking fee", "metered parking", "vending zone", "designated vending area"],
+    "curbside vending": ["curbside vending", "street vending", "mobile vending", "sidewalk vending"], # covered
+    "parking fees": ["parking fee", "metered parking", "vending zone", "designated vending area"], # covered
     "noise bylaws": ["noise", "noise bylaw", "sound regulation", "amplified sound"], # covered
-    "traffic bylaws": ["traffic bylaw", "traffic regulation", "vehicle restriction", "road use", "traffic act"],
+    "traffic bylaws": ["traffic bylaw", "traffic regulation", "vehicle restriction", "road use", "traffic act"], # covered
     "operation hours": ["operating hours", "business hours", "hours of operation", "time limit", "maximum duration",
                         "hours at any one time"], # covered
     "branded consumer goods": ["branding", "branded products", "product labeling", "consumer goods"], # covered
-    "private property operation": ["private property", "private lot", "owner permission", "property consent"],
+    "private property operation": ["private property", "private lot", "owner permission", "property consent"], # covered
     "proximity regulations": ["proximity regulation", "distance restriction", "buffer zone", "proximity limit"],
     # covered
     "min distance to restaurant": ["distance to restaurant", "separation from restaurant",  # covered
@@ -47,18 +47,18 @@ KEYWORDS = {
     "num food trucks allowed in geographic area": ["number of food trucks allowed", "maximum food trucks per area",
                                                    "vendor density limit", "food trucks per block"], # covered
     "parking locations": ["designated parking", "allowed parking", "approved vending location", "vending area",
-                          "public road vending"],
-    "additional private restrictions": ["private restrictions", "additional property rules", "landowner conditions"],
+                          "public road vending"], # covered
+    "additional private restrictions": ["private restrictions", "additional property rules", "landowner conditions"], # covered
     "name of local authority": ["local authority", "licensing department", "municipal licensing office", "city clerk",
                                 "regulatory agency"],  # covered
     "direct link to authority": ["reach out", "contact", "reach", "office", "call", "email", "phone"],  # covered
     "insurance requirements": ["insurance", "liability coverage", "certificate of insurance", "proof of insurance"], # covered
     "physical requirements for trucks": ["vehicle requirements", "truck must have", "equipment standards",
                                          "vehicle condition", "inspection requirements", "plate number",
-                                         "license number", "business name", "client's name"],
+                                         "license number", "business name", "client's name"], # TODO
     "exterior appearance guidelines": ["paint", "painted", "appearance", "vehicle signage", "branding on truck",
                                        "exterior look", "color", "color contrast", "colour", "colour contrast",
-                                       "identification markings"]
+                                       "identification markings"] # TODO
 }
 
 
@@ -105,6 +105,30 @@ TIME_RE = re.compile(
     re.IGNORECASE)
 CURRENCY_RE = re.compile(
     r'\$\s?\d+(?:,\d{3})*(?:\.d{2})?',
+    re.IGNORECASE)
+CURBSIDE_RE = re.compile(
+    r'\b(curbside|street|sidewalk|roadside)\b.*\b(vend|vendor|vending|operate)\b|'
+    r'\b(mobile|food truck|vehicle)\b.*\b(curbstone|curb)\b',
+    re.IGNORECASE)
+PARKING_FEE_RE = re.compile(
+    r'\b(parking|metered|pay station|parking meter)\b.*\$\s?\d+|'
+    r'\$\s?\d+.*\b(parking|metered)\b',
+    re.IGNORECASE)
+TRAFFIC_RE = re.compile(
+    r'\b(traffic|roadway|highway|intersection|lane)\b.*\b(restrict|prohibit|regulate|permit)\b|'
+    r'\b(traffic act|motor vehicle act|highway traffic)\b',
+    re.IGNORECASE)
+PARKING_LOCATION_RE = re.compile(
+    r'\b(designated|approved|authorized)\b.*\b(parking|vending area|zone)\b|'
+    r'\b(public street|public road|municipal roadway)\b',
+    re.IGNORECASE)
+PRIVATE_PROPERTY_RE = re.compile(
+    r'\b(private property|private lot|privately owned)\b|'
+    r'\b(owner consent|written permission|landowner approval)\b',
+    re.IGNORECASE)
+PRIVATE_RESTRICTION_RE = re.compile(
+    r'\b(in addition to|subject to|at the discretion of)\b.*\b(property owner|landowner)\b|'
+    r'\b(private restrictions|additional conditions)\b',
     re.IGNORECASE)
 
 OPERATIONAL_WORDS = {
@@ -361,6 +385,89 @@ def distance_confidence(sentence):
     return round(max(0, min(score, 1.0)), 2)
 
 
+def traffic_criteria(sentence):
+    if not TRAFFIC_RE.search(sentence.text):
+        return None
+    text = sentence.text.lower()
+
+    if "shall not" in text or "must not" in text:
+        meaning = "prohibited"
+    elif "shall" in text or "must" in text or "required" in text:
+        meaning = "required"
+    else:
+        meaning = "unknown"
+
+    return {
+        "criteria": "traffic_bylaw",
+        "meaning": meaning,
+        "confidence": operational_confidence(sentence),
+        "source": sentence.text
+    }
+
+
+def private_property_criteria(sentence):
+    if not (PRIVATE_PROPERTY_RE.search(sentence.text) or PRIVATE_RESTRICTION_RE.search(sentence.text)):
+        return None
+    text = sentence.text.lower()
+
+    if "required" in text or "must" in text or "shall" in text:
+        meaning = "permission_required"
+    else:
+        meaning = "mentioned"
+
+    return {
+        "criteria": "private_property_operation",
+        "meaning": meaning,
+        "confidence": operational_confidence(sentence),
+        "source": sentence.text
+    }
+
+
+def parking_location_criteria(sentence):
+    if not PARKING_LOCATION_RE.search(sentence.text):
+        return None
+
+    return {
+        "criteria": "parking_location",
+        "confidence": operational_confidence(sentence),
+        "source": sentence.text
+    }
+
+
+def parking_fee_criteria(sentence):
+    if not PARKING_FEE_RE.search(sentence.text):
+        return None
+    fees = CURRENCY_RE.findall(sentence.text)
+
+    return {
+        "criteria": "parking_fee",
+        "fees": fees if fees else None,
+        "confidence": operational_confidence(sentence),
+        "source": sentence.text
+    }
+
+def curbside_criteria(sentence):
+    if not CURBSIDE_RE.search(sentence.text):
+        return None
+    text = sentence.text.lower()
+
+    if "shall not" in text or "must not" in text or "prohibited" in text:
+        meaning = "prohibited"
+    elif "shall" in text or "must" in text or "required" in text:
+        meaning = "required"
+    elif "may" in text or "permitted" in text:
+        meaning = "permitted"
+    else:
+        meaning = "unknown"
+
+    return {
+        "criteria": "curbside_vending",
+        "meaning": meaning,
+        "confidence": operational_confidence(sentence),
+        "source": sentence.text
+    }
+
+
 def operational_criteria(sentence):
     operational = extract_operational(sentence.text)
     if not operational:
@@ -545,6 +652,26 @@ def extractTXT(filename):
             hits = extractKeywords(sentence.text, terms)
             if hits:
                 re_data = {}
+                if category in ["private property operation", "additional private restrictions"]:
+                    private_rule = private_property_criteria(sentence)
+                    if private_rule:
+                        re_data["private_criteria"] = private_rule
+                if category in ["traffic bylaws"]:
+                    traffic_rule = traffic_criteria(sentence)
+                    if traffic_rule:
+                        re_data["traffic_criteria"] = traffic_rule
+                if category in ["parking locations"]:
+                    parking_locations_rule = parking_location_criteria(sentence)
+                    if parking_locations_rule:
+                        re_data["parking_locations_criteria"] = parking_locations_rule
+                if category in ["parking fees"]:
+                    parking_fee_rule = parking_fee_criteria(sentence)
+                    if parking_fee_rule:
+                        re_data["parking_fees_criteria"] = parking_fee_rule
+                if category in ["curbside vending"]:
+                    curbside_rule = curbside_criteria(sentence)
+                    if curbside_rule:
+                        re_data["curbside_criteria"] = curbside_rule
                 if category in ["penalties", "noise bylaws", "operation hours", "insurance requirements",
                                 "branded consumer goods"]:
                     operational_rule = operational_criteria(sentence)
