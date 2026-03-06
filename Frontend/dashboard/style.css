@@ -71,6 +71,18 @@ header.floating {
   width: 100%;
 }
 
+/* ── Active nav link ─────────────────────────────────────────────────────
+   Indicates the current page with bold text + underline highlight  */
+.header-nav a.active-nav {
+  color: #203a82;
+  font-weight: 600;
+}
+
+.header-nav a.active-nav::after {
+  width: 100%;
+  background-color: #203a82;
+}
+
 .nav-logo {
   height: 70px;
   margin-right: 1rem;
