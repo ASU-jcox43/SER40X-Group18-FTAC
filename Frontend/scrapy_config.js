@@ -47,21 +47,24 @@ function municipalitySearchResultList(id, searchResults) {
 
 function configFormField(key, value, addLabel = true) {
     const field = {}
+    const subkeys = key.split('-');
+    const labelText = subkeys[subkeys.length - 1];
+
 
     if (addLabel) {
         const label = document.createElement("label");
         label.for = key;
-        const keys = key.split('.');
-        label.textContent = keys[keys.length - 1];
+        label.textContent = labelText;
         field.label = label;
     }
 
     if (Array.isArray(value)) {
         const innerForm = document.createElement("div");
-        innerForm.classList.add('innerFormList');
+        innerForm.classList.add(labelText, 'innerFormList');
+        innerForm.id = key;
 
         for (var i = 0; i < value.length; i++) {
-            innerForm.appendChild(configFormField(`${key}#${i}`,value[i], addLabel=false).input);
+            innerForm.appendChild(configFormField(`${key}-${i}`,value[i], addLabel=false).input);
             innerForm.appendChild(document.createElement("br"));
         }
         
@@ -69,11 +72,13 @@ function configFormField(key, value, addLabel = true) {
     }
     else if (value != null && typeof value == "object") {
         const innerForm = document.createElement("div");
-        innerForm.classList.add('innerFormDict');
+        innerForm.classList.add(labelText, 'innerFormDict');
+        innerForm.id = key;
+
         entries = Object.entries(value);
 
         for (const [innerKey, innerValue] of entries) {
-            const innerField = configFormField(`${key}.${innerKey}`, innerValue, addLabel=true);
+            const innerField = configFormField(`${key}-${innerKey}`, innerValue, addLabel=true);
             innerForm.appendChild(innerField.label);
             innerForm.appendChild(innerField.input);
             innerForm.appendChild(document.createElement("br"));
@@ -83,7 +88,8 @@ function configFormField(key, value, addLabel = true) {
     }
     else {
         const input = document.createElement("input");
-        input.name = key;
+        input.classList.add(labelText);
+        input.id = key;
 
         switch (typeof value) {
             case 'boolean':
@@ -124,13 +130,17 @@ function configForm(values, id = "scrapyConfigForm") {
     newConfigForm.appendChild(document.createElement("br"));
 
     newConfigForm.addEventListener("submit", async (e) => {
-        nest(newConfigForm);
         e.preventDefault();
+
+        formData = JSON.stringify(configFormData(newConfigForm)[values._id]);
+        console.log(formData);
+        
         const response = await fetch(`http://localhost:8000/scrapy_config?municipality=${values._id}`, {
             method: 'PUT',
             headers: {'Content-type': 'application/json'},
-            body: ""
+            body: formData
         });
+        
         confirmation = document.createElement("p1");
         confirmation.textContent = "Scrapy config has been changed"
         selectedConfig.appendChild(confirmation)
@@ -139,11 +149,57 @@ function configForm(values, id = "scrapyConfigForm") {
     return newConfigForm;
 }
 
-function nest(form) {
-    const innerForms = form.querySelectorAll(`#${form.id} > div.innerFormDict`);
+function configFormData(form, formData = {}) {
     const inputs = form.querySelectorAll(`#${form.id} > input`);
-    console.log(innerForms);
-    console.log(inputs);
+    const innerForms = form.querySelectorAll(`#${form.id} > div.innerFormDict`);
+    const lists = form.querySelectorAll(`#${form.id} > div.innerFormList`);
+    const isArray = Array.isArray(form);
+
+    for (const input of inputs) {
+        var formValue = input.value;
+        
+        switch (input.type) {
+            case "checkbox":
+                formValue = input.checked
+                break;
+            case "number":
+                formValue = Number(input.value)
+                break;
+            default:
+                break;
+        }
+
+        if (isArray) {
+            formData.push(formValue);
+        }
+        else {
+            formData[input.classList[0]] = formValue;
+        }
+    }
+
+    for (const innerForm of innerForms) {
+        if (isArray) {
+            formData.push({});
+            configFormData(innerForm, formData[formData.length - 1]);
+        }
+        else {
+            formData[innerForm.classList[0]] = {};
+            configFormData(innerForm, formData[innerForm.classList[0]]);
+        }
+    }
+
+    for (const list of lists) {
+        if (isArray) {
+            formData.push([]);
+            configFormData(list, formData[formData.length - 1]);
+        }
+        else {
+            formData[list.classList[0]] = [];
+            configFormData(list, formData[list.classList[0]]);
+        }
+    }
+
+    return formData;
 }
 
 function scrapyOutputList(list, municipality, id = "scrapyOutputList", maxLinkLength = 50) {
