@@ -3,10 +3,12 @@
    Flow:
      1. User drops / selects one or more PDFs
      2. Each file uploads immediately (real POST /upload)
+        → server returns jobId, pipeline starts in background
      3. On upload complete → appears in "Ready for OCR" queue
      4. User clicks "Run OCR" (per file) or "Run OCR on All"
-     5. OCR runs (simulated — swap simulateOCR() for real call)
-     6. On OCR complete → file moves to "Completed PDFs" section
+     5. Frontend polls GET /job/:id for live stage + progress
+        Stages: ocr → extracting → done | failed
+     6. On done → file moves to "Completed PDFs" section
 ══════════════════════════════════════════════════════════════ */
 
 /* ── Element refs ─────────────────────────────────────────────── */
@@ -34,14 +36,8 @@ function refreshQueueUI() {
   const anyActive = allJobs.some(
     j => j.state === 'uploading' || j.state === 'processing'
   );
-
-  // Show/hide empty placeholder
-  if (queueEmpty) queueEmpty.style.display = allJobs.length ? 'none' : '';
-
-  // Run All enabled only when at least one ready job exists
+  if (queueEmpty)  queueEmpty.style.display  = allJobs.length ? 'none' : '';
   runAllBtn.disabled = readyJobs.length === 0;
-
-  // Live indicator
   liveIndicator.classList.toggle('visible', anyActive);
 }
 
@@ -62,23 +58,23 @@ function createQueueRow(job) {
   li.innerHTML = `
     <span class="file-icon">📄</span>
     <span class="item-name" title="${job.name}">${job.name}</span>
-    <div class="item-progress-wrap" id="prog-wrap-${job.id}">
+    <div class="item-progress-wrap" id="prog-wrap-${job.id}" style="display:none">
       <div class="item-progress-bar" id="prog-bar-${job.id}"></div>
     </div>
-    <div class="spinner" id="spinner-${job.id}"></div>
-    <span class="item-badge badge-${job.state}" id="badge-${job.id}">
-      ${stateName(job.state)}
-    </span>
-    <div class="item-actions" id="actions-${job.id}">
+    <div class="spinner" id="spinner-${job.id}" style="display:none"></div>
+    <span class="item-badge badge-${job.state}" id="badge-${job.id}">${stateName(job.state)}</span>
+    <div class="item-actions">
       <button class="btn-ocr"    id="btn-ocr-${job.id}"    disabled>Run OCR</button>
       <button class="btn-remove" id="btn-remove-${job.id}">✕</button>
     </div>
   `;
 
-  document.getElementById(`btn-ocr-${job.id}`)
-    ?.addEventListener('click', () => startOCR(job.id));
-  document.getElementById(`btn-remove-${job.id}`)
-    ?.addEventListener('click', () => removeQueueJob(job.id));
+  // Attach listeners directly to the elements — never wiped since we
+  // only update child elements (badge, progress, spinner) not innerHTML
+  li.querySelector(`#btn-ocr-${job.id}`)
+    .addEventListener('click', () => startOCR(job.id));
+  li.querySelector(`#btn-remove-${job.id}`)
+    .addEventListener('click', () => removeQueueJob(job.id));
 
   queueList.appendChild(li);
   job.rowEl = li;
@@ -93,25 +89,26 @@ function updateQueueRow(job) {
   // Badge
   const badge = document.getElementById(`badge-${job.id}`);
   if (badge) {
+    const label = (job.state === 'processing' && job.stageLabel)
+      ? job.stageLabel : stateName(job.state);
     badge.className   = `item-badge badge-${job.state}`;
-    badge.textContent = stateName(job.state);
+    badge.textContent = label;
   }
 
-  // Progress bar visibility
+  // Progress bar + spinner — only visible while active
+  const isActive = job.state === 'uploading' || job.state === 'processing';
   const progWrap = document.getElementById(`prog-wrap-${job.id}`);
   const progBar  = document.getElementById(`prog-bar-${job.id}`);
   const spinner  = document.getElementById(`spinner-${job.id}`);
-  const isActive = job.state === 'uploading' || job.state === 'processing';
-
   if (progWrap) progWrap.style.display = isActive ? 'block' : 'none';
   if (progBar)  progBar.style.width    = job.progress + '%';
   if (spinner)  spinner.style.display  = isActive ? 'block' : 'none';
 
-  // OCR button — enabled only when ready
+  // OCR button enabled only when ready; remove always enabled unless actively running
   const ocrBtn    = document.getElementById(`btn-ocr-${job.id}`);
   const removeBtn = document.getElementById(`btn-remove-${job.id}`);
   if (ocrBtn)    ocrBtn.disabled    = job.state !== 'ready';
-  if (removeBtn) removeBtn.disabled = isActive;
+  if (removeBtn) removeBtn.disabled = job.state === 'uploading'; // only lock during upload
 }
 
 function stateName(state) {
@@ -160,6 +157,7 @@ function moveToCompleted(job) {
 /* ══════════════════════════════════════════════════════════════
    STAGE 1 — REAL UPLOAD  (POST /upload)
    Progress tracked via XHR upload events.
+   Server returns jobId which is stored on the job for polling.
 ══════════════════════════════════════════════════════════════ */
 function doUpload(job) {
   return new Promise((resolve, reject) => {
@@ -178,7 +176,13 @@ function doUpload(job) {
 
     xhr.onload = () => {
       if (xhr.status === 200) {
-        resolve();
+        try {
+          const body  = JSON.parse(xhr.responseText);
+          job.serverId = body.jobId; // store server-side job ID for polling
+          resolve();
+        } catch (_) {
+          reject(new Error('Invalid server response'));
+        }
       } else {
         let msg = `Server responded with ${xhr.status}`;
         try { const b = JSON.parse(xhr.responseText); if (b.error) msg = b.error; } catch (_) {}
@@ -214,21 +218,40 @@ async function uploadFile(job) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   STAGE 2 — SIMULATED OCR
-   Replace simulateOCR() with a real fetch('/ocr/:id') when ready.
+   STAGE 2 — MANUAL OCR TRIGGER + POLLING
+   Button calls POST /ocr/:serverId to start, then polls
+   GET /job/:serverId every 1.5s for progress until done.
 ══════════════════════════════════════════════════════════════ */
-function simulateOCR(job) {
+const STAGE_LABELS = {
+  ocr:    'OCR',
+  done:   'Done',
+  failed: 'Failed',
+};
+
+function pollJobUntilDone(job) {
   return new Promise((resolve, reject) => {
-    let pct = 0;
-    const tick = setInterval(() => {
-      pct = Math.min(pct + Math.random() * 12 + 4, 100);
-      job.progress = Math.round(pct);
-      updateQueueRow(job);
-      if (pct >= 100) {
-        clearInterval(tick);
-        resolve();
+    const interval = setInterval(async () => {
+      try {
+        const res  = await fetch(`/job/${job.serverId}`);
+        if (!res.ok) throw new Error(`Poll failed: ${res.status}`);
+        const data = await res.json();
+
+        job.progress  = data.progress ?? job.progress;
+        job.stageLabel = STAGE_LABELS[data.stage] ?? data.stage;
+        updateQueueRow(job);
+
+        if (data.stage === 'done') {
+          clearInterval(interval);
+          resolve();
+        } else if (data.stage === 'failed') {
+          clearInterval(interval);
+          reject(new Error(data.error || 'OCR failed on server'));
+        }
+      } catch (err) {
+        clearInterval(interval);
+        reject(err);
       }
-    }, 280);
+    }, 1500);
   });
 }
 
@@ -236,13 +259,30 @@ async function startOCR(id) {
   const job = jobs[id];
   if (!job || job.state !== 'ready') return;
 
-  job.state    = 'processing';
-  job.progress = 0;
+  if (!job.serverId) {
+    job.state = 'failed';
+    updateQueueRow(job);
+    refreshQueueUI();
+    console.error('[upload.js] No serverId on job — was upload successful?');
+    return;
+  }
+
+  job.state      = 'processing';
+  job.stageLabel = 'OCR';
+  job.progress   = 0;
   updateQueueRow(job);
   refreshQueueUI();
 
   try {
-    await simulateOCR(job);
+    // Tell the server to start OCR for this job
+    const triggerRes = await fetch(`/ocr/${job.serverId}`, { method: 'POST' });
+    if (!triggerRes.ok) {
+      const body = await triggerRes.json().catch(() => ({}));
+      throw new Error(body.error || `Server responded with ${triggerRes.status}`);
+    }
+
+    // Poll until done
+    await pollJobUntilDone(job);
     moveToCompleted(job);
   } catch (err) {
     job.state = 'failed';
