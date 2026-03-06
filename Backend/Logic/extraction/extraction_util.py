@@ -3,26 +3,30 @@ from collections import defaultdict
 
 
 def cleanText(text):
-    text = "\n".join(line.strip() for line in text.splitlines())
-    text = re.sub(r"\n+", "\n", text)
-    text = text.lower()
-    return text
+    # fix hyphenated line breaks
+    text = re.sub(r'(\w)-\n(\w)', r'\1\2', text)
+    # fix broken words across line breaks
+    text = re.sub(r'(\w)\n(\w)', r'\1 \2', text)
+    # convert remaining newlines to space
+    text = text.replace("\n", " ")
+    # collapse whitespace
+    text = re.sub(r'\s+', ' ', text)
+
+    return text.strip().lower()
 
 
 def extractKeywords(text, keywords):
     keyword_context = defaultdict(list)
 
-    # Split into paragraphs using single newline (already collapsed)
-    paragraphs = text.split("\n")
+    sentences = re.split(r'(?<=[.!?])\s+', text)
 
-    for para in paragraphs:
-        # Split paragraph into sentences using punctuation
-        sentences = re.split(r"(?<=[.!?])\s+", para)
-        for sentence in sentences:
-            sentence_lower = sentence.lower()
-            # Split sentences into words to compare with keywords
-            for keyword in keywords:
-                if keyword.lower() in sentence_lower:
-                    keyword_context[keyword].append(sentence.strip())
+    for sentence in sentences:
+        sentence_lower = sentence.lower()
+
+        for keyword in keywords:
+            if keyword.lower() in sentence_lower:
+                if keyword.lower() == "hours at any one time":
+                    print(sentence)
+                keyword_context[keyword].append(sentence.strip())
 
     return dict(keyword_context)

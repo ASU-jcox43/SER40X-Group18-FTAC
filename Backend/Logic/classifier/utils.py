@@ -1,7 +1,7 @@
 import re
 
 from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
-from Backend.Logic.mongo_db.classification_data_collection import upsertClassificationData
+from Backend.Logic.mongo_db.classification_data_collection import upsertClassificationData, getAllClassificationsData
 
 CANADIAN_CITIES = [
     "Toronto", "Ottawa", "Vancouver", "Montreal", "Calgary",
@@ -9,28 +9,68 @@ CANADIAN_CITIES = [
 ]
 
 def checkForConflicts():
-    collectData()
+    collectData() # Make data from classifier into type data and store in MongoDB
     
+    data = getAllClassificationsData()
+    
+    flagConflicts(data)
     # TODO: Finish checking for conflicts
-    
-    
-        
-def extractCityFromFilename(filename):
-    filenameLower = filename.lower()
-    for city in CANADIAN_CITIES:
-        if city.lower() in filenameLower:
-            return city
-    
-    return "unknown"
+
 
 # TODO: Figure out a way to flag conflicts
-def flagConflicts():
-    pass
+def flagConflicts(data_files):
+    conflicts = []
+    
+    for i, file1 in enumerate(data_files):
+        for file2 in data_files[i + 1:]:
+            if file1.get("city") != file2.get("city"):
+                continue
+            
+            for key in file1.keys():
 
-# TODO: Figure out a way to organize data extracted from text
+                if key in ["filename", "city", "_id"]:
+                    continue
+
+                val1 = file1.get(key)
+                val2 = file2.get(key)
+
+                if val1 is None or val2 is None:
+                    continue
+
+                # Handle list comparisons
+                if isinstance(val1, list) and isinstance(val2, list):
+                    if set(val1) != set(val2):
+                        conflicts.append({
+                            "city": file1["city"],
+                            "field": key,
+                            "file1": file1["filename"],
+                            "value1": val1,
+                            "file2": file2["filename"],
+                            "value2": val2
+                        })
+                else:
+                    if val1 != val2:
+                        conflicts.append({
+                            "city": file1["city"],
+                            "field": key,
+                            "file1": file1["filename"],
+                            "value1": val1,
+                            "file2": file2["filename"],
+                            "value2": val2
+                        })
+
+    for c in conflicts:
+        print(
+            f"Conflict in {c['city']} for {c['field']}:\n"
+            f"  {c['file1']} -> {c['value1']}\n"
+            f"  {c['file2']} -> {c['value2']}\n"
+        )
+
+    return conflicts             
+
+
 def collectData():
     files = getAllExtractions()
-    structuredData = []
 
     for file in files:
         filename = file.get("file", "unknown")
@@ -45,8 +85,7 @@ def collectData():
                 sentences.extend(termSentences)
 
         # Deduplicate
-        sentences = list(set([s.strip() for s in sentences if s.strip()]))
-
+        sentences = list({s.strip() for s in sentences if s.strip()})
         # Structure of data
         data = {
             "filename": filename,
@@ -95,6 +134,7 @@ def collectData():
                     data["insurance_amount"] = value
                 data["requirements"].append("insurance_required")
 
+            # TODO: Only handles numbers that are not spelled out
             hours = _extract_number(lower, r'(\d+)\s+hours?')
             if hours:
                 data["max_operating_hours"] = hours
@@ -136,8 +176,18 @@ def _extract_money(text):
         return float(match.group(1).replace(",", ""))
     return None
 
+
 def _extract_number(text, pattern):
-    match = re.search(pattern, text.lower())
+    match = re.search(pattern, text)
     if match:
-        return int(match.group(1))
+        return match.group(0)
     return None
+
+
+def extractCityFromFilename(filename):
+    filenameLower = filename.lower()
+    for city in CANADIAN_CITIES:
+        if city.lower() in filenameLower:
+            return city
+    
+    return "unknown"
