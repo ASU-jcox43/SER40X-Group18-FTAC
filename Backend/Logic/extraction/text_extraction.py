@@ -12,9 +12,9 @@ nlp = spacy.load("en_core_web_sm")
 # Category: Terms []
 KEYWORDS = {
     "webpage": [".gov", ".ca", "municipality", "city of", "regional district"],  # covered
-    "checklist": ["checklist", "requirements list", "required documents"],  # TODO
-    "guide to license": ["guide", "how to apply", "licensing process", "application process"],  # TODO
-    "bylaws": ["bylaw", "regulation", "municipal code", "ordinance"],  # TODO
+    "checklist": ["checklist", "requirements list", "required documents"],  # covered
+    "guide to license": ["guide", "how to apply", "licensing process", "application process"],  # covered
+    "bylaws": ["bylaw", "regulation", "municipal code", "ordinance"],  # covered
     "penalties": ["fine", "fee", "penalty", "violation", "infraction"],  # covered
     "provincial business license": ["provincial business license", "provincial permit", "provincial approval",
                                     # covered
@@ -151,6 +151,15 @@ EXTERIOR_APPEARANCE_RE = re.compile(
 MEASUREMENT_RE = re.compile(
     r'(?P<value>\d+(?:\.\d+)?)\s*'
     r'(?P<unit>inches?|inch|in\.?|cm|mm|millimeters?|millimetres?)\b',
+    re.IGNORECASE)
+BYLAW_RE = re.compile(
+    r'\b(by[- ]?law|ordinance|municipal code|city code|chapter\s+\d+|section\s+\d+)\b', re.IGNORECASE)
+LICENSE_GUIDE_RE = re.compile(
+    r'\b(how to apply|application process|licensing process|step\s*\d+|follow these steps|apply for a license)\b',
+    re.IGNORECASE)
+CHECKLIST_RE = re.compile(
+    r'(\[\s?\]|\☐|\✔|\•|-)\s+|'
+    r'\b(checklist|required documents|documents required|application checklist)\b',
     re.IGNORECASE)
 
 MEASUREMENT_WORDS = {
@@ -380,6 +389,39 @@ OPERATIONAL_WEIGHTS = {"shall": 0.3, "must": 0.2, "shall not": 0.3,
                        "liability coverage": 0.3, "certificate of insurance": 0.3, "fine": 0.3,
                        "penalty": 0.3, "violation": 0.3, "infraction": 0.3,
                        "may": 0.1, "permitted": 0.1}
+CHECKLIST_WEIGHTS = {"checklist": 0.4, "required documents": 0.3, "application checklist": 0.4,
+                     "must include": 0.2, "submit": 0.2, "provide": 0.2}
+GUIDE_WEIGHTS = {"how to apply": 0.4, "application process": 0.3, "licensing process": 0.3,
+                 "step": 0.3, "follow these steps": 0.4, "apply for": 0.2}
+BYLAW_WEIGHTS = {"bylaw": 0.4, "ordinance": 0.4, "municipal code": 0.4,
+                 "chapter": 0.2, "section": 0.2}
+
+
+def bylaw_context_score(text):
+    score = 0.0
+    lower = text.lower()
+    for keyword, weight in BYLAW_WEIGHTS.items():
+        if keyword in lower:
+            score += weight
+    return min(score, 1.0)
+
+
+def guide_context_score(text):
+    score = 0.0
+    lower = text.lower()
+    for keyword, weight in GUIDE_WEIGHTS.items():
+        if keyword in lower:
+            score += weight
+    return min(score, 1.0)
+
+
+def checklist_context_score(text):
+    score = 0.0
+    lower = text.lower()
+    for keyword, weight in CHECKLIST_WEIGHTS.items():
+        if keyword in lower:
+            score += weight
+    return min(score, 1.0)
 
 
 def operational_context_score(text):
@@ -435,6 +477,30 @@ def negation(sentence):
     return 0.0
 
 
+def guide_confidence(sentence):
+    score = 0.4
+    score += guide_context_score(sentence.text)
+    score += modality(sentence)
+    score += negation(sentence)
+    return round(max(0, min(score, 1.0)), 2)
+
+
+def bylaw_confidence(sentence):
+    score = 0.4
+    score += bylaw_context_score(sentence.text)
+    score += modality(sentence)
+    score += negation(sentence)
+    return round(max(0, min(score, 1.0)), 2)
+
+
+def checklist_confidence(sentence):
+    score = 0.4
+    score += checklist_context_score(sentence.text)
+    score += modality(sentence)
+    score += negation(sentence)
+    return round(max(0, min(score, 1.0)), 2)
+
+
 def operational_confidence(sentence):
     score = 0.4
     score += operational_context_score(sentence.text)
@@ -465,6 +531,48 @@ def distance_confidence(sentence):
     score += modality(sentence)
     score += negation(sentence)
     return round(max(0, min(score, 1.0)), 2)
+
+
+def checklist_criteria(sentence):
+    if not CHECKLIST_RE.search(sentence.text):
+        return None
+
+    documents = re.findall(
+        r'(proof of insurance|application form|permit|certificate|identification)',
+        sentence.text,
+        re.IGNORECASE)
+
+    return {
+        "criteria": "license_checklist",
+        "documents": documents if documents else None,
+        "confidence": checklist_confidence(sentence),
+        "source": sentence.text
+    }
+
+
+def license_guide_criteria(sentence):
+    if not LICENSE_GUIDE_RE.search(sentence.text):
+        return None
+
+    steps = re.findall(r'step\s*\d+', sentence.text, re.IGNORECASE)
+
+    return {
+        "criteria": "license_guide",
+        "steps_detected": steps if steps else None,
+        "confidence": guide_confidence(sentence),
+        "source": sentence.text
+    }
+
+
+def bylaw_criteria(sentence):
+    if not BYLAW_RE.search(sentence.text):
+        return None
+
+    return {
+        "criteria": "bylaw_reference",
+        "confidence": bylaw_confidence(sentence),
+        "source": sentence.text
+    }
 
 
 def exterior_appearance_criteria(sentence):
@@ -792,6 +900,18 @@ def extractTXT(filename):
             hits = extractKeywords(sentence.text, terms)
             if hits:
                 re_data = {}
+                if category in ["checklist"]:
+                    checklist_rule = checklist_criteria(sentence)
+                    if checklist_rule:
+                        re_data["checklist_criteria"] = checklist_rule
+                if category in ["guide to license"]:
+                    guide_rule = license_guide_criteria(sentence)
+                    if guide_rule:
+                        re_data["guide_to_license_criteria"] = guide_rule
+                if category in ["bylaws"]:
+                    bylaw_rule = bylaw_criteria(sentence)
+                    if bylaw_rule:
+                        re_data["bylaw_criteria"] = bylaw_rule
                 if category in ["physical requirements for trucks"]:
                     physical_rule = physical_truck_criteria(sentence)
                     if physical_rule:
@@ -884,6 +1004,18 @@ def extractPDF(filename):
             hits = extractKeywords(sentence.text, terms)
             if hits:
                 re_data = {}
+                if category in ["checklist"]:
+                    checklist_rule = checklist_criteria(sentence)
+                    if checklist_rule:
+                        re_data["checklist_criteria"] = checklist_rule
+                if category in ["guide to license"]:
+                    guide_rule = license_guide_criteria(sentence)
+                    if guide_rule:
+                        re_data["guide_to_license_criteria"] = guide_rule
+                if category in ["bylaws"]:
+                    bylaw_rule = bylaw_criteria(sentence)
+                    if bylaw_rule:
+                        re_data["bylaw_criteria"] = bylaw_rule
                 if category in ["physical requirements for trucks"]:
                     physical_rule = physical_truck_criteria(sentence)
                     if physical_rule:
