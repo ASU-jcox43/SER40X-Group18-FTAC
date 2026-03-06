@@ -67,6 +67,10 @@ KEYWORDS = {
 
 
 def split_sentences(text):
+    text = re.sub(r'\n+', '\n', text)
+    text = re.sub(r'\n([a-z])', r' \1', text)
+    text = re.sub(r'\n\s*(?:\d+\.|\(\w\)|•|-)\s+', '\n', text)
+    text = re.sub(r';', '. ', text)
     doc = nlp(text)
     return [sent for sent in doc.sents if sent.text.strip()]
 
