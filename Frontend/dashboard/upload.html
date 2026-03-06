@@ -7,7 +7,7 @@
   <link rel="icon" href="images/ftacLogo.png" type="image/png">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    /* ── Page layout ───────────────────────────────────────────── */
+    /* ── Page layout ─────────────────────────────────────────────── */
     #filesPage {
       display: flex;
       justify-content: center;
@@ -52,10 +52,16 @@
       font-size: 0.95rem;
       font-weight: 600;
       color: #333;
-      margin-bottom: 0.75rem;
+      margin: 0 0 0.75rem 0;
     }
 
-    /* ── Drop area ──────────────────────────────────────────────── */
+    .section-divider {
+      border: none;
+      border-top: 1px solid #eaeaea;
+      margin: 0;
+    }
+
+    /* ── Drop area ───────────────────────────────────────────────── */
     .drop-area {
       border: 2px dashed #a8bfbd;
       border-radius: 10px;
@@ -80,96 +86,169 @@
       font-size: 0.85rem;
     }
 
-    /* ── Upload controls ────────────────────────────────────────── */
-    .upload-controls {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-top: 1rem;
-      flex-wrap: wrap;
-    }
-
-    #fileName {
-      font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: #254441;
-    }
-
-    #uploadBtn {
-      padding: 0.4rem 1.25rem;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 500;
-      border: none;
-      border-radius: 6px;
-      background-color: #254441;
-      color: #fff;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    #uploadBtn:hover:not(:disabled) { background-color: #1b3330; }
-    #uploadBtn:disabled { background-color: #9db5b2; cursor: not-allowed; }
-
-    #progressContainer {
-      width: 100%;
-      background-color: #e8eaf0;
-      border-radius: 5px;
-      margin-top: 0.75rem;
-      height: 18px;
-      display: none;
-    }
-
-    #progressBar {
-      width: 0%;
-      height: 100%;
-      background-color: #254441;
-      border-radius: 5px;
-      text-align: center;
-      color: #fff;
-      font-size: 0.75rem;
-      font-weight: 600;
-      line-height: 18px;
-      transition: width 0.3s ease;
-    }
-
-    #status {
+    /* Upload status line */
+    #uploadStatus {
       font-family: 'Inter', sans-serif;
       font-size: 0.85rem;
       color: #555;
-      margin-top: 0.5rem;
+      margin-top: 0.75rem;
       min-height: 1.2em;
     }
 
-    #status.error { color: #c0392b; font-weight: 600; }
+    #uploadStatus.error { color: #c0392b; font-weight: 600; }
 
-    /* ── Divider ────────────────────────────────────────────────── */
-    .section-divider {
-      border: none;
-      border-top: 1px solid #eaeaea;
-      margin: 0;
-    }
+    /* ── SECTION 1: Upload queue (ready for OCR) ─────────────────── */
+    .queue-section { display: flex; flex-direction: column; gap: 0.75rem; }
 
-    /* ════════════════════════════════════════════════════════════
-       STATUS PANEL  (#224)
-    ════════════════════════════════════════════════════════════ */
-    .status-panel {
-      background-color: #f7faf9;
-      border: 1px solid #dde8e7;
-      border-radius: 8px;
-      padding: 1.25rem 1.5rem;
-    }
-
-    .status-panel-header {
+    .queue-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.75rem;
     }
 
-    .status-panel-header .section-label { margin-bottom: 0; }
+    .queue-header .section-label { margin-bottom: 0; }
 
+    /* "Run OCR on All" bulk button */
+    #runAllBtn {
+      padding: 0.35rem 1rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      background-color: #203a82;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.2s, opacity 0.2s;
+    }
+
+    #runAllBtn:hover:not(:disabled) { background-color: #162a61; }
+    #runAllBtn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* Queue list */
+    #queueList {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    /* Each queued / processing file row */
+    .queue-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 1rem;
+      border: 1px solid #e4eded;
+      border-left: 3px solid #a8bfbd;
+      border-radius: 6px;
+      background-color: #f7faf9;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem;
+      transition: border-color 0.3s;
+    }
+
+    .queue-item.state-ready      { border-left-color: #a8bfbd; }
+    .queue-item.state-uploading  { border-left-color: #f0a500; }
+    .queue-item.state-processing { border-left-color: #2980b9; }
+    .queue-item.state-failed     { border-left-color: #c0392b; }
+
+    .queue-item .file-icon { font-size: 1rem; color: #5c7a76; flex-shrink: 0; }
+
+    .queue-item .item-name {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 500;
+      color: #333;
+    }
+
+    /* Mini progress bar inside queue row */
+    .item-progress-wrap {
+      width: 80px;
+      height: 5px;
+      background-color: #dde8e7;
+      border-radius: 3px;
+      overflow: hidden;
+      flex-shrink: 0;
+      display: none; /* shown only during upload/OCR */
+    }
+
+    .item-progress-bar {
+      height: 100%;
+      background-color: #254441;
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.35s ease;
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #ddd;
+      border-top-color: #254441;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+      display: none;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Badges */
+    .item-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 20px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .badge-ready      { background-color: #eef2f0; color: #4a6a65; }
+    .badge-uploading  { background-color: #fff4d6; color: #b07800; }
+    .badge-processing { background-color: #d6eaf8; color: #1a5276; }
+    .badge-failed     { background-color: #fadbd8; color: #922b21; }
+
+    /* Per-file action buttons */
+    .item-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+
+    .btn-ocr {
+      padding: 0.2rem 0.6rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid #203a82;
+      border-radius: 5px;
+      background: none;
+      color: #203a82;
+      cursor: pointer;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    .btn-ocr:hover:not(:disabled) { background-color: #203a82; color: #fff; }
+    .btn-ocr:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-remove {
+      padding: 0.2rem 0.6rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      border: 1px solid #e2e2e2;
+      border-radius: 5px;
+      background: none;
+      color: #888;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-remove:hover:not(:disabled) { border-color: #c0392b; color: #c0392b; }
+    .btn-remove:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Live indicator */
     .live-indicator {
       display: none;
       align-items: center;
@@ -195,103 +274,25 @@
       50%       { opacity: 0.4; transform: scale(0.75); }
     }
 
-    .status-empty {
-      font-family: 'Inter', sans-serif;
+    .empty-state {
+      padding: 1rem 1.25rem;
+      text-align: center;
       font-size: 0.88rem;
       color: #aaa;
-      text-align: center;
-      padding: 0.75rem 0;
-    }
-
-    #statusJobList {
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-    }
-
-    .status-job {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.6rem 0.9rem;
-      background-color: #fff;
-      border: 1px solid #e4eded;
-      border-radius: 6px;
       font-family: 'Inter', sans-serif;
-      font-size: 0.875rem;
+      border: 1px dashed #e2e2e2;
+      border-radius: 6px;
     }
 
-    .status-job.status-uploading  { border-left: 3px solid #f0a500; }
-    .status-job.status-processing { border-left: 3px solid #2980b9; }
-    .status-job.status-complete   { border-left: 3px solid #27ae60; }
-    .status-job.status-failed     { border-left: 3px solid #c0392b; }
-
-    .job-icon { font-size: 1rem; flex-shrink: 0; width: 20px; text-align: center; }
-
-    .spinner {
-      width: 16px;
-      height: 16px;
-      border: 2px solid #ddd;
-      border-top-color: #254441;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      flex-shrink: 0;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .job-name {
-      flex: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: #333;
-      font-weight: 500;
-    }
-
-    .job-badge {
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 0.15rem 0.55rem;
-      border-radius: 20px;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    .badge-uploading  { background-color: #fff4d6; color: #b07800; }
-    .badge-processing { background-color: #d6eaf8; color: #1a5276; }
-    .badge-complete   { background-color: #d5f5e3; color: #1e8449; }
-    .badge-failed     { background-color: #fadbd8; color: #922b21; }
-
-    .job-progress-wrap {
-      width: 70px;
-      height: 5px;
-      background-color: #e8eaf0;
-      border-radius: 3px;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-
-    .job-progress-bar {
-      height: 100%;
-      background-color: #254441;
-      border-radius: 3px;
-      transition: width 0.4s ease;
-    }
-
-    /* ════════════════════════════════════════════════════════════
-       UPLOADED FILES LIST
-    ════════════════════════════════════════════════════════════ */
-    .uploaded-section { padding-top: 0; }
-
-    #uploadedFiles {
+    /* ── SECTION 2: Completed files ──────────────────────────────── */
+    #completedList {
       list-style: none;
       margin: 0;
       padding: 0;
       font-family: 'Inter', sans-serif;
     }
 
-    #uploadedFiles li {
+    #completedList li {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -302,36 +303,26 @@
       transition: background-color 0.2s;
     }
 
-    #uploadedFiles li:first-child { border-top: none; }
-    #uploadedFiles li:hover { background-color: #f2f6f5; }
+    #completedList li:first-child { border-top: none; }
+    #completedList li:hover { background-color: #f2f6f5; }
 
-    .file-name {
+    .completed-name {
       display: flex;
       align-items: center;
       gap: 0.6rem;
       flex: 1;
-      min-width: 0;
+      overflow: hidden;
     }
 
-    .file-icon { font-size: 1rem; color: #5c7a76; flex-shrink: 0; }
-
-    .inline-status-badge {
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 0.15rem 0.5rem;
-      border-radius: 20px;
-      margin-left: 0.6rem;
-      flex-shrink: 0;
+    .completed-name span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .file-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex-shrink: 0;
-    }
+    .badge-complete { background-color: #d5f5e3; color: #1e8449; }
 
-    #uploadedFiles li button {
+    .btn-completed-remove {
       background: none;
       border: 1px solid #e2e2e2;
       border-radius: 6px;
@@ -341,22 +332,16 @@
       color: #555;
       cursor: pointer;
       transition: border-color 0.2s, color 0.2s;
+      flex-shrink: 0;
+      margin-left: 1rem;
     }
 
-    #uploadedFiles li button:hover { border-color: #c0392b; color: #c0392b; }
-
-    .empty-state {
-      padding: 1.25rem;
-      text-align: center;
-      font-size: 0.88rem;
-      color: #aaa;
-      font-family: 'Inter', sans-serif;
-    }
+    .btn-completed-remove:hover { border-color: #c0392b; color: #c0392b; }
   </style>
 </head>
 <body>
 
-  <!-- ── Top Bar ───────────────────────────────────────────────── -->
+  <!-- ── Top Bar ────────────────────────────────────────────────── -->
   <header>
     <nav class="header-nav">
       <img src="assets/ftacLogo.png" alt="FTAC Logo" class="nav-logo">
@@ -369,7 +354,7 @@
     </nav>
   </header>
 
-  <!-- ── Page body ─────────────────────────────────────────────── -->
+  <!-- ── Page body ──────────────────────────────────────────────── -->
   <div id="filesPage">
     <div class="files-container">
 
@@ -377,44 +362,46 @@
 
       <div class="files-body">
 
-        <!-- Upload section -->
+        <!-- ① Drop zone ─────────────────────────────────────────── -->
         <div>
-          <p class="section-label">Upload a PDF File</p>
+          <p class="section-label">Upload PDF Files</p>
           <div id="dropArea" class="drop-area">
-            Drag &amp; drop a PDF here<br>or<br>
-            <input type="file" id="pdfInput" name="pdfFile" accept="application/pdf">
+            Drag &amp; drop one or more PDFs here<br>or<br>
+            <input type="file" id="pdfInput" name="pdfFile"
+                   accept="application/pdf" multiple>
           </div>
-          <div class="upload-controls">
-            <button type="button" id="uploadBtn" disabled>Upload &amp; Process</button>
-            <span id="fileName"></span>
-          </div>
-          <div id="progressContainer">
-            <div id="progressBar">0%</div>
-          </div>
-          <p id="status"></p>
+          <p id="uploadStatus"></p>
         </div>
 
         <hr class="section-divider">
 
-        <!-- OCR Processing Status Panel (#224) -->
-        <div class="status-panel">
-          <div class="status-panel-header">
-            <p class="section-label">Processing Status</p>
-            <div class="live-indicator" id="liveIndicator">
-              <span class="live-dot"></span> Live
+        <!-- ② Queue: uploaded & ready for OCR ───────────────────── -->
+        <div class="queue-section">
+          <div class="queue-header">
+            <p class="section-label">Ready for OCR</p>
+            <div style="display:flex;align-items:center;gap:1rem;">
+              <div class="live-indicator" id="liveIndicator">
+                <span class="live-dot"></span> Processing
+              </div>
+              <button id="runAllBtn" disabled>▶ Run OCR on All</button>
             </div>
           </div>
-          <div id="statusEmpty" class="status-empty">No files in the pipeline yet.</div>
-          <div id="statusJobList"></div>
+          <ul id="queueList">
+            <li class="empty-state" id="queueEmpty">
+              Upload PDFs above — they'll appear here ready to process.
+            </li>
+          </ul>
         </div>
 
         <hr class="section-divider">
 
-        <!-- Uploaded files list -->
-        <div class="uploaded-section">
-          <p class="section-label">Uploaded PDFs</p>
-          <ul id="uploadedFiles">
-            <li class="empty-state" id="emptyState">No files uploaded yet.</li>
+        <!-- ③ Completed files ────────────────────────────────────── -->
+        <div>
+          <p class="section-label">Completed PDFs</p>
+          <ul id="completedList">
+            <li class="empty-state" id="completedEmpty">
+              Completed files will appear here after OCR finishes.
+            </li>
           </ul>
         </div>
 
@@ -422,7 +409,6 @@
     </div><!-- /.files-container -->
   </div><!-- /#filesPage -->
 
-  <!-- script.js first (shared utilities), then upload.js (page-specific) -->
   <script src="script.js"></script>
   <script src="upload.js"></script>
 </body>

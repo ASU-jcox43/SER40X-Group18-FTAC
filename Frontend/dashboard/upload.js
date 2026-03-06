@@ -1,245 +1,319 @@
+/* ══════════════════════════════════════════════════════════════
+   upload.js  —  File Manager logic
+   Flow:
+     1. User drops / selects one or more PDFs
+     2. Each file uploads immediately (real POST /upload)
+     3. On upload complete → appears in "Ready for OCR" queue
+     4. User clicks "Run OCR" (per file) or "Run OCR on All"
+     5. OCR runs (simulated — swap simulateOCR() for real call)
+     6. On OCR complete → file moves to "Completed PDFs" section
+══════════════════════════════════════════════════════════════ */
+
 /* ── Element refs ─────────────────────────────────────────────── */
 const dropArea      = document.getElementById('dropArea');
 const pdfInput      = document.getElementById('pdfInput');
-const uploadBtn     = document.getElementById('uploadBtn');
-const fileNameEl    = document.getElementById('fileName');
-const statusEl      = document.getElementById('status');
-const progressCont  = document.getElementById('progressContainer');
-const progressBar   = document.getElementById('progressBar');
-const uploadedFiles = document.getElementById('uploadedFiles');
-const statusJobList = document.getElementById('statusJobList');
-const statusEmpty   = document.getElementById('statusEmpty');
+const uploadStatus  = document.getElementById('uploadStatus');
+const queueList     = document.getElementById('queueList');
+const queueEmpty    = document.getElementById('queueEmpty');
+const completedList = document.getElementById('completedList');
+const completedEmpty= document.getElementById('completedEmpty');
+const runAllBtn     = document.getElementById('runAllBtn');
 const liveIndicator = document.getElementById('liveIndicator');
 
-/* ── Job state ────────────────────────────────────────────────── */
-const jobs = {}; // jobId → { id, name, status, progress, fileListEl, statusPanelEl }
+/* ── Job registry ─────────────────────────────────────────────── */
+// jobId → { id, name, file, state, rowEl }
+// states: 'uploading' | 'ready' | 'processing' | 'failed'
+const jobs = {};
 
-/* ── Status metadata ──────────────────────────────────────────── */
-const STATUS_META = {
-  uploading:  { label: 'Uploading',      badgeClass: 'badge-uploading',  spinner: true,  icon: null },
-  processing: { label: 'OCR Processing', badgeClass: 'badge-processing', spinner: true,  icon: null },
-  complete:   { label: 'Complete',       badgeClass: 'badge-complete',   spinner: false, icon: '✓'  },
-  failed:     { label: 'Failed',         badgeClass: 'badge-failed',     spinner: false, icon: '✕'  },
-};
-
-// HELPERS — HTML builders
-function iconHTML(status) {
-  const m = STATUS_META[status];
-  return m.spinner
-    ? `<div class="spinner"></div>`
-    : `<span class="job-icon">${m.icon}</span>`;
-}
-
-function badgeHTML(status) {
-  const m = STATUS_META[status];
-  return `<span class="job-badge ${m.badgeClass}">${m.label}</span>`;
-}
-
-function inlineBadgeClass(status) {
-  return `inline-status-badge ${STATUS_META[status].badgeClass}`;
-}
-
-// LIVE INDICATOR
-function refreshLiveIndicator() {
-  const anyActive = Object.values(jobs).some(
-    j => j.status === 'uploading' || j.status === 'processing'
+/* ══════════════════════════════════════════════════════════════
+   QUEUE EMPTY STATE + RUN-ALL BUTTON
+══════════════════════════════════════════════════════════════ */
+function refreshQueueUI() {
+  const allJobs   = Object.values(jobs);
+  const readyJobs = allJobs.filter(j => j.state === 'ready');
+  const anyActive = allJobs.some(
+    j => j.state === 'uploading' || j.state === 'processing'
   );
+
+  // Show/hide empty placeholder
+  if (queueEmpty) queueEmpty.style.display = allJobs.length ? 'none' : '';
+
+  // Run All enabled only when at least one ready job exists
+  runAllBtn.disabled = readyJobs.length === 0;
+
+  // Live indicator
   liveIndicator.classList.toggle('visible', anyActive);
 }
 
-// STATUS PANEL — create / update job row
-function createStatusRow(job) {
-  statusEmpty.style.display = 'none';
-
-  const row = document.createElement('div');
-  row.id        = `status-row-${job.id}`;
-  row.className = `status-job status-${job.status}`;
-  row.innerHTML = buildStatusRowHTML(job);
-  statusJobList.prepend(row);
-  job.statusPanelEl = row;
+function refreshCompletedUI() {
+  const hasCompleted = completedList.querySelectorAll('li:not(#completedEmpty)').length > 0;
+  if (completedEmpty) completedEmpty.style.display = hasCompleted ? 'none' : '';
 }
 
-function updateStatusRow(job) {
-  const row = job.statusPanelEl;
-  if (!row) return;
-  row.className = `status-job status-${job.status}`;
-  row.innerHTML = buildStatusRowHTML(job);
-}
-
-function buildStatusRowHTML(job) {
-  return `
-    ${iconHTML(job.status)}
-    <span class="job-name" title="${job.name}">${job.name}</span>
-    <div class="job-progress-wrap">
-      <div class="job-progress-bar" style="width:${job.progress}%"></div>
-    </div>
-    ${badgeHTML(job.status)}
-  `;
-}
-
-//FILE LIST ROW — create / update inline badge
-function createFileRow(job) {
-  const existingEmpty = document.getElementById('emptyState');
-  if (existingEmpty) existingEmpty.remove();
+/* ══════════════════════════════════════════════════════════════
+   QUEUE ROW — build & update
+══════════════════════════════════════════════════════════════ */
+function createQueueRow(job) {
+  if (queueEmpty) queueEmpty.style.display = 'none';
 
   const li = document.createElement('li');
-  li.id        = `file-row-${job.id}`;
+  li.id        = `qrow-${job.id}`;
+  li.className = `queue-item state-${job.state}`;
   li.innerHTML = `
-    <span class="file-name">
-      <span class="file-icon">📄</span>
-      <span>${job.name}</span>
-      <span class="${inlineBadgeClass(job.status)}" id="ibadge-${job.id}">
-        ${STATUS_META[job.status].label}
-      </span>
+    <span class="file-icon">📄</span>
+    <span class="item-name" title="${job.name}">${job.name}</span>
+    <div class="item-progress-wrap" id="prog-wrap-${job.id}">
+      <div class="item-progress-bar" id="prog-bar-${job.id}"></div>
+    </div>
+    <div class="spinner" id="spinner-${job.id}"></div>
+    <span class="item-badge badge-${job.state}" id="badge-${job.id}">
+      ${stateName(job.state)}
     </span>
-    <div class="file-actions">
-      <button data-job-id="${job.id}">Remove</button>
+    <div class="item-actions" id="actions-${job.id}">
+      <button class="btn-ocr"    id="btn-ocr-${job.id}"    disabled>Run OCR</button>
+      <button class="btn-remove" id="btn-remove-${job.id}">✕</button>
     </div>
   `;
 
-  li.querySelector('button').addEventListener('click', () => removeJob(job.id));
-  uploadedFiles.appendChild(li);
-  job.fileListEl = li;
+  document.getElementById(`btn-ocr-${job.id}`)
+    ?.addEventListener('click', () => startOCR(job.id));
+  document.getElementById(`btn-remove-${job.id}`)
+    ?.addEventListener('click', () => removeQueueJob(job.id));
+
+  queueList.appendChild(li);
+  job.rowEl = li;
 }
 
-function updateFileRowBadge(job) {
-  const badge = document.getElementById(`ibadge-${job.id}`);
-  if (!badge) return;
-  badge.className   = inlineBadgeClass(job.status);
-  badge.textContent = STATUS_META[job.status].label;
-}
+function updateQueueRow(job) {
+  const li = job.rowEl;
+  if (!li) return;
 
-// REMOVE JOB
-function removeJob(id) {
-  const job = jobs[id];
-  if (!job) return;
+  li.className = `queue-item state-${job.state}`;
 
-  job.fileListEl?.remove();
-  job.statusPanelEl?.remove();
-  delete jobs[id];
-
-  if (!Object.keys(jobs).length) {
-    statusEmpty.style.display = '';
-    const msg = document.createElement('li');
-    msg.id        = 'emptyState';
-    msg.className = 'empty-state';
-    msg.textContent = 'No files uploaded yet.';
-    uploadedFiles.appendChild(msg);
+  // Badge
+  const badge = document.getElementById(`badge-${job.id}`);
+  if (badge) {
+    badge.className   = `item-badge badge-${job.state}`;
+    badge.textContent = stateName(job.state);
   }
 
-  refreshLiveIndicator();
+  // Progress bar visibility
+  const progWrap = document.getElementById(`prog-wrap-${job.id}`);
+  const progBar  = document.getElementById(`prog-bar-${job.id}`);
+  const spinner  = document.getElementById(`spinner-${job.id}`);
+  const isActive = job.state === 'uploading' || job.state === 'processing';
+
+  if (progWrap) progWrap.style.display = isActive ? 'block' : 'none';
+  if (progBar)  progBar.style.width    = job.progress + '%';
+  if (spinner)  spinner.style.display  = isActive ? 'block' : 'none';
+
+  // OCR button — enabled only when ready
+  const ocrBtn    = document.getElementById(`btn-ocr-${job.id}`);
+  const removeBtn = document.getElementById(`btn-remove-${job.id}`);
+  if (ocrBtn)    ocrBtn.disabled    = job.state !== 'ready';
+  if (removeBtn) removeBtn.disabled = isActive;
 }
 
-// OCR SIMULATED PIPELINE  (#221)
-function simulateUpload(job) {
-  return new Promise(resolve => {
-    let pct = 0;
-    const tick = setInterval(() => {
-      pct = Math.min(pct + Math.random() * 18 + 5, 100);
-      job.progress = Math.round(pct);
-      updateStatusRow(job);
+function stateName(state) {
+  return { uploading: 'Uploading', ready: 'Ready', processing: 'Processing', failed: 'Failed' }[state] ?? state;
+}
 
-      progressBar.style.width   = job.progress + '%';
-      progressBar.textContent   = job.progress + '%';
+/* ══════════════════════════════════════════════════════════════
+   REMOVE FROM QUEUE
+══════════════════════════════════════════════════════════════ */
+function removeQueueJob(id) {
+  const job = jobs[id];
+  if (!job) return;
+  job.rowEl?.remove();
+  delete jobs[id];
+  refreshQueueUI();
+}
 
-      if (pct >= 100) { clearInterval(tick); resolve(); }
-    }, 220);
+/* ══════════════════════════════════════════════════════════════
+   COMPLETED ROW
+══════════════════════════════════════════════════════════════ */
+function moveToCompleted(job) {
+  // Remove from queue
+  job.rowEl?.remove();
+  delete jobs[job.id];
+  refreshQueueUI();
+
+  // Add to completed list
+  if (completedEmpty) completedEmpty.style.display = 'none';
+
+  const li = document.createElement('li');
+  li.innerHTML = `
+    <span class="completed-name">
+      <span class="file-icon">📄</span>
+      <span title="${job.name}">${job.name}</span>
+      <span class="item-badge badge-complete">Complete</span>
+    </span>
+    <button class="btn-completed-remove">✕</button>
+  `;
+  li.querySelector('.btn-completed-remove')
+    .addEventListener('click', () => { li.remove(); refreshCompletedUI(); });
+
+  completedList.appendChild(li);
+  refreshCompletedUI();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STAGE 1 — REAL UPLOAD  (POST /upload)
+   Progress tracked via XHR upload events.
+══════════════════════════════════════════════════════════════ */
+function doUpload(job) {
+  return new Promise((resolve, reject) => {
+    const formData = new FormData();
+    formData.append('pdfFile', job.file);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/upload');
+
+    xhr.upload.onprogress = e => {
+      if (e.lengthComputable) {
+        job.progress = Math.round((e.loaded / e.total) * 100);
+        updateQueueRow(job);
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        resolve();
+      } else {
+        let msg = `Server responded with ${xhr.status}`;
+        try { const b = JSON.parse(xhr.responseText); if (b.error) msg = b.error; } catch (_) {}
+        reject(new Error(msg));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error('Network error — is the server running?'));
+    xhr.send(formData);
   });
 }
 
+async function uploadFile(job) {
+  job.state    = 'uploading';
+  job.progress = 0;
+  createQueueRow(job);
+  refreshQueueUI();
+
+  try {
+    await doUpload(job);
+    job.state    = 'ready';
+    job.progress = 0;
+    updateQueueRow(job);
+  } catch (err) {
+    job.state = 'failed';
+    updateQueueRow(job);
+    uploadStatus.textContent = `❌ ${job.name}: ${err.message}`;
+    uploadStatus.className   = 'error';
+    console.error('[upload.js] Upload failed:', err);
+  }
+
+  refreshQueueUI();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STAGE 2 — SIMULATED OCR
+   Replace simulateOCR() with a real fetch('/ocr/:id') when ready.
+══════════════════════════════════════════════════════════════ */
 function simulateOCR(job) {
   return new Promise((resolve, reject) => {
-    const willFail = Math.random() < 0.10; // 10% failure rate for demo
     let pct = 0;
     const tick = setInterval(() => {
       pct = Math.min(pct + Math.random() * 12 + 4, 100);
       job.progress = Math.round(pct);
-      updateStatusRow(job);
-      updateFileRowBadge(job);
-
+      updateQueueRow(job);
       if (pct >= 100) {
         clearInterval(tick);
-        willFail ? reject(new Error('OCR engine error')) : resolve();
+        resolve();
       }
-    }, 300);
+    }, 280);
   });
 }
 
-async function runPipeline(job) {
-  /* Stage 1 — Uploading */
-  job.status   = 'uploading';
-  job.progress = 0;
-  createStatusRow(job);
-  createFileRow(job);
-  refreshLiveIndicator();
+async function startOCR(id) {
+  const job = jobs[id];
+  if (!job || job.state !== 'ready') return;
 
-  progressCont.style.display = 'block';
-  progressBar.style.width    = '0%';
-  progressBar.textContent    = '0%';
-  statusEl.textContent       = `Uploading ${job.name}…`;
-  statusEl.className         = '';
+  job.state    = 'processing';
+  job.progress = 0;
+  updateQueueRow(job);
+  refreshQueueUI();
 
   try {
-    await simulateUpload(job);
-
-    /* Stage 2 — OCR Processing */
-    job.status   = 'processing';
-    job.progress = 0;
-    updateStatusRow(job);
-    updateFileRowBadge(job);
-    progressCont.style.display = 'none';
-    statusEl.textContent       = `Processing ${job.name} through OCR…`;
-
     await simulateOCR(job);
-
-    /* Stage 3 — Complete */
-    job.status   = 'complete';
-    job.progress = 100;
-    updateStatusRow(job);
-    updateFileRowBadge(job);
-    statusEl.textContent = `✅ ${job.name} — OCR complete.`;
-
+    moveToCompleted(job);
   } catch (err) {
-    /* Stage — Failed */
-    job.status   = 'failed';
-    job.progress = 0;
-    updateStatusRow(job);
-    updateFileRowBadge(job);
-    statusEl.textContent = `❌ ${job.name} — processing failed. Please retry.`;
-    statusEl.className   = 'error';
+    job.state = 'failed';
+    updateQueueRow(job);
+    refreshQueueUI();
+    console.error('[upload.js] OCR failed:', err);
   }
-
-  refreshLiveIndicator();
 }
 
-// PDF VALIDATION  
+/* ── Run OCR on All ready files ───────────────────────────────── */
+function startOCRAll() {
+  Object.values(jobs)
+    .filter(j => j.state === 'ready')
+    .forEach(j => startOCR(j.id));
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PDF VALIDATION
+══════════════════════════════════════════════════════════════ */
 function validatePDF(file) {
   if (!file)
-    return { valid: false, message: '❌ No file selected.' };
+    return { valid: false, message: `❌ No file selected.` };
   if (file.type !== 'application/pdf')
-    return { valid: false, message: `❌ "${file.name}" was refused — only PDF files are accepted (received: ${file.type || 'unknown type'}).` };
+    return { valid: false, message: `❌ "${file.name}" refused — only PDFs accepted (got: ${file.type || 'unknown'}).` };
   if (file.size === 0)
-    return { valid: false, message: `❌ "${file.name}" was refused — file is empty.` };
-  return { valid: true, message: '' };
+    return { valid: false, message: `❌ "${file.name}" refused — file is empty.` };
+  return { valid: true };
 }
 
-function handleFileSelection(file) {
-  const result = validatePDF(file);
-  if (result.valid) {
-    fileNameEl.textContent = file.name;
-    uploadBtn.disabled     = false;
-    statusEl.textContent   = '';
-    statusEl.className     = '';
-  } else {
-    pdfInput.value         = '';
-    fileNameEl.textContent = '';
-    uploadBtn.disabled     = true;
-    statusEl.textContent   = result.message;
-    statusEl.className     = 'error';
+/* ══════════════════════════════════════════════════════════════
+   HANDLE FILE SELECTION (multi-file)
+══════════════════════════════════════════════════════════════ */
+function handleFiles(fileList) {
+  const files  = Array.from(fileList);
+  const errors = [];
+
+  uploadStatus.textContent = '';
+  uploadStatus.className   = '';
+
+  files.forEach(file => {
+    const result = validatePDF(file);
+    if (!result.valid) {
+      errors.push(result.message);
+      return;
+    }
+
+    const job = {
+      id:       `job-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      name:     file.name,
+      file,
+      state:    'uploading',
+      progress: 0,
+      rowEl:    null,
+    };
+    jobs[job.id] = job;
+    uploadFile(job);
+  });
+
+  if (errors.length) {
+    uploadStatus.textContent = errors.join(' • ');
+    uploadStatus.className   = 'error';
   }
+
+  // Reset input so same files can be re-selected if needed
+  pdfInput.value = '';
 }
 
-//   EVENT LISTENERS
+/* ══════════════════════════════════════════════════════════════
+   EVENT LISTENERS
+══════════════════════════════════════════════════════════════ */
+
 // Drag & drop
 ['dragenter', 'dragover'].forEach(e =>
   dropArea.addEventListener(e, ev => { ev.preventDefault(); dropArea.classList.add('dragover'); })
@@ -247,29 +321,10 @@ function handleFileSelection(file) {
 ['dragleave', 'drop'].forEach(e =>
   dropArea.addEventListener(e, ev => { ev.preventDefault(); dropArea.classList.remove('dragover'); })
 );
-dropArea.addEventListener('drop', ev => handleFileSelection(ev.dataTransfer.files[0]));
+dropArea.addEventListener('drop', ev => handleFiles(ev.dataTransfer.files));
 
-// File picker
-pdfInput.addEventListener('change', () => handleFileSelection(pdfInput.files[0]));
+// File picker (multiple)
+pdfInput.addEventListener('change', () => handleFiles(pdfInput.files));
 
-// Upload — kick off pipeline
-uploadBtn.addEventListener('click', () => {
-  const file = pdfInput.files[0];
-  if (!file) return;
-
-  const job = {
-    id:            `job-${Date.now()}`,
-    name:          file.name,
-    status:        'uploading',
-    progress:      0,
-    fileListEl:    null,
-    statusPanelEl: null,
-  };
-  jobs[job.id] = job;
-
-  pdfInput.value         = '';
-  fileNameEl.textContent = '';
-  uploadBtn.disabled     = true;
-
-  runPipeline(job);
-});
+// Run OCR on All
+runAllBtn.addEventListener('click', startOCRAll);
