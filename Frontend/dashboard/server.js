@@ -1,7 +1,7 @@
 /* ══════════════════════════════════════════════════════════════
    server.js
    Pipeline: PDF upload → (manual trigger) → Tesseract OCR
-             (eng+fra) → raw text saved to uploads/filename.txt
+             (eng+fra) → raw text saved to ocr_processed/filename.txt
 
    Install dependencies:
      npm install express multer tesseract.js pdf-to-img
@@ -21,8 +21,31 @@ const app  = express();
 const PORT = 3000;
 
 /* ── Directory setup ──────────────────────────────────────────── */
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+const uploadsDir    = path.join(__dirname, 'uploads');
+const ocrOutputDir  = path.join(__dirname, 'ocr_processed');
+
+if (!fs.existsSync(uploadsDir))   fs.mkdirSync(uploadsDir,   { recursive: true });
+if (!fs.existsSync(ocrOutputDir)) fs.mkdirSync(ocrOutputDir, { recursive: true });
+
+/* ── Sanitize any existing dirty filenames on startup ─────────── */
+function migrateDirFilenames(dir, ext) {
+  fs.readdirSync(dir)
+    .filter(f => f.endsWith(ext))
+    .forEach(f => {
+      const clean = sanitizeFilename(f);
+      if (clean !== f) {
+        const oldPath = path.join(dir, f);
+        const newPath = path.join(dir, clean);
+        if (!fs.existsSync(newPath)) {
+          fs.renameSync(oldPath, newPath);
+          console.log(`[startup] Renamed: "${f}" → "${clean}"`);
+        }
+      }
+    });
+}
+
+migrateDirFilenames(uploadsDir,   '.pdf');
+migrateDirFilenames(ocrOutputDir, '.txt');
 
 /* ── In-memory job store ──────────────────────────────────────── */
 // jobId → { id, filename, stage, progress, error, result, retryCount }
@@ -60,10 +83,21 @@ function failJob(job, message, err = null) {
   else     console.error(`[${job.id}] ❌ ${message}`);
 }
 
+/* ── Filename sanitizer ───────────────────────────────────────── */
+function sanitizeFilename(name) {
+  return name
+    .normalize('NFD')                    // decompose accented chars
+    .replace(/[\u0300-\u036f]/g, '')     // strip accent marks
+    .replace(/[–—]/g, '-')              // em/en dash → hyphen
+    .replace(/[^\w.\-]/g, '-')          // anything else non-safe → hyphen
+    .replace(/-+/g, '-')                // collapse multiple hyphens
+    .replace(/^-|-$/g, '');             // trim leading/trailing hyphens
+}
+
 /* ── Multer — save PDFs to uploads/ ──────────────────────────── */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadsDir),
-  filename:    (req, file, cb) => cb(null, file.originalname),
+  filename: (req, file, cb) => cb(null, sanitizeFilename(file.originalname)),
 });
 
 const upload = multer({
@@ -197,7 +231,7 @@ app.get('/ocr-result/:filename', (req, res) => {
     return res.status(400).json({ error: 'Only .txt files can be retrieved.' });
   }
 
-  const txtPath = path.join(uploadsDir, filename);
+  const txtPath = path.join(ocrOutputDir, filename);
   if (!fs.existsSync(txtPath)) {
     return res.status(404).json({ error: 'OCR result not found. Has OCR been run for this file?' });
   }
@@ -220,7 +254,7 @@ app.get('/files', (req, res) => {
     const pdfs  = fs.readdirSync(uploadsDir).filter(f => f.endsWith('.pdf'));
     const files = pdfs.map(pdf => ({
       filename:  pdf,
-      hasResult: fs.existsSync(path.join(uploadsDir, pdf.replace('.pdf', '.txt'))),
+      hasResult: fs.existsSync(path.join(ocrOutputDir, pdf.replace('.pdf', '.txt'))),
     }));
     res.json(files);
   } catch (err) {
@@ -318,7 +352,7 @@ async function runPipeline(job, pdfPath) {
     }
 
     /* ── Stage 3: Save .txt output ──────────────────────────────── */
-    const txtPath = path.join(uploadsDir, job.filename.replace('.pdf', '.txt'));
+    const txtPath = path.join(ocrOutputDir, job.filename.replace('.pdf', '.txt'));
     try {
       fs.writeFileSync(txtPath, fullText.trim(), 'utf8');
     } catch (err) {
