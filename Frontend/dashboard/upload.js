@@ -155,7 +155,7 @@ function moveToCompleted(job) {
 
   if (completedEmpty) completedEmpty.style.display = 'none';
 
-  const txtFilename = job.name.replace(/\.pdf$/i, '.txt');
+  const txtFilename = job.txtFilename || job.name.replace(/\.pdf$/i, '.txt');
 
   const li = document.createElement('li');
   li.innerHTML = `
@@ -269,7 +269,8 @@ function pollJobUntilDone(job) {
 
         if (data.stage === 'done') {
           clearInterval(interval);
-          // Surface any partial warnings (e.g. some pages failed OCR)
+          // Store the exact .txt filename the server saved
+          if (data.result?.savedTo) job.txtFilename = data.result.savedTo;
           if (data.result?.warnings) {
             console.warn(`[upload.js] OCR done with warnings: ${data.result.warnings}`);
           }
