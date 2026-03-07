@@ -64,14 +64,18 @@ function createQueueRow(job) {
     <div class="spinner" id="spinner-${job.id}" style="display:none"></div>
     <span class="item-badge badge-${job.state}" id="badge-${job.id}">${stateName(job.state)}</span>
     <div class="item-actions">
-      <button class="btn-ocr"    id="btn-ocr-${job.id}"    disabled>Run OCR</button>
+      <button class="btn-ocr"   id="btn-ocr-${job.id}"   disabled>Run OCR</button>
+      <button class="btn-retry" id="btn-retry-${job.id}" style="display:none">↺ Retry</button>
       <button class="btn-remove" id="btn-remove-${job.id}">✕</button>
     </div>
+    <div class="item-error" id="error-${job.id}" style="display:none"></div>
   `;
 
   // Attach listeners directly to the elements — never wiped since we
   // only update child elements (badge, progress, spinner) not innerHTML
   li.querySelector(`#btn-ocr-${job.id}`)
+    .addEventListener('click', () => startOCR(job.id));
+  li.querySelector(`#btn-retry-${job.id}`)
     .addEventListener('click', () => startOCR(job.id));
   li.querySelector(`#btn-remove-${job.id}`)
     .addEventListener('click', () => removeQueueJob(job.id));
@@ -104,11 +108,26 @@ function updateQueueRow(job) {
   if (progBar)  progBar.style.width    = job.progress + '%';
   if (spinner)  spinner.style.display  = isActive ? 'block' : 'none';
 
-  // OCR button enabled only when ready; remove always enabled unless actively running
+  // OCR button, retry button, remove button states
   const ocrBtn    = document.getElementById(`btn-ocr-${job.id}`);
+  const retryBtn  = document.getElementById(`btn-retry-${job.id}`);
   const removeBtn = document.getElementById(`btn-remove-${job.id}`);
-  if (ocrBtn)    ocrBtn.disabled    = job.state !== 'ready';
-  if (removeBtn) removeBtn.disabled = job.state === 'uploading'; // only lock during upload
+  const errorDiv  = document.getElementById(`error-${job.id}`);
+
+  if (ocrBtn)    ocrBtn.disabled             = job.state !== 'ready';
+  if (ocrBtn)    ocrBtn.style.display        = job.state === 'failed' ? 'none' : '';
+  if (retryBtn)  retryBtn.style.display      = (job.state === 'failed' && job.canRetry) ? '' : 'none';
+  if (removeBtn) removeBtn.disabled          = job.state === 'uploading';
+
+  // Error message — shown only on failure
+  if (errorDiv) {
+    if (job.state === 'failed' && job.errorMsg) {
+      errorDiv.textContent = `⚠️ ${job.errorMsg}`;
+      errorDiv.style.display = 'block';
+    } else {
+      errorDiv.style.display = 'none';
+    }
+  }
 }
 
 function stateName(state) {
@@ -218,9 +237,10 @@ async function uploadFile(job) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   STAGE 2 — MANUAL OCR TRIGGER + POLLING
+   STAGE 2 — MANUAL OCR TRIGGER + POLLING  (#223)
    Button calls POST /ocr/:serverId to start, then polls
    GET /job/:serverId every 1.5s for progress until done.
+   On failure: shows server error message + retry button if allowed.
 ══════════════════════════════════════════════════════════════ */
 const STAGE_LABELS = {
   ocr:    'OCR',
@@ -236,12 +256,17 @@ function pollJobUntilDone(job) {
         if (!res.ok) throw new Error(`Poll failed: ${res.status}`);
         const data = await res.json();
 
-        job.progress  = data.progress ?? job.progress;
+        job.progress   = data.progress ?? job.progress;
         job.stageLabel = STAGE_LABELS[data.stage] ?? data.stage;
+        job.canRetry   = data.canRetry ?? false;
         updateQueueRow(job);
 
         if (data.stage === 'done') {
           clearInterval(interval);
+          // Surface any partial warnings (e.g. some pages failed OCR)
+          if (data.result?.warnings) {
+            console.warn(`[upload.js] OCR done with warnings: ${data.result.warnings}`);
+          }
           resolve();
         } else if (data.stage === 'failed') {
           clearInterval(interval);
@@ -257,38 +282,38 @@ function pollJobUntilDone(job) {
 
 async function startOCR(id) {
   const job = jobs[id];
-  if (!job || job.state !== 'ready') return;
+  if (!job || (job.state !== 'ready' && job.state !== 'failed')) return;
 
   if (!job.serverId) {
-    job.state = 'failed';
+    job.state      = 'failed';
+    job.errorMsg   = 'Upload did not complete — please remove and re-upload this file.';
     updateQueueRow(job);
     refreshQueueUI();
-    console.error('[upload.js] No serverId on job — was upload successful?');
     return;
   }
 
   job.state      = 'processing';
   job.stageLabel = 'OCR';
   job.progress   = 0;
+  job.errorMsg   = null;
   updateQueueRow(job);
   refreshQueueUI();
 
   try {
-    // Tell the server to start OCR for this job
     const triggerRes = await fetch(`/ocr/${job.serverId}`, { method: 'POST' });
     if (!triggerRes.ok) {
       const body = await triggerRes.json().catch(() => ({}));
       throw new Error(body.error || `Server responded with ${triggerRes.status}`);
     }
 
-    // Poll until done
     await pollJobUntilDone(job);
     moveToCompleted(job);
   } catch (err) {
-    job.state = 'failed';
+    job.state    = 'failed';
+    job.errorMsg = err.message;
     updateQueueRow(job);
     refreshQueueUI();
-    console.error('[upload.js] OCR failed:', err);
+    console.error('[upload.js] OCR failed:', err.message);
   }
 }
 
