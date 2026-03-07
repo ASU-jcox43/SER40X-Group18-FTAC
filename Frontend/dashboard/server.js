@@ -187,6 +187,31 @@ app.get('/job/:id', (req, res) => {
 });
 
 /* ════════════════════════════════════════════════════════════════
+   GET /ocr-result/:filename  (#222)
+   Returns raw OCR text for a completed file.
+   Frontend uses this to populate the View modal.
+════════════════════════════════════════════════════════════════ */
+app.get('/ocr-result/:filename', (req, res) => {
+  const filename = path.basename(req.params.filename); // strip any path traversal
+  if (!filename.endsWith('.txt')) {
+    return res.status(400).json({ error: 'Only .txt files can be retrieved.' });
+  }
+
+  const txtPath = path.join(uploadsDir, filename);
+  if (!fs.existsSync(txtPath)) {
+    return res.status(404).json({ error: 'OCR result not found. Has OCR been run for this file?' });
+  }
+
+  try {
+    const text = fs.readFileSync(txtPath, 'utf8');
+    res.type('text/plain').send(text);
+  } catch (err) {
+    console.error(`[/ocr-result] Failed to read ${filename}:`, err);
+    res.status(500).json({ error: 'Could not read OCR result file.' });
+  }
+});
+
+/* ════════════════════════════════════════════════════════════════
    GET /files
    Returns list of PDFs in uploads/ with .txt result flag.
 ════════════════════════════════════════════════════════════════ */

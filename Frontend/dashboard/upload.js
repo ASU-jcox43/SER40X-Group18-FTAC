@@ -149,13 +149,13 @@ function removeQueueJob(id) {
    COMPLETED ROW
 ══════════════════════════════════════════════════════════════ */
 function moveToCompleted(job) {
-  // Remove from queue
   job.rowEl?.remove();
   delete jobs[job.id];
   refreshQueueUI();
 
-  // Add to completed list
   if (completedEmpty) completedEmpty.style.display = 'none';
+
+  const txtFilename = job.name.replace(/\.pdf$/i, '.txt');
 
   const li = document.createElement('li');
   li.innerHTML = `
@@ -164,8 +164,14 @@ function moveToCompleted(job) {
       <span title="${job.name}">${job.name}</span>
       <span class="item-badge badge-complete">Complete</span>
     </span>
-    <button class="btn-completed-remove">✕</button>
+    <div class="completed-actions">
+      <button class="btn-view-txt">View</button>
+      <button class="btn-completed-remove">✕</button>
+    </div>
   `;
+
+  li.querySelector('.btn-view-txt')
+    .addEventListener('click', () => openTxtModal(job.name, txtFilename));
   li.querySelector('.btn-completed-remove')
     .addEventListener('click', () => { li.remove(); refreshCompletedUI(); });
 
@@ -393,3 +399,48 @@ pdfInput.addEventListener('change', () => handleFiles(pdfInput.files));
 
 // Run OCR on All
 runAllBtn.addEventListener('click', startOCRAll);
+
+/* ══════════════════════════════════════════════════════════════
+   TXT RESULT MODAL  (#222)
+   Opens a modal showing the raw OCR text for a completed file.
+   Fetches GET /ocr-result/:filename from the server.
+══════════════════════════════════════════════════════════════ */
+async function openTxtModal(pdfName, txtFilename) {
+  const modal    = document.getElementById('txtModal');
+  const title    = document.getElementById('txtModalTitle');
+  const content  = document.getElementById('txtModalContent');
+  const loading  = document.getElementById('txtModalLoading');
+
+  // Show modal in loading state
+  title.textContent    = pdfName;
+  content.style.display  = 'none';
+  loading.style.display  = 'block';
+  modal.style.display    = 'flex';
+
+  try {
+    const res = await fetch(`/ocr-result/${encodeURIComponent(txtFilename)}`);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || `Server responded with ${res.status}`);
+    }
+    const text = await res.text();
+    content.textContent   = text;
+    content.style.display = 'block';
+    loading.style.display = 'none';
+  } catch (err) {
+    content.textContent   = `❌ Could not load OCR text: ${err.message}`;
+    content.style.display = 'block';
+    loading.style.display = 'none';
+  }
+}
+
+function closeTxtModal() {
+  document.getElementById('txtModal').style.display = 'none';
+}
+
+// Close modal on backdrop click
+document.getElementById('txtModal')
+  .addEventListener('click', e => { if (e.target.id === 'txtModal') closeTxtModal(); });
+
+// Close on Escape key
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTxtModal(); });
