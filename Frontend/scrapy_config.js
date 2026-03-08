@@ -213,11 +213,91 @@ function scrapyOutputList(list, municipality, id = "scrapyOutputList", maxLinkLe
     const scrapyOutputList = document.createElement("ul");
     scrapyOutputList.id = id;
 
+    const exportli = exportLinksListItem(municipality);
+    exportli.classList.add(id);
+    const addli = addLinkListItem(municipality, maxLinkLength);
+    addli.classList.add(id);
+    scrapyOutputList.appendChild(exportli);
+    scrapyOutputList.appendChild(addli);
+
+    for (let item of list) {
+        const outputli = storedLinkListItem(municipality, item, maxLinkLength);
+        outputli.classList.add(id);
+        scrapyOutputList.appendChild(outputli);
+    }
+
+    return scrapyOutputList;
+}
+
+function storedLinkListItem(municipality, link, maxLinkLength = 50) {
+    const listItem = document.createElement("li");
+    const listItemAnchor = document.createElement("a");
+    
+    if (link.length > maxLinkLength) {
+        listItemAnchor.textContent = `${link.slice(0, maxLinkLength/2)}...${link.slice(link.length - maxLinkLength/2 + 3, link.length)}`
+    }
+    else {
+        listItemAnchor.textContent = link;
+    }
+
+    listItemAnchor.href = link;
+    listItem.appendChild(listItemAnchor);
+
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "remove";
+    deleteButton.addEventListener("click", async (e) => {
+        const response = await fetch(`http://localhost:8000/scrapy_config/output?municipality=${municipality}&link=${link}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-type': 'application/json'
+            }
+        });
+
+        if (await response.ok)
+            deleteButton.parentElement.remove();
+    });
+
+    listItem.appendChild(deleteButton);
+    
+    return listItem;
+}
+
+function addLinkListItem(municipality) {
+    const addLinkItem = document.createElement("li");
+    const addLinkButton = document.createElement("button");
+    addLinkButton.textContent = "add link";
+    addLinkItem.appendChild(addLinkButton);
+
+    addLinkButton.addEventListener("click", async (e) => {
+        var addLinkInput = addLinkItem.querySelector("#add_link_input");
+        if (addLinkInput) {
+            fetch(`http://localhost:8000/scrapy_config/output?municipality=${municipality}&link=${addLinkInput.value}`, {
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json'
+                }
+            }).then(res => res.json()).then(body => {
+                console.log(body["new_link"]);
+                addLinkInput.remove();
+                addLinkButton.textContent = "add link";
+                addLinkItem.after(storedLinkListItem(municipality, body["new_link"]));
+            });
+        }
+        else {
+            addLinkInput = document.createElement('input');
+            addLinkInput.id = 'add_link_input';
+            addLinkItem.insertBefore(addLinkInput, addLinkButton);
+            addLinkButton.textContent = "save";
+        }
+    });
+
+    return addLinkItem;
+}
+
+function exportLinksListItem(municipality) {
     const exportButtonListItem = document.createElement("li");
     const exportAnchor = document.createElement("a");
     const exportButton = document.createElement("button");
-
-    exportButtonListItem.classList.add(id);
     exportAnchor.href = `http://localhost:8000/scrapy_config/export_output?municipality=${municipality}`;
     exportAnchor.download = `${municipality}.csv`
     exportButton.textContent = "export list";
@@ -225,40 +305,5 @@ function scrapyOutputList(list, municipality, id = "scrapyOutputList", maxLinkLe
     exportAnchor.appendChild(exportButton);
     exportButtonListItem.appendChild(exportAnchor);
 
-    scrapyOutputList.appendChild(exportButtonListItem);
-
-    for (let item of list) {
-        const listItem = document.createElement("li");
-        const listItemAnchor = document.createElement("a");
-
-        if (item.length > maxLinkLength) {
-            listItemAnchor.textContent = `${item.slice(0, maxLinkLength/2)}...${item.slice(item.length - maxLinkLength/2 + 3, item.length)}`
-        }
-        else {
-            listItemAnchor.textContent = item;
-        }
-
-        listItemAnchor.href = item;
-        listItem.classList.add(id);
-        listItem.appendChild(listItemAnchor);
-
-        const deleteButton = document.createElement("button");
-        deleteButton.textContent = "remove";
-        deleteButton.addEventListener("click", async (e) => {
-            const response = await fetch(`http://localhost:8000/scrapy_config/output?municipality=${municipality}&link=${item}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-type': 'application/json'
-                }
-            });
-
-            if (await response.ok)
-                deleteButton.parentElement.remove();
-        });
-
-        listItem.appendChild(deleteButton);
-        scrapyOutputList.appendChild(listItem);
-    }
-
-    return scrapyOutputList;
+    return exportButtonListItem;
 }

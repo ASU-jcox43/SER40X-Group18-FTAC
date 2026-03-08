@@ -1,5 +1,5 @@
 from typing import Union
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, status, Body
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -8,14 +8,13 @@ from .Logic.scrapers.document_scraper.spiders.DocumentScraper import *
 from .Logic.OCRProcessor.ocr_processor import process_pdfs
 from .Logic.extraction.text_extraction import extract
 from .Logic.mongo_db.scrapy_config import update_config, get_config_list, get_daily_document_update
-from .Logic.mongo_db.scrapy_output import get_links, remove_link
+from .Logic.mongo_db.scrapy_output import get_links, remove_link, add_link
 from .Logic.mongo_db.connection import CLIENT
 from Backend.Logic.reports.report_generator import generate_report
 from pathlib import Path
 from fastapi.responses import FileResponse
 import zipfile
 import tempfile
-from fastapi import Body
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -112,6 +111,14 @@ async def get_scrapy_output(municipality: str):
 async def remove_scrapy_link(municipality: str, link: str):
     remove_link(municipality,link)
     return f"removed {link} from {municipality}"
+
+@api_app.post("/scrapy_config/output")
+async def add_scrapy_link(municipality: str, link: str):
+    success = add_link(municipality,link)
+    if success:
+        return {"new_link": link}
+    else:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="link could not be added")
 
 @api_app.get("/scrapy_config/export_output")
 async def export_scrapy_output(municipality: str):
