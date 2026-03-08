@@ -1,5 +1,5 @@
 from .connection import DB
-from datetime import date
+from datetime import datetime, timedelta, timezone
 
 SCRAPY_CONFIG_COLLECTION = DB["scrapy_config"]
 
@@ -11,11 +11,18 @@ def update_config(municipality: str, sconfig: dict):
         upsert=True
     )
 
-# Method to return scrapy config based on city
 def get_config_list(num_results:int = 1) -> list[dict]:
     return SCRAPY_CONFIG_COLLECTION.find(limit=num_results).to_list()
 
+# Method to return scrapy config based on city
+def get_config(municipality: str) -> list[dict]:
+    return SCRAPY_CONFIG_COLLECTION.find_one(filter={"_id": municipality})
+
 def get_daily_document_update() -> list[str]:
-    return SCRAPY_CONFIG_COLLECTION.find({
-        {"update_at": {"$elemMatch": {"$eq": date.today()}}}
-    }).distinct("_id")
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    return SCRAPY_CONFIG_COLLECTION.find(
+        {"update_at": {"$elemMatch": {
+            "$gte": today_start,
+            "$lt": today_start + timedelta(days=1)
+            }}}
+    ).distinct("_id")

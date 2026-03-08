@@ -21,7 +21,7 @@ function municipalitySearchResultList(id, searchResults) {
     municipalitySearchResultList.id = id;
     for (let result of searchResults) {
         var listItem = document.createElement("li");
-        listItem.textContent = result["_id"];
+        listItem.textContent = result["_id"].replace('_', ' ');
         listItem.id = result["_id"];
         listItem.addEventListener("click", async (e) => {
             e.preventDefault();
@@ -203,13 +203,6 @@ function configFormData(form, formData = {}) {
 }
 
 function scrapyOutputList(list, municipality, id = "scrapyOutputList", maxLinkLength = 50) {
-    if (list == null || list.length == 0) {
-        const scrapyOutputList = document.createElement("p");
-        scrapyOutputList.textContent = "no links found";
-        scrapyOutputList.id = id;
-        return scrapyOutputList;
-    }
-
     const scrapyOutputList = document.createElement("ul");
     scrapyOutputList.id = id;
 
@@ -220,10 +213,12 @@ function scrapyOutputList(list, municipality, id = "scrapyOutputList", maxLinkLe
     scrapyOutputList.appendChild(exportli);
     scrapyOutputList.appendChild(addli);
 
-    for (let item of list) {
-        const outputli = storedLinkListItem(municipality, item, maxLinkLength);
-        outputli.classList.add(id);
-        scrapyOutputList.appendChild(outputli);
+    if (list) {
+        for (let item of list) {
+            const outputli = storedLinkListItem(municipality, item, maxLinkLength);
+            outputli.classList.add(id);
+            scrapyOutputList.appendChild(outputli);
+        }
     }
 
     return scrapyOutputList;
