@@ -42,6 +42,7 @@ KEYWORDS = {
         "business licence": 3,
         "inspection required": 3,
         "approval": 1,
+        "Application fee + licence fee": 3
     },
     "Zoning": {
         "zoning": 3,
@@ -125,7 +126,7 @@ def classify_text(text):
         for term, weight in keywords.items():
             matches = []
             for sentence in sentences:
-                if term.lower() in sentence.lower():
+                if re.search(r'\b' + re.escape(term) + r'\b', sentence, re.IGNORECASE):
                     matches.append(sentence.strip())
                     
             count = len(matches)

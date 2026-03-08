@@ -14,10 +14,8 @@ def checkForConflicts():
     data = getAllClassificationsData()
     
     flagConflicts(data)
-    # TODO: Finish checking for conflicts
 
 
-# TODO: Figure out a way to flag conflicts
 def flagConflicts(data_files):
     conflicts = []
     
