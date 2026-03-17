@@ -20,13 +20,15 @@ def remove_link(municipality:str, url:str):
         }
     )
 
-def add_link(municipality:str, url:str):
-    SCRAPY_OUTPUT_COLLECTION.update_one(
+def add_link(municipality:str, url:str) -> bool:
+    result = SCRAPY_OUTPUT_COLLECTION.update_one(
         filter={"_id": municipality},
         update={
             "$addToSet": {"urls": url}
         }
     )
+
+    return result.acknowledged
 
 def get_links(municipality:str) -> list:
     document = SCRAPY_OUTPUT_COLLECTION.find_one(filter={"_id": municipality})
