@@ -1,11 +1,16 @@
-import json
-
 from pathlib import Path
 from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
 from Backend.Logic.mongo_db.scoring_collection import getSummary
 
 # TODO: replace with MongoDB code
-OUTPUT = Path("Backend/Logic/reports/generated_reports")
+# OUTPUT = Path("Backend/Logic/reports/generated_reports")
+BASE_DIR = Path(__file__).resolve().parent
+OUTPUT = BASE_DIR / "generated_reports"
+
+def has_sentences(content):
+    if not isinstance(content, list):
+        return False
+    return any(isinstance(item, dict) and isinstance(item.get("sentence"), str) for item in content)
 
 def generate_report(data, scores, output_path):
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -29,30 +34,39 @@ def generate_report(data, scores, output_path):
 
     # Add each category with either a found or missing tag.
     for category, content in keyword_contexts.items():
-        empty = (len(content) == 0)
-        status = "Found" if not empty else "Missing"
+        status = "Found" if has_sentences(content) else "Missing"
         markdown.append(f"| {category.capitalize()} | {status} |\n")
 
     # For key findings, check if they are unique by checking the seen set and adding to it if it is new.
     markdown.append("\n## Key Findings\n")
 
     seen = set()
+    found_any = False
 
     for category, content in keyword_contexts.items():
-        if not isinstance(content, dict):
+        if not isinstance(content, list):
             continue
-        for items in content.values():
-            if not isinstance(items, list):
+        for entry in content:
+            if isinstance(entry, dict):
+                line = entry.get("sentence")
+            else:
+                line = entry
+            if not isinstance(line, str):
                 continue
-            for line in items:
-                if len(line.split()) < 4:
-                    continue
-                line = line.strip()
-                if not line.endswith("."):
-                    line += "."
-                if line not in seen:
-                    markdown.append(f"- {line.capitalize()}\n")
-                    seen.add(line)
+            line = line.strip()
+
+            if len(line.split()) < 4:
+                continue
+
+            if not line.endswith("."):
+                line += "."
+
+            if line not in seen:
+                markdown.append(f"- {line.capitalize()}\n")
+                seen.add(line)
+                found_any = True
+        if not found_any:
+            markdown.append("No key findings were extracted.\n")
 
     # For now, recommendations are just finding more info about missing categories.
     markdown.append("\n## Recommendations\n")
