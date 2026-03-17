@@ -76,11 +76,14 @@ def collectData():
 
         contexts = file.get("keyword_contexts", {})
 
-        # Flatten all sentences
+        # Flatten all hits (only sentences with keyword hits)
         sentences = []
-        for category in contexts.values():
-            for termSentences in category.values():
-                sentences.extend(termSentences)
+
+        for category_list in contexts.values():            # category_list is a list of objects
+            for item in category_list:                     # each object in the list
+                hits = item.get("hits", {})                # hits is a dict of keyword -> list of sentences
+                for hit_list in hits.values():
+                    sentences.extend(hit_list)            # add all hit sentences
 
         # Deduplicate
         sentences = list({s.strip() for s in sentences if s.strip()})

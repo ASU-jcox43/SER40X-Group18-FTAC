@@ -190,13 +190,17 @@ def classify_files():
         result = []
         # flatten keyword_contexts -> text string
         contexts = []
-        for terms in doc.get("keyword_contexts", {}).values():
-            for arr in terms.values():
-                contexts.extend(arr)
+        for category_arr in doc.get("keyword_contexts", {}).values():
+            for item in category_arr:  # each object in the array
+                hits = item.get("hits", {})
+                
+                for hit_list in hits.values():  # each keyword's matches
+                    contexts.extend(hit_list)
 
         text = " ".join(contexts)
 
         print(f"{doc.get("file", "unkown")}")
+        print(text)
         top_categories, confidence, context = classify_text(text)
         filename = doc.get("file", "unkown")
         result = {
