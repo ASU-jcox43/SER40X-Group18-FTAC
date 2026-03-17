@@ -26,6 +26,7 @@ class DocumentScraperSpider(scrapy.Spider):
     #def __init__(self, start_url: str, layers: int, get_pdfs, regex: str | None = None, xpath: str | None = None, municipality_name: str | None = None, **kwargs):
     def __init__(self, config: dict, **kwargs):
         super().__init__(**kwargs)
+        print(config)
         config = ast.literal_eval(config)
 
         logging.getLogger('scrapy.core.engine').setLevel(logging.WARNING)
