@@ -50,7 +50,7 @@ class ScrapyConfig(BaseModel):
 class PostExtractDocs(BaseModel):
     urls: list[str] # List of document urls
 
-@scheduler.scheduled_job(trigger=CronTrigger(hour=0, minute=0), args=get_daily_document_update())
+#@scheduler.scheduled_job(trigger=CronTrigger(hour=0, minute=0), args=get_daily_document_update())
 def run_document_scraper(*municipalities):
     configs: list[dict] = [get_config(m) for m in municipalities] # TODO make this only do 1 database query
 
