@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from typing import Union
 from fastapi import FastAPI, HTTPException, BackgroundTasks, status, Body
 from pydantic import BaseModel
@@ -20,12 +21,31 @@ from io import BytesIO
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.mongodb import MongoDBJobStore
 from apscheduler.triggers.cron import CronTrigger
+import logging
 
-api_app = FastAPI()
 
 jobstores = {'default': MongoDBJobStore(client=CLIENT, database='CapstoneDB', collection='cronjobs')}
 scheduler = BackgroundScheduler(jobstores=jobstores)
-scheduler.start()
+
+def run_document_scraper(*municipalities):
+    configs: list[dict] = [get_config(m) for m in municipalities] # TODO make this only do 1 database query
+    logging.log(msg=configs, level=40)
+
+    os.chdir('Backend/Logic/scrapers')
+    for config in configs:
+        config['municipality_name'] = config['_id']
+        config.pop('_id')
+        config.pop('update_at')
+        subprocess.Popen(['scrapy', 'crawl', '-a', f'config={str(config)}', 'DocumentScraper'], text=True)
+    os.chdir('../../..')
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    scheduler.start()
+    scheduler.add_job(run_document_scraper, trigger=CronTrigger(second=0), args=get_daily_document_update(), misfire_grace_time=30, coalesce=True)
+    yield
+
+api_app = FastAPI(lifespan=lifespan)
 
 api_app.add_middleware(
     CORSMiddleware,
@@ -49,18 +69,6 @@ class ScrapyConfig(BaseModel):
 
 class PostExtractDocs(BaseModel):
     urls: list[str] # List of document urls
-
-#@scheduler.scheduled_job(trigger=CronTrigger(hour=0, minute=0), args=get_daily_document_update())
-def run_document_scraper(*municipalities):
-    configs: list[dict] = [get_config(m) for m in municipalities] # TODO make this only do 1 database query
-
-    os.chdir('Backend/Logic/scrapers')
-    for config in configs:
-        config['municipality_name'] = config['_id']
-        config.pop('_id')
-        config.pop('update_at')
-        subprocess.Popen(['scrapy', 'crawl', '-a', f'config={str(config)}', 'DocumentScraper'], text=True)
-    os.chdir('../../..')
 
 @api_app.post("/ingest-docs")
 async def ingest_docs(municipality: str, background_tasks: BackgroundTasks):
