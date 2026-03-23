@@ -19,7 +19,7 @@ def get_config(municipality: str) -> list[dict]:
     return SCRAPY_CONFIG_COLLECTION.find_one(filter={"_id": municipality})
 
 def get_daily_document_update() -> list[str]:
-    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    today_start = datetime.now().astimezone().replace(hour=0, minute=0, second=0, microsecond=0)
     return SCRAPY_CONFIG_COLLECTION.find(
         {"update_at": {"$elemMatch": {
             "$gte": today_start,
