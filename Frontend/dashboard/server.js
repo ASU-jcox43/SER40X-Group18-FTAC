@@ -279,6 +279,7 @@ function broadcastProcessedFile(entry) {
 
 /* ════════════════════════════════════════════════════════════════
    GET /processed-files  
+   #259 link ocr to ocr processed directory
    Returns all .txt files in ocr_processed/ as a JSON array.
    Each entry: { pdfName, txtFilename, processedAt }
    Frontend calls this once on page load to populate the
