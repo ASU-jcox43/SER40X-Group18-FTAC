@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from typing import Union
 from fastapi import FastAPI, HTTPException, BackgroundTasks, status, Body
-from pydantic import BaseModel
+from pydantic import BaseModel, TypeAdapter, conlist
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import subprocess
@@ -22,17 +22,18 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.mongodb import MongoDBJobStore
 from apscheduler.triggers.cron import CronTrigger
 import logging
+from datetime import datetime
 
 
 jobstores = {'default': MongoDBJobStore(client=CLIENT, database='CapstoneDB', collection='cronjobs')}
 scheduler = BackgroundScheduler(jobstores=jobstores)
 
 def run_document_scraper(*municipalities):
-    configs: list[dict] = [get_config(m) for m in municipalities] # TODO make this only do 1 database query
-    logging.log(msg=configs, level=40)
+    #configs: list[dict] = [get_config(m) for m in municipalities] # TODO make this only do 1 database query
+    #logging.log(msg=configs, level=40)
 
     os.chdir('Backend/Logic/scrapers')
-    for config in configs:
+    for config in municipalities:
         config['municipality_name'] = config['_id']
         config.pop('_id')
         config.pop('update_at')
@@ -42,7 +43,11 @@ def run_document_scraper(*municipalities):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     scheduler.start()
-    scheduler.add_job(run_document_scraper, trigger=CronTrigger(hour=0, minute=0, second=0), args=get_daily_document_update(), misfire_grace_time=30, coalesce=True)
+    def run_daily_document_scraper(*municipalities):
+        
+        run_document_scraper(municipalities)
+        pass
+    scheduler.add_job(run_daily_document_scraper, trigger=CronTrigger(hour=0, minute=0, second=0), args=get_daily_document_update(), misfire_grace_time=30, coalesce=True)
     yield
 
 api_app = FastAPI(lifespan=lifespan)
@@ -66,6 +71,7 @@ class ScrapyConfig(BaseModel):
     get_pdfs: bool | None = False
     layer_filter: ScrapyFilter | None = None
     next_page_filter: ScrapyFilter | None = None
+    update_at: list[datetime]
 
 class PostExtractDocs(BaseModel):
     urls: list[str] # List of document urls
@@ -109,6 +115,8 @@ async def search_configs():
 
 @api_app.put("/scrapy_config")
 async def edit_config(req: ScrapyConfig, municipality: str):
+    if (len(req.update_at) != 2):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Must have 2 update days in a year.")
     update_config(municipality,req.model_dump(exclude_unset=True))
     return f"updated {municipality}"
 

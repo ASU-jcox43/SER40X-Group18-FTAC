@@ -12,17 +12,20 @@ def update_config(municipality: str, sconfig: dict):
     )
 
 def get_config_list(num_results:int = 1) -> list[dict]:
-    return SCRAPY_CONFIG_COLLECTION.find(limit=num_results).to_list()
+    return list(SCRAPY_CONFIG_COLLECTION.find(limit=num_results).to_list())
 
 # Method to return scrapy config based on city
 def get_config(municipality: str) -> list[dict]:
-    return SCRAPY_CONFIG_COLLECTION.find_one(filter={"_id": municipality})
+    return list(SCRAPY_CONFIG_COLLECTION.find_one(filter={"_id": municipality}))
 
 def get_daily_document_update() -> list[str]:
     today_start = datetime.now().astimezone().replace(hour=0, minute=0, second=0, microsecond=0)
-    return SCRAPY_CONFIG_COLLECTION.find(
+    return list(SCRAPY_CONFIG_COLLECTION.find(
         {"update_at": {"$elemMatch": {
             "$gte": today_start,
             "$lt": today_start + timedelta(days=1)
             }}}
-    ).distinct("_id")
+    ))
+
+def increment_update_schedule(municipality: str):
+    today_start = datetime.now().astimezone().replace(hour=0, minute=0, second=0, microsecond=0)

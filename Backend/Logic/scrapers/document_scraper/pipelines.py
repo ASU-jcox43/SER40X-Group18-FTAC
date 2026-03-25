@@ -9,7 +9,7 @@ from itemadapter import ItemAdapter
 from pymongo import MongoClient
 
 class DocumentScraperPipeline:
-    MONGO_DB = MongoClient("mongodb://ftac-mongo:27017").get_database("ftac")
+    MONGO_DB = MongoClient("mongodb://ftac-mongo:27017").get_database("CapstoneDB")
     
     def __init__(self, crawler):
         self.crawler = crawler
