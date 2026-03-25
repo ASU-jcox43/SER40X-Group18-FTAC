@@ -8,7 +8,19 @@
      4. User clicks "Run OCR" (per file) or "Run OCR on All"
      5. Frontend polls GET /job/:id for live stage + progress
         Stages: ocr → extracting → done | failed
-     6. On done → file moves to "Completed PDFs" section
+     6. On done → SSE push from GET /processed-files/stream
+        updates "Completed PDFs" section in real time.
+
+    Persistent Completed List
+     • On page load: GET /processed-files populates completed list
+       from the OCR-processed directory on the server.
+     • Real-time: SSE (GET /processed-files/stream) pushes new
+       entries as they finish, no polling needed.
+     • Actions per completed item:
+         - View     → modal with OCR text (existing openTxtModal)
+         - Download → fetches /ocr-result/:filename as blob
+         - Re-run OCR → re-queues file via POST /rerun/:filename
+         - Delete   → DELETE /processed-files/:filename + remove row
 ══════════════════════════════════════════════════════════════ */
 
 /* ── Element refs ─────────────────────────────────────────────── */
@@ -17,15 +29,22 @@ const pdfInput      = document.getElementById('pdfInput');
 const uploadStatus  = document.getElementById('uploadStatus');
 const queueList     = document.getElementById('queueList');
 const queueEmpty    = document.getElementById('queueEmpty');
-const completedList = document.getElementById('completedList');
-const completedEmpty= document.getElementById('completedEmpty');
-const runAllBtn     = document.getElementById('runAllBtn');
-const liveIndicator = document.getElementById('liveIndicator');
+const completedList    = document.getElementById('completedList');
+const completedEmpty   = document.getElementById('completedEmpty');
+const completedLoading = document.getElementById('completedLoading'); // #259
+const sseIndicator     = document.getElementById('sseIndicator');     // #259
+const runAllBtn        = document.getElementById('runAllBtn');
+const liveIndicator    = document.getElementById('liveIndicator');
 
 /* ── Job registry ─────────────────────────────────────────────── */
 // jobId → { id, name, file, state, rowEl }
 // states: 'uploading' | 'ready' | 'processing' | 'failed'
 const jobs = {};
+
+/* ── Completed file registry ──────────────────────────────────── */
+// #259: Track txt filenames already rendered so SSE doesn't
+// add duplicates for files that were loaded on page load.
+const completedFilenames = new Set();
 
 /* ══════════════════════════════════════════════════════════════
    QUEUE EMPTY STATE + RUN-ALL BUTTON
@@ -42,7 +61,12 @@ function refreshQueueUI() {
 }
 
 function refreshCompletedUI() {
-  const hasCompleted = completedList.querySelectorAll('li:not(#completedEmpty)').length > 0;
+  // Only show the empty state once the initial load has finished
+  // (completedLoading hidden = load complete). While loading is visible
+  // we don't want to flash "No completed files yet".
+  const isLoading = completedLoading && completedLoading.style.display !== 'none';
+  if (isLoading) return;
+  const hasCompleted = completedFilenames.size > 0;
   if (completedEmpty) completedEmpty.style.display = hasCompleted ? 'none' : '';
 }
 
@@ -146,37 +170,223 @@ function removeQueueJob(id) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   COMPLETED ROW
+   COMPLETED ROW (persistent, server-linked)
+
+   addCompletedRow({ pdfName, txtFilename, processedAt })
+     Builds a completed list row with View / Download /
+     Re-run OCR / Delete actions.  Safe to call from both
+     the initial page-load fetch and the SSE handler —
+     completedFilenames guards against duplicates.
 ══════════════════════════════════════════════════════════════ */
-function moveToCompleted(job) {
-  job.rowEl?.remove();
-  delete jobs[job.id];
-  refreshQueueUI();
+function addCompletedRow({ pdfName, txtFilename, processedAt }) {
+  // Guard: skip if already rendered (e.g. SSE fires for a file
+  // that was already loaded on page load)
+  if (completedFilenames.has(txtFilename)) return;
+  completedFilenames.add(txtFilename);
 
   if (completedEmpty) completedEmpty.style.display = 'none';
 
-  const txtFilename = job.txtFilename || job.name.replace(/\.pdf$/i, '.txt');
+  const dateLabel = processedAt
+    ? new Date(processedAt).toLocaleString()
+    : '';
 
   const li = document.createElement('li');
+  li.dataset.txtFilename = txtFilename;
   li.innerHTML = `
     <span class="completed-name">
       <span class="file-icon">📄</span>
-      <span title="${job.name}">${job.name}</span>
+      <span title="${pdfName}">${pdfName}</span>
       <span class="item-badge badge-complete">Complete</span>
+      ${dateLabel ? `<span class="completed-date">${dateLabel}</span>` : ''}
     </span>
     <div class="completed-actions">
-      <button class="btn-view-txt">View</button>
-      <button class="btn-completed-remove">✕</button>
+      <button class="btn-view-txt"    title="View OCR text">View</button>
+      <button class="btn-download-txt" title="Download .txt file">⬇ Download</button>
+      <button class="btn-rerun-ocr"   title="Re-queue for OCR">↺ Re-run OCR</button>
+      <button class="btn-delete-file" title="Delete from server">🗑 Delete</button>
     </div>
   `;
 
+  // View
   li.querySelector('.btn-view-txt')
-    .addEventListener('click', () => openTxtModal(job.name, txtFilename));
-  li.querySelector('.btn-completed-remove')
-    .addEventListener('click', () => { li.remove(); refreshCompletedUI(); });
+    .addEventListener('click', () => openTxtModal(pdfName, txtFilename));
+
+  // Download
+  li.querySelector('.btn-download-txt')
+    .addEventListener('click', () => downloadTxt(txtFilename));
+
+  // Re-run OCR — asks server to re-queue the original PDF
+  li.querySelector('.btn-rerun-ocr')
+    .addEventListener('click', () => rerunOCR(pdfName, txtFilename, li));
+
+  // Delete from server
+  li.querySelector('.btn-delete-file')
+    .addEventListener('click', () => deleteCompleted(txtFilename, li));
 
   completedList.appendChild(li);
+}
+
+/* ── #259 helper: remove a completed row cleanly ─────────────── */
+function removeCompletedRow(txtFilename, liEl) {
+  completedFilenames.delete(txtFilename);
+  liEl.remove();
   refreshCompletedUI();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   #259 — COMPLETED ROW ACTIONS
+══════════════════════════════════════════════════════════════ */
+
+/* Download the .txt file as a browser file download */
+async function downloadTxt(txtFilename) {
+  try {
+    const res = await fetch(`/ocr-result/${encodeURIComponent(txtFilename)}`);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || `Server responded with ${res.status}`);
+    }
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = txtFilename;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('[upload.js] Download failed:', err.message);
+    alert(`Download failed: ${err.message}`);
+  }
+}
+
+/* Re-queue the file for OCR — server must still have the original PDF.
+   POST /rerun/:txtFilename  →  { jobId, pdfName }
+   The completed row is removed immediately; the job re-enters the
+   queue section so the user can see its progress as normal. */
+async function rerunOCR(pdfName, txtFilename, liEl) {
+  if (!confirm(`Re-run OCR on "${pdfName}"? The current result will be replaced when complete.`)) return;
+
+  try {
+    const res = await fetch(`/rerun/${encodeURIComponent(txtFilename)}`, { method: 'POST' });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || `Server responded with ${res.status}`);
+    }
+    const { jobId } = await res.json();
+
+    // Remove from completed list so SSE re-adds it fresh when done
+    removeCompletedRow(txtFilename, liEl);
+
+    // Register a skeleton job so the queue row appears immediately
+    const job = {
+      id:       jobId,
+      name:     pdfName,
+      file:     null,           // original file not in memory
+      serverId: jobId,
+      state:    'processing',
+      stageLabel: 'OCR',
+      progress: 0,
+      rowEl:    null,
+    };
+    jobs[jobId] = job;
+    createQueueRow(job);
+    refreshQueueUI();
+
+    // Resume polling — on done the SSE will re-add it to completed
+    await pollJobUntilDone(job);
+    // pollJobUntilDone resolves on 'done'; SSE handles the completed row
+    job.rowEl?.remove();
+    delete jobs[jobId];
+    refreshQueueUI();
+  } catch (err) {
+    console.error('[upload.js] Re-run OCR failed:', err.message);
+    alert(`Re-run failed: ${err.message}`);
+  }
+}
+
+/* Delete the processed file from the server */
+async function deleteCompleted(txtFilename, liEl) {
+  if (!confirm(`Delete "${txtFilename}" from the server? This cannot be undone.`)) return;
+
+  try {
+    const res = await fetch(`/processed-files/${encodeURIComponent(txtFilename)}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || `Server responded with ${res.status}`);
+    }
+    removeCompletedRow(txtFilename, liEl);
+  } catch (err) {
+    console.error('[upload.js] Delete failed:', err.message);
+    alert(`Delete failed: ${err.message}`);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   #259 — PAGE-LOAD FETCH  (GET /processed-files)
+   Populates "Completed PDFs" from the server's OCR output
+   directory so the list survives page refreshes.
+
+   Expected response shape:
+   [
+     { pdfName: "foo.pdf", txtFilename: "foo.txt", processedAt: "<ISO>" },
+     ...
+   ]
+══════════════════════════════════════════════════════════════ */
+async function loadProcessedFiles() {
+  // #259: Show spinner while fetching; always hide it when done
+  if (completedLoading) completedLoading.style.display = 'flex';
+
+  try {
+    const res = await fetch('/processed-files');
+    if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+    const files = await res.json();
+
+    if (!Array.isArray(files)) throw new Error('Unexpected response format');
+
+    files.forEach(entry => addCompletedRow(entry));
+  } catch (err) {
+    console.error('[upload.js] Could not load processed files:', err.message);
+    // Non-fatal — the list stays empty; SSE may still deliver new files
+  } finally {
+    if (completedLoading) completedLoading.style.display = 'none';
+    refreshCompletedUI(); // show empty state now if nothing came back
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   #259 — SSE LISTENER  (GET /processed-files/stream)
+   Server pushes an event whenever a new file lands in the
+   OCR-processed directory.  Keeps the completed list live
+   without the frontend needing to poll.
+
+   Expected SSE event data (JSON string):
+   { pdfName: "bar.pdf", txtFilename: "bar.txt", processedAt: "<ISO>" }
+══════════════════════════════════════════════════════════════ */
+function connectProcessedFilesSSE() {
+  const sse = new EventSource('/processed-files/stream');
+
+  // #259: Light up the SSE indicator when the connection opens
+  sse.addEventListener('open', () => {
+    if (sseIndicator) sseIndicator.classList.add('connected');
+  });
+
+  sse.addEventListener('processed-file', e => {
+    try {
+      const entry = JSON.parse(e.data);
+      addCompletedRow(entry);
+      refreshCompletedUI();
+    } catch (err) {
+      console.error('[upload.js] SSE parse error:', err.message);
+    }
+  });
+
+  sse.addEventListener('error', () => {
+    // Dim the indicator while disconnected; it re-lights on next 'open'
+    if (sseIndicator) sseIndicator.classList.remove('connected');
+    console.warn('[upload.js] SSE connection lost — will auto-reconnect.');
+    // EventSource reconnects automatically; no manual retry needed
+  });
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -247,6 +457,8 @@ async function uploadFile(job) {
    Button calls POST /ocr/:serverId to start, then polls
    GET /job/:serverId every 1.5s for progress until done.
    On failure: shows server error message + retry button if allowed.
+   On success: SSE delivers the completed-file event which calls
+   addCompletedRow(); moveToCompleted() is no longer used.
 ══════════════════════════════════════════════════════════════ */
 const STAGE_LABELS = {
   ocr:    'OCR',
@@ -269,8 +481,6 @@ function pollJobUntilDone(job) {
 
         if (data.stage === 'done') {
           clearInterval(interval);
-          // Store the exact .txt filename the server saved
-          if (data.result?.savedTo) job.txtFilename = data.result.savedTo;
           if (data.result?.warnings) {
             console.warn(`[upload.js] OCR done with warnings: ${data.result.warnings}`);
           }
@@ -314,7 +524,12 @@ async function startOCR(id) {
     }
 
     await pollJobUntilDone(job);
-    moveToCompleted(job);
+
+    // #259: Completed row is now driven by SSE (addCompletedRow).
+    // Just clean up the queue row here.
+    job.rowEl?.remove();
+    delete jobs[job.id];
+    refreshQueueUI();
   } catch (err) {
     job.state    = 'failed';
     job.errorMsg = err.message;
@@ -445,3 +660,12 @@ document.getElementById('txtModal')
 
 // Close on Escape key
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTxtModal(); });
+
+/* ══════════════════════════════════════════════════════════════
+   INIT
+   Load persisted files first, then open SSE for live updates.
+══════════════════════════════════════════════════════════════ */
+(async () => {
+  await loadProcessedFiles();   // populate from OCR-processed directory
+  connectProcessedFilesSSE();   // keep list live as new files arrive
+})();
