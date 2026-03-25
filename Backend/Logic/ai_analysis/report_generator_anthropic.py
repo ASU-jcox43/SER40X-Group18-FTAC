@@ -38,7 +38,7 @@ def AI_Generate_Report(analyze):
         model=MODEL,
         max_tokens=4096,
         system=SYSTEM_PROMPT,
-        MESSAGES = [
+        messages = [
             {
                 "role": "user",
                 "content": f"Here is the extracted data:\n\n{analyze}"
@@ -49,6 +49,7 @@ def AI_Generate_Report(analyze):
     print(response.content[0].text)
 
 if __name__ == "__main__":
-    docs = getAllExtractions
+    # TODO: Feed web links
+    docs = getAllExtractions()
     for doc in docs:
-        AI_Generate_Report(doc)
+        AI_Generate_Report(doc.get("keyword_contexts"))
