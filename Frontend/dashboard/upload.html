@@ -175,7 +175,7 @@
       border-radius: 3px;
       overflow: hidden;
       flex-shrink: 0;
-      display: none; /* shown only during upload/OCR */
+      display: none;
     }
 
     .item-progress-bar {
@@ -214,6 +214,7 @@
     .badge-uploading  { background-color: #fff4d6; color: #b07800; }
     .badge-processing { background-color: #d6eaf8; color: #1a5276; }
     .badge-failed     { background-color: #fadbd8; color: #922b21; }
+    .badge-complete   { background-color: #d5f5e3; color: #1e8449; }
 
     /* Per-file action buttons */
     .item-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
@@ -312,7 +313,63 @@
       border-radius: 6px;
     }
 
-    /* ── SECTION 2: Completed files ──────────────────────────────── */
+    /* ── SECTION 2: Completed files (#259) ───────────────────────── */
+
+    /* Section header row — label left, count + SSE indicator right */
+    .completed-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .completed-header .section-label { margin-bottom: 0; }
+
+    /* Small SSE live dot shown while connection is open */
+    .sse-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      color: #2e7d6e;
+      font-weight: 500;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .sse-indicator.connected { opacity: 1; }
+
+    .sse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: #2e7d6e;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
+    /* Loading skeleton shown while GET /processed-files is in-flight */
+    #completedLoading {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.9rem 1.25rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .loading-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #ddd;
+      border-top-color: #254441;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    /* Completed list */
     #completedList {
       list-style: none;
       margin: 0;
@@ -325,68 +382,92 @@
       justify-content: space-between;
       align-items: center;
       padding: 0.75rem 1.25rem;
-      font-size: 0.9rem;
+      font-size: 0.875rem;
       color: #333;
       border-top: 1px solid #eaeaea;
       transition: background-color 0.2s;
+      gap: 0.75rem;
     }
 
     #completedList li:first-child { border-top: none; }
     #completedList li:hover { background-color: #f2f6f5; }
 
+    /* Left side: icon + name + badge + date */
     .completed-name {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.55rem;
       flex: 1;
-      overflow: hidden;
+      min-width: 0; /* allows text-overflow to work inside flex */
     }
 
-    .completed-name span {
+    .completed-name .file-name-text {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      font-weight: 500;
+      color: #333;
     }
 
-    .badge-complete { background-color: #d5f5e3; color: #1e8449; }
-
-    .btn-completed-remove {
-      background: none;
-      border: 1px solid #e2e2e2;
-      border-radius: 6px;
-      padding: 0.2rem 0.65rem;
+    /* Timestamp shown in muted style beside the badge */
+    .completed-date {
       font-family: 'Inter', sans-serif;
-      font-size: 0.8rem;
-      color: #555;
-      cursor: pointer;
-      transition: border-color 0.2s, color 0.2s;
+      font-size: 0.72rem;
+      color: #aaa;
+      white-space: nowrap;
       flex-shrink: 0;
-      margin-left: 1rem;
     }
 
-    .btn-completed-remove:hover { border-color: #c0392b; color: #c0392b; }
-
+    /* Right side: action buttons */
     .completed-actions {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.4rem;
       flex-shrink: 0;
-      margin-left: 1rem;
     }
 
-    .btn-view-txt {
-      background: none;
-      border: 1px solid #203a82;
-      border-radius: 6px;
-      padding: 0.2rem 0.65rem;
+    /* Shared base for all completed-row action buttons */
+    .completed-actions button {
+      padding: 0.2rem 0.6rem;
       font-family: 'Inter', sans-serif;
-      font-size: 0.8rem;
+      font-size: 0.76rem;
       font-weight: 600;
-      color: #203a82;
+      border-radius: 5px;
       cursor: pointer;
-      transition: background-color 0.2s, color 0.2s;
+      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+      white-space: nowrap;
     }
 
+    /* View */
+    .btn-view-txt {
+      border: 1px solid #203a82;
+      background: none;
+      color: #203a82;
+    }
     .btn-view-txt:hover { background-color: #203a82; color: #fff; }
+
+    /* Download */
+    .btn-download-txt {
+      border: 1px solid #254441;
+      background: none;
+      color: #254441;
+    }
+    .btn-download-txt:hover { background-color: #254441; color: #fff; }
+
+    /* Re-run OCR */
+    .btn-rerun-ocr {
+      border: 1px solid #e67e22;
+      background: none;
+      color: #e67e22;
+    }
+    .btn-rerun-ocr:hover { background-color: #e67e22; color: #fff; }
+
+    /* Delete */
+    .btn-delete-file {
+      border: 1px solid #e2e2e2;
+      background: none;
+      color: #888;
+    }
+    .btn-delete-file:hover { border-color: #c0392b; color: #c0392b; }
 
     /* ── TXT Modal ──────────────────────────────────────────────── */
     #txtModal {
@@ -512,19 +593,39 @@
           </div>
           <ul id="queueList">
             <li class="empty-state" id="queueEmpty">
-              Upload PDFs above — they'll appear here ready to process.
+              Upload PDFs above
             </li>
           </ul>
         </div>
 
         <hr class="section-divider">
 
-        <!-- ③ Completed files ────────────────────────────────────── -->
+        <!-- ③ Completed files (#259 — persistent, server-linked) ── -->
         <div>
-          <p class="section-label">Completed PDFs</p>
+          <div class="completed-header">
+            <p class="section-label">Completed PDFs</p>
+            <!--
+              #259: SSE connection indicator.
+              upload.js adds the class 'connected' once the
+              EventSource opens, and removes it if it closes.
+            -->
+            <div class="sse-indicator" id="sseIndicator">
+              <span class="sse-dot"></span> Live
+            </div>
+          </div>
+
+          <!--
+            #259: Shown while GET /processed-files is in-flight on
+            page load. upload.js hides this once the fetch resolves.
+          -->
+          <div id="completedLoading">
+            <div class="loading-spinner"></div>
+            Loading processed files…
+          </div>
+
           <ul id="completedList">
-            <li class="empty-state" id="completedEmpty">
-              Completed files will appear here after OCR finishes.
+
+            <li class="empty-state" id="completedEmpty" style="display:none">
             </li>
           </ul>
         </div>
@@ -533,7 +634,6 @@
     </div><!-- /.files-container -->
   </div><!-- /#filesPage -->
 
-  <!-- TXT Result Modal (#222) -->
   <div id="txtModal">
     <div class="txt-modal-box">
       <div class="txt-modal-header">
