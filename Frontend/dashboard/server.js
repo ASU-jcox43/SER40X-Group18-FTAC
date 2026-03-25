@@ -221,9 +221,9 @@ app.get('/job/:id', (req, res) => {
 });
 
 /* ════════════════════════════════════════════════════════════════
-   GET /ocr-result/:filename  (#222)
+   GET /ocr-result/:filename  
    Returns raw OCR text for a completed file.
-   Frontend uses this to populate the View modal.
+   Frontend uses this to populate the View modal and Download.
 ════════════════════════════════════════════════════════════════ */
 app.get('/ocr-result/:filename', (req, res) => {
   const filename = path.basename(req.params.filename); // strip any path traversal
@@ -264,15 +264,150 @@ app.get('/files', (req, res) => {
 });
 
 /* ════════════════════════════════════════════════════════════════
-   PIPELINE — PDF → images → Tesseract (eng+fra) → .txt  (#223)
+   SSE CLIENT REGISTRY
+   Keeps track of open SSE connections so we can push events to
+   all connected browser tabs when a new file is processed.
+════════════════════════════════════════════════════════════════ */
+const sseClients = new Set();
 
-   Error handling:
-   - pdf-to-img failure (encrypted, corrupt, unsupported)
-   - Empty PDF (0 pages)
-   - Tesseract failure on individual pages (skipped, not fatal)
-   - Complete Tesseract failure (all pages failed)
-   - .txt write failure (disk full, permissions)
-   - Temp dir always cleaned up in finally block
+function broadcastProcessedFile(entry) {
+  const payload = `event: processed-file\ndata: ${JSON.stringify(entry)}\n\n`;
+  for (const res of sseClients) {
+    try { res.write(payload); } catch (_) { sseClients.delete(res); }
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   GET /processed-files  
+   Returns all .txt files in ocr_processed/ as a JSON array.
+   Each entry: { pdfName, txtFilename, processedAt }
+   Frontend calls this once on page load to populate the
+   persistent Completed PDFs list.
+════════════════════════════════════════════════════════════════ */
+app.get('/processed-files', (req, res) => {
+  try {
+    const txts = fs.readdirSync(ocrOutputDir).filter(f => f.endsWith('.txt'));
+
+    const files = txts.map(txt => {
+      const fullPath    = path.join(ocrOutputDir, txt);
+      const stats       = fs.statSync(fullPath);
+      const pdfName     = txt.replace(/\.txt$/, '.pdf');
+      return {
+        pdfName,
+        txtFilename:  txt,
+        processedAt:  stats.mtime.toISOString(),
+      };
+    });
+
+    // Sort newest first
+    files.sort((a, b) => new Date(b.processedAt) - new Date(a.processedAt));
+
+    res.json(files);
+  } catch (err) {
+    console.error('[/processed-files] Error reading ocr_processed dir:', err);
+    res.status(500).json({ error: 'Could not read processed files directory.' });
+  }
+});
+
+/* ════════════════════════════════════════════════════════════════
+   GET /processed-files/stream  (#259)
+   Server-Sent Events endpoint. Stays open and pushes a
+   'processed-file' event whenever a new OCR result is saved.
+   The frontend's EventSource reconnects automatically on drop.
+════════════════════════════════════════════════════════════════ */
+app.get('/processed-files/stream', (req, res) => {
+  res.setHeader('Content-Type',  'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection',    'keep-alive');
+  res.flushHeaders();
+
+  // Keep connection alive with a comment ping every 25s
+  const heartbeat = setInterval(() => {
+    try { res.write(': ping\n\n'); } catch (_) { clearInterval(heartbeat); }
+  }, 25_000);
+
+  sseClients.add(res);
+  console.log(`[SSE] Client connected (${sseClients.size} total)`);
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    sseClients.delete(res);
+    console.log(`[SSE] Client disconnected (${sseClients.size} remaining)`);
+  });
+});
+
+/* ════════════════════════════════════════════════════════════════
+   DELETE /processed-files/:filename  
+   Deletes a .txt file from ocr_processed/.
+   Frontend calls this when the user clicks Delete on a row.
+════════════════════════════════════════════════════════════════ */
+app.delete('/processed-files/:filename', (req, res) => {
+  const filename = path.basename(req.params.filename);
+
+  if (!filename.endsWith('.txt')) {
+    return res.status(400).json({ error: 'Only .txt files can be deleted via this endpoint.' });
+  }
+
+  const txtPath = path.join(ocrOutputDir, filename);
+  if (!fs.existsSync(txtPath)) {
+    return res.status(404).json({ error: 'File not found.' });
+  }
+
+  try {
+    fs.unlinkSync(txtPath);
+    console.log(`[DELETE /processed-files] Deleted: ${filename}`);
+    res.json({ message: 'Deleted successfully.', filename });
+  } catch (err) {
+    console.error(`[DELETE /processed-files] Failed to delete ${filename}:`, err);
+    res.status(500).json({ error: 'Could not delete file. Check permissions.' });
+  }
+});
+
+/* ════════════════════════════════════════════════════════════════
+   POST /rerun/:txtFilename 
+   Re-queues the original PDF for OCR when the user clicks
+   "Re-run OCR" on a completed row.
+   - Derives the PDF name from the .txt filename
+   - Verifies the original PDF still exists in uploads/
+   - Creates a fresh job and kicks off the pipeline
+   - Returns { jobId } so the frontend can poll progress
+   - Broadcasts the new result via SSE when done
+════════════════════════════════════════════════════════════════ */
+app.post('/rerun/:txtFilename', (req, res) => {
+  const txtFilename = path.basename(req.params.txtFilename);
+
+  if (!txtFilename.endsWith('.txt')) {
+    return res.status(400).json({ error: 'Expected a .txt filename.' });
+  }
+
+  const pdfFilename = txtFilename.replace(/\.txt$/, '.pdf');
+  const pdfPath     = path.join(uploadsDir, pdfFilename);
+
+  if (!fs.existsSync(pdfPath)) {
+    return res.status(404).json({
+      error: `Original PDF "${pdfFilename}" not found in uploads. Please re-upload the file.`,
+    });
+  }
+
+  // Remove the old .txt so the pipeline can overwrite cleanly
+  const oldTxtPath = path.join(ocrOutputDir, txtFilename);
+  if (fs.existsSync(oldTxtPath)) {
+    try { fs.unlinkSync(oldTxtPath); } catch (_) {}
+  }
+
+  const job = createJob(pdfFilename);
+  console.log(`[${job.id}] Re-run OCR requested for ${pdfFilename}`);
+
+  res.json({ jobId: job.id, pdfName: pdfFilename });
+
+  runPipeline(job, pdfPath).catch(err => {
+    failJob(job, `Unexpected pipeline error: ${err.message}`, err);
+  });
+});
+
+/* ════════════════════════════════════════════════════════════════
+   PIPELINE — PDF → images → Tesseract (eng+fra) → .txt  
+   On success, broadcasts the new file to all SSE clients 
 ════════════════════════════════════════════════════════════════ */
 async function runPipeline(job, pdfPath) {
   setStage(job, 'ocr', 0);
@@ -311,7 +446,6 @@ async function runPipeline(job, pdfPath) {
         fs.writeFileSync(imgPath, image);
         imageFiles.push(imgPath);
       } catch (err) {
-        // Skip pages that fail to render rather than aborting entirely
         console.warn(`[${job.id}] Page ${pageNum} failed to render — skipping. (${err.message})`);
       }
       pageNum++;
@@ -339,45 +473,50 @@ async function runPipeline(job, pdfPath) {
         });
         fullText += `\n--- Page ${i + 1} ---\n${text}`;
       } catch (err) {
-        // Individual page failure — log and continue
         console.warn(`[${job.id}] OCR failed on page ${i + 1} — skipping. (${err.message})`);
         failedPages.push(i + 1);
         fullText += `\n--- Page ${i + 1} ---\n[OCR failed for this page]\n`;
       }
     }
 
-    // If every single page failed, treat as a full failure
     if (failedPages.length === rendered) {
       throw new Error('OCR failed on all pages. The PDF may contain only images or be unreadable.');
     }
 
     /* ── Stage 3: Save .txt output ──────────────────────────────── */
-    const txtPath = path.join(ocrOutputDir, job.filename.replace('.pdf', '.txt'));
+    const txtFilename = job.filename.replace('.pdf', '.txt');
+    const txtPath     = path.join(ocrOutputDir, txtFilename);
     try {
       fs.writeFileSync(txtPath, fullText.trim(), 'utf8');
     } catch (err) {
       throw new Error(`Could not save OCR output — check disk space or permissions. (${err.message})`);
     }
 
-    // Note partial failures in result but still mark done
     const warnings = failedPages.length > 0
       ? `Pages with OCR errors: ${failedPages.join(', ')}`
       : null;
 
-    job.result   = { savedTo: path.basename(txtPath), pageCount: total, warnings };
+    job.result   = { savedTo: txtFilename, pageCount: total, warnings };
     job.progress = 100;
     setStage(job, 'done', 100);
 
     if (warnings) {
       console.warn(`[${job.id}] ⚠️  Done with warnings — ${warnings}`);
     } else {
-      console.log(`[${job.id}] ✅ Done — saved ${path.basename(txtPath)}`);
+      console.log(`[${job.id}] ✅ Done — saved ${txtFilename}`);
     }
+
+    /* Notify SSE clients of the new completed file */
+    const stats = fs.statSync(txtPath);
+    broadcastProcessedFile({
+      pdfName:     job.filename,
+      txtFilename,
+      processedAt: stats.mtime.toISOString(),
+    });
 
   } catch (err) {
     failJob(job, err.message, err);
   } finally {
-    // Always clean up temp images, even on failure
     try {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     } catch (cleanupErr) {
