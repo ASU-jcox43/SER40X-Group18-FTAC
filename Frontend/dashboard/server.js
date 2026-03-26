@@ -531,3 +531,104 @@ app.listen(PORT, () => {
   console.log(`\nServer running at http://localhost:${PORT}`);
   console.log(`Open:  http://localhost:${PORT}/upload.html\n`);
 });
+
+/* ════════════════════════════════════════════════════════════════
+   #248 — PUT /processed-files/:filename
+   ─────────────────────────────────────────────────────────────
+   Saves manually-edited OCR text back to the .txt file in
+   ocr_processed/.  Called by the frontend's Save button in the
+   edit modal (upload.js tbSave handler).
+
+   Request:
+     Content-Type: text/plain; charset=utf-8
+     Body:         the full updated text
+
+   Response (success):
+     200  { message, filename, savedAt }
+
+   Errors:
+     400  filename is not a .txt file
+     404  file does not exist in ocr_processed/
+     413  body exceeds MAX_EDIT_SIZE_MB
+     500  disk write failure
+
+   ── WHERE TO ADD THIS IN server.js ───────────────────────────
+   Paste the block below directly after the existing:
+
+     app.delete('/processed-files/:filename', (req, res) => { … });
+
+   and before the runPipeline() function / app.listen() call.
+════════════════════════════════════════════════════════════════ */
+
+const MAX_EDIT_SIZE_MB = 10; // generous ceiling for OCR text files
+
+app.put('/processed-files/:filename', (req, res) => {
+  /* ── 1. Validate filename ─────────────────────────────────── */
+  const filename = path.basename(req.params.filename);
+
+  if (!filename.endsWith('.txt')) {
+    return res.status(400).json({
+      error: 'Only .txt files can be updated via this endpoint.',
+    });
+  }
+
+  const txtPath = path.join(ocrOutputDir, filename);
+
+  if (!fs.existsSync(txtPath)) {
+    return res.status(404).json({
+      error: `File "${filename}" not found. It may have been deleted.`,
+    });
+  }
+
+  /* ── 2. Collect raw body ─────────────────────────────────── */
+  // express.json() is already mounted but won't handle text/plain.
+  // We read the raw body ourselves with a size cap.
+  const MAX_BYTES = MAX_EDIT_SIZE_MB * 1024 * 1024;
+  let body = '';
+  let bytesReceived = 0;
+  let aborted = false;
+
+  req.setEncoding('utf8');
+
+  req.on('data', chunk => {
+    bytesReceived += Buffer.byteLength(chunk, 'utf8');
+    if (bytesReceived > MAX_BYTES) {
+      aborted = true;
+      // Drain the request and return early
+      req.resume();
+      return res.status(413).json({
+        error: `Edit body too large — maximum is ${MAX_EDIT_SIZE_MB} MB.`,
+      });
+    }
+    body += chunk;
+  });
+
+  req.on('end', () => {
+    if (aborted) return; // already responded
+
+    /* ── 3. Write to disk ──────────────────────────────────── */
+    try {
+      fs.writeFileSync(txtPath, body, 'utf8');
+
+      const savedAt = new Date().toISOString();
+      console.log(`[PUT /processed-files] Saved edits to ${filename} (${bytesReceived} bytes)`);
+
+      res.json({
+        message:  'File updated successfully.',
+        filename,
+        savedAt,
+      });
+    } catch (err) {
+      console.error(`[PUT /processed-files] Write failed for ${filename}:`, err);
+      res.status(500).json({
+        error: 'Could not write to file. Check disk space or permissions.',
+      });
+    }
+  });
+
+  req.on('error', err => {
+    if (aborted) return;
+    console.error(`[PUT /processed-files] Request error for ${filename}:`, err);
+    res.status(500).json({ error: 'Request error while reading body.' });
+  });
+});

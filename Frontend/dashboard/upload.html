@@ -86,7 +86,6 @@
       font-size: 0.85rem;
     }
 
-    /* Upload status line */
     #uploadStatus {
       font-family: 'Inter', sans-serif;
       font-size: 0.85rem;
@@ -97,7 +96,7 @@
 
     #uploadStatus.error { color: #c0392b; font-weight: 600; }
 
-    /* ── SECTION 1: Upload queue (ready for OCR) ─────────────────── */
+    /* ── Queue section ───────────────────────────────────────────── */
     .queue-section { display: flex; flex-direction: column; gap: 0.75rem; }
 
     .queue-header {
@@ -108,7 +107,6 @@
 
     .queue-header .section-label { margin-bottom: 0; }
 
-    /* "Run OCR on All" bulk button */
     #runAllBtn {
       padding: 0.35rem 1rem;
       font-family: 'Inter', sans-serif;
@@ -125,7 +123,6 @@
     #runAllBtn:hover:not(:disabled) { background-color: #162a61; }
     #runAllBtn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-    /* Queue list */
     #queueList {
       list-style: none;
       margin: 0;
@@ -135,7 +132,6 @@
       gap: 0.5rem;
     }
 
-    /* Each queued / processing file row */
     .queue-item {
       display: flex;
       align-items: center;
@@ -167,7 +163,6 @@
       color: #333;
     }
 
-    /* Mini progress bar inside queue row */
     .item-progress-wrap {
       width: 80px;
       height: 5px;
@@ -186,7 +181,6 @@
       transition: width 0.35s ease;
     }
 
-    /* Spinner */
     .spinner {
       width: 14px;
       height: 14px;
@@ -200,7 +194,6 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Badges */
     .item-badge {
       font-size: 0.72rem;
       font-weight: 600;
@@ -216,7 +209,6 @@
     .badge-failed     { background-color: #fadbd8; color: #922b21; }
     .badge-complete   { background-color: #d5f5e3; color: #1e8449; }
 
-    /* Per-file action buttons */
     .item-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
 
     .btn-ocr {
@@ -265,7 +257,6 @@
     .btn-remove:hover:not(:disabled) { border-color: #c0392b; color: #c0392b; }
     .btn-remove:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* Live indicator */
     .live-indicator {
       display: none;
       align-items: center;
@@ -313,9 +304,7 @@
       border-radius: 6px;
     }
 
-    /* ── SECTION 2: Completed files (#259) ───────────────────────── */
-
-    /* Section header row — label left, count + SSE indicator right */
+    /* ── Completed section ───────────────────────────────────────── */
     .completed-header {
       display: flex;
       justify-content: space-between;
@@ -325,7 +314,6 @@
 
     .completed-header .section-label { margin-bottom: 0; }
 
-    /* Small SSE live dot shown while connection is open */
     .sse-indicator {
       display: flex;
       align-items: center;
@@ -348,7 +336,6 @@
       animation: pulse 1.8s ease-in-out infinite;
     }
 
-    /* Loading skeleton shown while GET /processed-files is in-flight */
     #completedLoading {
       display: flex;
       align-items: center;
@@ -369,7 +356,6 @@
       flex-shrink: 0;
     }
 
-    /* Completed list */
     #completedList {
       list-style: none;
       margin: 0;
@@ -392,13 +378,12 @@
     #completedList li:first-child { border-top: none; }
     #completedList li:hover { background-color: #f2f6f5; }
 
-    /* Left side: icon + name + badge + date */
     .completed-name {
       display: flex;
       align-items: center;
       gap: 0.55rem;
       flex: 1;
-      min-width: 0; /* allows text-overflow to work inside flex */
+      min-width: 0;
     }
 
     .completed-name .file-name-text {
@@ -409,7 +394,6 @@
       color: #333;
     }
 
-    /* Timestamp shown in muted style beside the badge */
     .completed-date {
       font-family: 'Inter', sans-serif;
       font-size: 0.72rem;
@@ -418,14 +402,12 @@
       flex-shrink: 0;
     }
 
-    /* Right side: action buttons */
     .completed-actions {
       display: flex;
       gap: 0.4rem;
       flex-shrink: 0;
     }
 
-    /* Shared base for all completed-row action buttons */
     .completed-actions button {
       padding: 0.2rem 0.6rem;
       font-family: 'Inter', sans-serif;
@@ -437,39 +419,27 @@
       white-space: nowrap;
     }
 
-    /* View */
-    .btn-view-txt {
-      border: 1px solid #203a82;
-      background: none;
-      color: #203a82;
-    }
+    .btn-view-txt    { border: 1px solid #203a82; background: none; color: #203a82; }
     .btn-view-txt:hover { background-color: #203a82; color: #fff; }
 
-    /* Download */
-    .btn-download-txt {
-      border: 1px solid #254441;
-      background: none;
-      color: #254441;
-    }
+    .btn-download-txt { border: 1px solid #254441; background: none; color: #254441; }
     .btn-download-txt:hover { background-color: #254441; color: #fff; }
 
-    /* Re-run OCR */
-    .btn-rerun-ocr {
-      border: 1px solid #e67e22;
-      background: none;
-      color: #e67e22;
-    }
+    .btn-rerun-ocr  { border: 1px solid #e67e22; background: none; color: #e67e22; }
     .btn-rerun-ocr:hover { background-color: #e67e22; color: #fff; }
 
-    /* Delete */
-    .btn-delete-file {
-      border: 1px solid #e2e2e2;
-      background: none;
-      color: #888;
-    }
+    .btn-delete-file { border: 1px solid #e2e2e2; background: none; color: #888; }
     .btn-delete-file:hover { border-color: #c0392b; color: #c0392b; }
 
-    /* ── TXT Modal ──────────────────────────────────────────────── */
+    /* ═══════════════════════════════════════════════════════════════
+       TXT VIEW/EDIT MODAL  (#248)
+       Extended from the original txtModal with:
+         - Toolbar: Edit | Diff | Find & Replace toggles
+         - Edit mode: textarea replaces <pre>
+         - Diff mode: two-column original vs current view
+         - Find & Replace bar: slides in below toolbar
+         - Unsaved changes guard on close/cancel
+    ═══════════════════════════════════════════════════════════════ */
     #txtModal {
       display: none;
       position: fixed;
@@ -486,26 +456,55 @@
       border-radius: 10px;
       box-shadow: 0 8px 32px rgba(0,0,0,0.18);
       width: 100%;
-      max-width: 720px;
-      max-height: 80vh;
+      max-width: 860px;
+      height: 88vh;
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
 
+    /* ── Modal header ─────────────────────────────────────────────── */
     .txt-modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 1.5rem;
+      padding: 0.9rem 1.5rem;
       background-color: #254441;
       color: #fff;
       font-family: 'Poppins', sans-serif;
       font-weight: 600;
       font-size: 0.95rem;
       flex-shrink: 0;
+      gap: 1rem;
     }
 
+    .txt-modal-title-area {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      min-width: 0;
+      flex: 1;
+    }
+
+    #txtModalTitle {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Small "Edited" badge shown when there are unsaved changes */
+    #txtUnsavedBadge {
+      display: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #f0a500;
+      letter-spacing: 0.03em;
+    }
+
+    #txtUnsavedBadge.visible { display: block; }
+
+    /* Close button */
     .txt-modal-close {
       background: none;
       border: none;
@@ -516,14 +515,174 @@
       padding: 0 0.25rem;
       opacity: 0.8;
       transition: opacity 0.2s;
+      flex-shrink: 0;
     }
-
     .txt-modal-close:hover { opacity: 1; }
 
+    /* ── Toolbar ──────────────────────────────────────────────────── */
+    .txt-modal-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.5rem;
+      background-color: #f4f7f6;
+      border-bottom: 1px solid #e2e2e2;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    /* Toolbar button group separator */
+    .toolbar-sep {
+      width: 1px;
+      height: 20px;
+      background-color: #d4d4d4;
+      margin: 0 0.15rem;
+    }
+
+    /* Generic toolbar button */
+    .tb-btn {
+      padding: 0.3rem 0.75rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border-radius: 5px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background-color 0.18s, color 0.18s, border-color 0.18s;
+      white-space: nowrap;
+    }
+
+    /* Edit toggle */
+    #tbEdit {
+      background-color: #203a82;
+      color: #fff;
+      border-color: #203a82;
+    }
+    #tbEdit:hover { background-color: #162a61; border-color: #162a61; }
+
+    /* While in edit mode the button becomes "Stop Editing" */
+    #tbEdit.active {
+      background-color: #fff;
+      color: #203a82;
+      border-color: #203a82;
+    }
+    #tbEdit.active:hover { background-color: #eef0f8; }
+
+    /* Diff toggle */
+    #tbDiff {
+      background: none;
+      color: #555;
+      border-color: #ccc;
+    }
+    #tbDiff:hover { border-color: #254441; color: #254441; }
+    #tbDiff.active { background-color: #254441; color: #fff; border-color: #254441; }
+    #tbDiff:disabled { opacity: 0.38; cursor: not-allowed; }
+
+    /* Find & Replace toggle */
+    #tbFind {
+      background: none;
+      color: #555;
+      border-color: #ccc;
+    }
+    #tbFind:hover { border-color: #254441; color: #254441; }
+    #tbFind.active { background-color: #254441; color: #fff; border-color: #254441; }
+
+    /* Save / Cancel — only visible in edit mode */
+    #tbSave {
+      background-color: #1e8449;
+      color: #fff;
+      border-color: #1e8449;
+      margin-left: auto;    /* push to right edge */
+    }
+    #tbSave:hover:not(:disabled) { background-color: #166138; }
+    #tbSave:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    #tbCancel {
+      background: none;
+      color: #888;
+      border-color: #ccc;
+    }
+    #tbCancel:hover { border-color: #c0392b; color: #c0392b; }
+
+    /* Save spinner inside button */
+    .tb-spinner {
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-right: 0.3rem;
+      vertical-align: middle;
+    }
+
+    /* ── Find & Replace bar ───────────────────────────────────────── */
+    #fnrBar {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 1.5rem;
+      background-color: #fafafa;
+      border-bottom: 1px solid #e8e8e8;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    #fnrBar.visible { display: flex; }
+
+    .fnr-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #555;
+      white-space: nowrap;
+    }
+
+    .fnr-input {
+      padding: 0.3rem 0.6rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      outline: none;
+      width: 160px;
+      transition: border-color 0.18s;
+    }
+    .fnr-input:focus { border-color: #254441; }
+
+    .fnr-btn {
+      padding: 0.3rem 0.7rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.76rem;
+      font-weight: 600;
+      border-radius: 5px;
+      cursor: pointer;
+      border: 1px solid #203a82;
+      background: none;
+      color: #203a82;
+      transition: background-color 0.18s, color 0.18s;
+      white-space: nowrap;
+    }
+    .fnr-btn:hover { background-color: #203a82; color: #fff; }
+    .fnr-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    #fnrCount {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      color: #888;
+      white-space: nowrap;
+      min-width: 60px;
+    }
+
+    /* ── Modal body ───────────────────────────────────────────────── */
     .txt-modal-body {
-      padding: 1.25rem 1.5rem;
-      overflow-y: auto;
+      padding: 0;
+      overflow: hidden;
       flex: 1;
+      min-height: 0;        /* required so flex children can stretch to fill */
+      display: flex;
+      flex-direction: column;
     }
 
     #txtModalLoading {
@@ -534,6 +693,7 @@
       padding: 2rem 0;
     }
 
+    /* View mode: scrollable pre */
     #txtModalContent {
       font-family: 'Courier New', monospace;
       font-size: 0.82rem;
@@ -541,6 +701,129 @@
       color: #333;
       white-space: pre-wrap;
       word-break: break-word;
+      padding: 1.25rem 1.5rem;
+      overflow-y: auto;
+      flex: 1;
+      margin: 0;
+    }
+
+    /* Edit mode: full-height textarea — mirrors #txtModalContent exactly */
+    #txtModalEditor {
+      display: none;
+      font-family: 'Courier New', monospace;
+      font-size: 0.82rem;
+      line-height: 1.65;
+      color: #333;
+      border: none;
+      outline: none;
+      padding: 1.25rem 1.5rem;
+      resize: none;
+      flex: 1;
+      min-height: 0;        /* let flexbox control height, not content */
+      width: 100%;
+      box-sizing: border-box;
+      background-color: #fffef8;   /* very subtle warm tint to signal edit mode */
+    }
+
+    #txtModalEditor:focus {
+      background-color: #fffdf4;
+    }
+
+    /* ── Diff view ────────────────────────────────────────────────── */
+    #txtDiffView {
+      display: none;
+      flex: 1;
+      overflow: hidden;
+      flex-direction: row;
+    }
+
+    #txtDiffView.visible {
+      display: flex;
+    }
+
+    .diff-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-right: 1px solid #e2e2e2;
+    }
+
+    .diff-pane:last-child { border-right: none; }
+
+    .diff-pane-header {
+      padding: 0.45rem 1rem;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #fff;
+      background-color: #5c7a76;
+      flex-shrink: 0;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .diff-pane:last-child .diff-pane-header {
+      background-color: #203a82;
+    }
+
+    .diff-pane-body {
+      overflow-y: auto;
+      flex: 1;
+      padding: 0.9rem 1rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      line-height: 1.65;
+      color: #444;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* Highlight lines that differ */
+    .diff-line-changed {
+      background-color: #fff8e1;
+      display: block;
+      margin: 0 -1rem;
+      padding: 0 1rem;
+    }
+
+    .diff-line-added {
+      background-color: #e8f5e9;
+      display: block;
+      margin: 0 -1rem;
+      padding: 0 1rem;
+    }
+
+    .diff-line-removed {
+      background-color: #fce4e4;
+      display: block;
+      margin: 0 -1rem;
+      padding: 0 1rem;
+    }
+
+    /* Save success toast ─────────────────────────────────────────── */
+    #saveToast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background-color: #1e8449;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.6rem 1.4rem;
+      border-radius: 30px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+      z-index: 2000;
+    }
+
+    #saveToast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
   </style>
 </head>
@@ -580,7 +863,7 @@
 
         <hr class="section-divider">
 
-        <!-- ② Queue: uploaded & ready for OCR ───────────────────── -->
+        <!-- ② Queue ─────────────────────────────────────────────── -->
         <div class="queue-section">
           <div class="queue-header">
             <p class="section-label">Ready for OCR</p>
@@ -592,41 +875,28 @@
             </div>
           </div>
           <ul id="queueList">
-            <li class="empty-state" id="queueEmpty">
-              Upload PDFs above
-            </li>
+            <li class="empty-state" id="queueEmpty">Upload PDFs above</li>
           </ul>
         </div>
 
         <hr class="section-divider">
 
-        <!-- ③ Completed files (#259 — persistent, server-linked) ── -->
+        <!-- ③ Completed files ───────────────────────────────────── -->
         <div>
           <div class="completed-header">
             <p class="section-label">Processed Files</p>
-            <!--
-              #259: SSE connection indicator.
-              upload.js adds the class 'connected' once the
-              EventSource opens, and removes it if it closes.
-            -->
             <div class="sse-indicator" id="sseIndicator">
               <span class="sse-dot"></span> Live
             </div>
           </div>
 
-          <!--
-            #259: Shown while GET /processed-files is in-flight on
-            page load. upload.js hides this once the fetch resolves.
-          -->
           <div id="completedLoading">
             <div class="loading-spinner"></div>
             Loading processed files…
           </div>
 
           <ul id="completedList">
-
-            <li class="empty-state" id="completedEmpty" style="display:none">
-            </li>
+            <li class="empty-state" id="completedEmpty" style="display:none"></li>
           </ul>
         </div>
 
@@ -634,18 +904,72 @@
     </div><!-- /.files-container -->
   </div><!-- /#filesPage -->
 
+  <!-- ══════════════════════════════════════════════════════════════
+       TXT VIEW / EDIT MODAL  (#248)
+       Unified modal for View, Edit, Diff, and Find & Replace.
+  ══════════════════════════════════════════════════════════════ -->
   <div id="txtModal">
     <div class="txt-modal-box">
+
+      <!-- Header -->
       <div class="txt-modal-header">
-        <span id="txtModalTitle"></span>
-        <button class="txt-modal-close" onclick="closeTxtModal()">✕</button>
+        <div class="txt-modal-title-area">
+          <span id="txtModalTitle"></span>
+          <span id="txtUnsavedBadge">● Unsaved changes</span>
+        </div>
+        <button class="txt-modal-close" id="txtModalCloseBtn">✕</button>
       </div>
+
+      <!-- Toolbar -->
+      <div class="txt-modal-toolbar">
+        <button class="tb-btn" id="tbEdit"   title="Toggle edit mode">✏️ Edit</button>
+        <div class="toolbar-sep"></div>
+        <button class="tb-btn" id="tbDiff"   title="Show diff against original" disabled>⇄ Diff</button>
+        <button class="tb-btn" id="tbFind"   title="Find & Replace">🔍 Find &amp; Replace</button>
+        <!-- Save / Cancel pushed to the right via margin-left:auto on #tbSave -->
+        <button class="tb-btn" id="tbSave"   title="Save changes to server" style="display:none" disabled>💾 Save</button>
+        <button class="tb-btn" id="tbCancel" title="Discard changes"        style="display:none">✕ Cancel</button>
+      </div>
+
+      <!-- Find & Replace bar (hidden until toggled) -->
+      <div id="fnrBar">
+        <span class="fnr-label">Find</span>
+        <input  class="fnr-input" id="fnrFind"    placeholder="Search…" autocomplete="off">
+        <span class="fnr-label">Replace with</span>
+        <input  class="fnr-input" id="fnrReplace" placeholder="Replacement…" autocomplete="off">
+        <button class="fnr-btn"  id="fnrReplaceOne"  disabled>Replace</button>
+        <button class="fnr-btn"  id="fnrReplaceAll"  disabled>Replace All</button>
+        <span id="fnrCount"></span>
+      </div>
+
+      <!-- Body: loading indicator, view <pre>, edit <textarea>, diff panes -->
       <div class="txt-modal-body">
         <div id="txtModalLoading">Loading OCR text…</div>
+
+        <!-- View mode -->
         <pre id="txtModalContent" style="display:none"></pre>
+
+        <!-- Edit mode -->
+        <textarea id="txtModalEditor" spellcheck="false"></textarea>
+
+        <!-- Diff mode -->
+        <div id="txtDiffView">
+          <div class="diff-pane">
+            <div class="diff-pane-header">Original (server)</div>
+            <div class="diff-pane-body" id="diffOriginal"></div>
+          </div>
+          <div class="diff-pane">
+            <div class="diff-pane-header">Current edits</div>
+            <div class="diff-pane-body" id="diffCurrent"></div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
+
+    </div><!-- /.txt-modal-box -->
+  </div><!-- /#txtModal -->
+
+  <!-- Save success toast -->
+  <div id="saveToast">✓ Changes saved</div>
 
   <script src="script.js"></script>
   <script src="upload.js"></script>

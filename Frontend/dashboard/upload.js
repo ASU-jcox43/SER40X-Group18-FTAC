@@ -13,14 +13,21 @@
 
     Persistent Completed List
      • On page load: GET /processed-files populates completed list
-       from the OCR-processed directory on the server.
-     • Real-time: SSE (GET /processed-files/stream) pushes new
-       entries as they finish, no polling needed.
+     • Real-time: SSE pushes new entries as they finish
      • Actions per completed item:
-         - View     → modal with OCR text (existing openTxtModal)
+         - View     → modal with OCR text
+         - Edit     → #248 in-modal textarea editor
          - Download → fetches /ocr-result/:filename as blob
          - Re-run OCR → re-queues file via POST /rerun/:filename
          - Delete   → DELETE /processed-files/:filename + remove row
+
+    #248 Edit Modal Features
+     • Edit toggle   — switches <pre> ↔ <textarea>
+     • Save          — PUT /processed-files/:filename with new text
+     • Cancel        — reverts textarea; warns if unsaved changes
+     • Diff view     — side-by-side original (server) vs current edits
+     • Find & Replace— operates on the live textarea content
+     • Unsaved guard — fires on close / cancel / backdrop click
 ══════════════════════════════════════════════════════════════ */
 
 /* ── Element refs ─────────────────────────────────────────────── */
@@ -31,19 +38,15 @@ const queueList     = document.getElementById('queueList');
 const queueEmpty    = document.getElementById('queueEmpty');
 const completedList    = document.getElementById('completedList');
 const completedEmpty   = document.getElementById('completedEmpty');
-const completedLoading = document.getElementById('completedLoading'); // #259
-const sseIndicator     = document.getElementById('sseIndicator');     // #259
+const completedLoading = document.getElementById('completedLoading');
+const sseIndicator     = document.getElementById('sseIndicator');
 const runAllBtn        = document.getElementById('runAllBtn');
 const liveIndicator    = document.getElementById('liveIndicator');
 
 /* ── Job registry ─────────────────────────────────────────────── */
-// jobId → { id, name, file, state, rowEl }
-// states: 'uploading' | 'ready' | 'processing' | 'failed'
 const jobs = {};
 
 /* ── Completed file registry ──────────────────────────────────── */
-// #259: Track txt filenames already rendered so SSE doesn't
-// add duplicates for files that were loaded on page load.
 const completedFilenames = new Set();
 
 /* ══════════════════════════════════════════════════════════════
@@ -61,9 +64,6 @@ function refreshQueueUI() {
 }
 
 function refreshCompletedUI() {
-  // Only show the empty state once the initial load has finished
-  // (completedLoading hidden = load complete). While loading is visible
-  // we don't want to flash "No completed files yet".
   const isLoading = completedLoading && completedLoading.style.display !== 'none';
   if (isLoading) return;
   const hasCompleted = completedFilenames.size > 0;
@@ -95,8 +95,6 @@ function createQueueRow(job) {
     <div class="item-error" id="error-${job.id}" style="display:none"></div>
   `;
 
-  // Attach listeners directly to the elements — never wiped since we
-  // only update child elements (badge, progress, spinner) not innerHTML
   li.querySelector(`#btn-ocr-${job.id}`)
     .addEventListener('click', () => startOCR(job.id));
   li.querySelector(`#btn-retry-${job.id}`)
@@ -114,7 +112,6 @@ function updateQueueRow(job) {
 
   li.className = `queue-item state-${job.state}`;
 
-  // Badge
   const badge = document.getElementById(`badge-${job.id}`);
   if (badge) {
     const label = (job.state === 'processing' && job.stageLabel)
@@ -123,7 +120,6 @@ function updateQueueRow(job) {
     badge.textContent = label;
   }
 
-  // Progress bar + spinner — only visible while active
   const isActive = job.state === 'uploading' || job.state === 'processing';
   const progWrap = document.getElementById(`prog-wrap-${job.id}`);
   const progBar  = document.getElementById(`prog-bar-${job.id}`);
@@ -132,7 +128,6 @@ function updateQueueRow(job) {
   if (progBar)  progBar.style.width    = job.progress + '%';
   if (spinner)  spinner.style.display  = isActive ? 'block' : 'none';
 
-  // OCR button, retry button, remove button states
   const ocrBtn    = document.getElementById(`btn-ocr-${job.id}`);
   const retryBtn  = document.getElementById(`btn-retry-${job.id}`);
   const removeBtn = document.getElementById(`btn-remove-${job.id}`);
@@ -143,7 +138,6 @@ function updateQueueRow(job) {
   if (retryBtn)  retryBtn.style.display      = (job.state === 'failed' && job.canRetry) ? '' : 'none';
   if (removeBtn) removeBtn.disabled          = job.state === 'uploading';
 
-  // Error message — shown only on failure
   if (errorDiv) {
     if (job.state === 'failed' && job.errorMsg) {
       errorDiv.textContent = `⚠️ ${job.errorMsg}`;
@@ -170,17 +164,9 @@ function removeQueueJob(id) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   COMPLETED ROW (persistent, server-linked)
-
-   addCompletedRow({ pdfName, txtFilename, processedAt })
-     Builds a completed list row with View / Download /
-     Re-run OCR / Delete actions.  Safe to call from both
-     the initial page-load fetch and the SSE handler —
-     completedFilenames guards against duplicates.
+   COMPLETED ROW
 ══════════════════════════════════════════════════════════════ */
 function addCompletedRow({ pdfName, txtFilename, processedAt }) {
-  // Guard: skip if already rendered (e.g. SSE fires for a file
-  // that was already loaded on page load)
   if (completedFilenames.has(txtFilename)) return;
   completedFilenames.add(txtFilename);
 
@@ -200,33 +186,28 @@ function addCompletedRow({ pdfName, txtFilename, processedAt }) {
       ${dateLabel ? `<span class="completed-date">${dateLabel}</span>` : ''}
     </span>
     <div class="completed-actions">
-      <button class="btn-view-txt"    title="View OCR text">View</button>
+      <button class="btn-view-txt"     title="View OCR text">View</button>
       <button class="btn-download-txt" title="Download .txt file">⬇ Download</button>
-      <button class="btn-rerun-ocr"   title="Re-queue for OCR">↺ Re-run OCR</button>
-      <button class="btn-delete-file" title="Delete from server">🗑 Delete</button>
+      <button class="btn-rerun-ocr"    title="Re-queue for OCR">↺ Re-run OCR</button>
+      <button class="btn-delete-file"  title="Delete from server">🗑 Delete</button>
     </div>
   `;
 
-  // View
   li.querySelector('.btn-view-txt')
     .addEventListener('click', () => openTxtModal(pdfName, txtFilename));
 
-  // Download
   li.querySelector('.btn-download-txt')
     .addEventListener('click', () => downloadTxt(txtFilename));
 
-  // Re-run OCR — asks server to re-queue the original PDF
   li.querySelector('.btn-rerun-ocr')
     .addEventListener('click', () => rerunOCR(pdfName, txtFilename, li));
 
-  // Delete from server
   li.querySelector('.btn-delete-file')
     .addEventListener('click', () => deleteCompleted(txtFilename, li));
 
   completedList.appendChild(li);
 }
 
-/* ── #259 helper: remove a completed row cleanly ─────────────── */
 function removeCompletedRow(txtFilename, liEl) {
   completedFilenames.delete(txtFilename);
   liEl.remove();
@@ -234,10 +215,8 @@ function removeCompletedRow(txtFilename, liEl) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   #259 — COMPLETED ROW ACTIONS
+   COMPLETED ROW ACTIONS
 ══════════════════════════════════════════════════════════════ */
-
-/* Download the .txt file as a browser file download */
 async function downloadTxt(txtFilename) {
   try {
     const res = await fetch(`/ocr-result/${encodeURIComponent(txtFilename)}`);
@@ -258,10 +237,6 @@ async function downloadTxt(txtFilename) {
   }
 }
 
-/* Re-queue the file for OCR — server must still have the original PDF.
-   POST /rerun/:txtFilename  →  { jobId, pdfName }
-   The completed row is removed immediately; the job re-enters the
-   queue section so the user can see its progress as normal. */
 async function rerunOCR(pdfName, txtFilename, liEl) {
   if (!confirm(`Re-run OCR on "${pdfName}"? The current result will be replaced when complete.`)) return;
 
@@ -273,27 +248,23 @@ async function rerunOCR(pdfName, txtFilename, liEl) {
     }
     const { jobId } = await res.json();
 
-    // Remove from completed list so SSE re-adds it fresh when done
     removeCompletedRow(txtFilename, liEl);
 
-    // Register a skeleton job so the queue row appears immediately
     const job = {
-      id:       jobId,
-      name:     pdfName,
-      file:     null,           // original file not in memory
-      serverId: jobId,
-      state:    'processing',
+      id:         jobId,
+      name:       pdfName,
+      file:       null,
+      serverId:   jobId,
+      state:      'processing',
       stageLabel: 'OCR',
-      progress: 0,
-      rowEl:    null,
+      progress:   0,
+      rowEl:      null,
     };
     jobs[jobId] = job;
     createQueueRow(job);
     refreshQueueUI();
 
-    // Resume polling — on done the SSE will re-add it to completed
     await pollJobUntilDone(job);
-    // pollJobUntilDone resolves on 'done'; SSE handles the completed row
     job.rowEl?.remove();
     delete jobs[jobId];
     refreshQueueUI();
@@ -303,7 +274,6 @@ async function rerunOCR(pdfName, txtFilename, liEl) {
   }
 }
 
-/* Delete the processed file from the server */
 async function deleteCompleted(txtFilename, liEl) {
   if (!confirm(`Delete "${txtFilename}" from the server? This cannot be undone.`)) return;
 
@@ -323,18 +293,9 @@ async function deleteCompleted(txtFilename, liEl) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   #259 — PAGE-LOAD FETCH  (GET /processed-files)
-   Populates "Completed PDFs" from the server's OCR output
-   directory so the list survives page refreshes.
-
-   Expected response shape:
-   [
-     { pdfName: "foo.pdf", txtFilename: "foo.txt", processedAt: "<ISO>" },
-     ...
-   ]
+   PAGE-LOAD FETCH  (GET /processed-files)
 ══════════════════════════════════════════════════════════════ */
 async function loadProcessedFiles() {
-  // #259: Show spinner while fetching; always hide it when done
   if (completedLoading) completedLoading.style.display = 'flex';
 
   try {
@@ -347,26 +308,18 @@ async function loadProcessedFiles() {
     files.forEach(entry => addCompletedRow(entry));
   } catch (err) {
     console.error('[upload.js] Could not load processed files:', err.message);
-    // Non-fatal — the list stays empty; SSE may still deliver new files
   } finally {
     if (completedLoading) completedLoading.style.display = 'none';
-    refreshCompletedUI(); // show empty state now if nothing came back
+    refreshCompletedUI();
   }
 }
 
 /* ══════════════════════════════════════════════════════════════
-   #259 — SSE LISTENER  (GET /processed-files/stream)
-   Server pushes an event whenever a new file lands in the
-   OCR-processed directory.  Keeps the completed list live
-   without the frontend needing to poll.
-
-   Expected SSE event data (JSON string):
-   { pdfName: "bar.pdf", txtFilename: "bar.txt", processedAt: "<ISO>" }
+   SSE LISTENER  (GET /processed-files/stream)
 ══════════════════════════════════════════════════════════════ */
 function connectProcessedFilesSSE() {
   const sse = new EventSource('/processed-files/stream');
 
-  // #259: Light up the SSE indicator when the connection opens
   sse.addEventListener('open', () => {
     if (sseIndicator) sseIndicator.classList.add('connected');
   });
@@ -382,17 +335,13 @@ function connectProcessedFilesSSE() {
   });
 
   sse.addEventListener('error', () => {
-    // Dim the indicator while disconnected; it re-lights on next 'open'
     if (sseIndicator) sseIndicator.classList.remove('connected');
     console.warn('[upload.js] SSE connection lost — will auto-reconnect.');
-    // EventSource reconnects automatically; no manual retry needed
   });
 }
 
 /* ══════════════════════════════════════════════════════════════
    STAGE 1 — REAL UPLOAD  (POST /upload)
-   Progress tracked via XHR upload events.
-   Server returns jobId which is stored on the job for polling.
 ══════════════════════════════════════════════════════════════ */
 function doUpload(job) {
   return new Promise((resolve, reject) => {
@@ -412,8 +361,8 @@ function doUpload(job) {
     xhr.onload = () => {
       if (xhr.status === 200) {
         try {
-          const body  = JSON.parse(xhr.responseText);
-          job.serverId = body.jobId; // store server-side job ID for polling
+          const body   = JSON.parse(xhr.responseText);
+          job.serverId = body.jobId;
           resolve();
         } catch (_) {
           reject(new Error('Invalid server response'));
@@ -453,12 +402,7 @@ async function uploadFile(job) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   STAGE 2 — MANUAL OCR TRIGGER + POLLING  (#223)
-   Button calls POST /ocr/:serverId to start, then polls
-   GET /job/:serverId every 1.5s for progress until done.
-   On failure: shows server error message + retry button if allowed.
-   On success: SSE delivers the completed-file event which calls
-   addCompletedRow(); moveToCompleted() is no longer used.
+   STAGE 2 — OCR TRIGGER + POLLING
 ══════════════════════════════════════════════════════════════ */
 const STAGE_LABELS = {
   ocr:    'OCR',
@@ -502,8 +446,8 @@ async function startOCR(id) {
   if (!job || (job.state !== 'ready' && job.state !== 'failed')) return;
 
   if (!job.serverId) {
-    job.state      = 'failed';
-    job.errorMsg   = 'Upload did not complete — please remove and re-upload this file.';
+    job.state    = 'failed';
+    job.errorMsg = 'Upload did not complete — please remove and re-upload this file.';
     updateQueueRow(job);
     refreshQueueUI();
     return;
@@ -525,8 +469,6 @@ async function startOCR(id) {
 
     await pollJobUntilDone(job);
 
-    // #259: Completed row is now driven by SSE (addCompletedRow).
-    // Just clean up the queue row here.
     job.rowEl?.remove();
     delete jobs[job.id];
     refreshQueueUI();
@@ -539,7 +481,6 @@ async function startOCR(id) {
   }
 }
 
-/* ── Run OCR on All ready files ───────────────────────────────── */
 function startOCRAll() {
   Object.values(jobs)
     .filter(j => j.state === 'ready')
@@ -560,7 +501,7 @@ function validatePDF(file) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   HANDLE FILE SELECTION (multi-file)
+   HANDLE FILE SELECTION
 ══════════════════════════════════════════════════════════════ */
 function handleFiles(fileList) {
   const files  = Array.from(fileList);
@@ -571,10 +512,7 @@ function handleFiles(fileList) {
 
   files.forEach(file => {
     const result = validatePDF(file);
-    if (!result.valid) {
-      errors.push(result.message);
-      return;
-    }
+    if (!result.valid) { errors.push(result.message); return; }
 
     const job = {
       id:       `job-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -593,15 +531,12 @@ function handleFiles(fileList) {
     uploadStatus.className   = 'error';
   }
 
-  // Reset input so same files can be re-selected if needed
   pdfInput.value = '';
 }
 
 /* ══════════════════════════════════════════════════════════════
-   EVENT LISTENERS
+   EVENT LISTENERS (drop, file picker, run-all)
 ══════════════════════════════════════════════════════════════ */
-
-// Drag & drop
 ['dragenter', 'dragover'].forEach(e =>
   dropArea.addEventListener(e, ev => { ev.preventDefault(); dropArea.classList.add('dragover'); })
 );
@@ -609,29 +544,141 @@ function handleFiles(fileList) {
   dropArea.addEventListener(e, ev => { ev.preventDefault(); dropArea.classList.remove('dragover'); })
 );
 dropArea.addEventListener('drop', ev => handleFiles(ev.dataTransfer.files));
-
-// File picker (multiple)
 pdfInput.addEventListener('change', () => handleFiles(pdfInput.files));
-
-// Run OCR on All
 runAllBtn.addEventListener('click', startOCRAll);
 
-/* ══════════════════════════════════════════════════════════════
-   TXT RESULT MODAL  (#222)
-   Opens a modal showing the raw OCR text for a completed file.
-   Fetches GET /ocr-result/:filename from the server.
-══════════════════════════════════════════════════════════════ */
-async function openTxtModal(pdfName, txtFilename) {
-  const modal    = document.getElementById('txtModal');
-  const title    = document.getElementById('txtModalTitle');
-  const content  = document.getElementById('txtModalContent');
-  const loading  = document.getElementById('txtModalLoading');
 
-  // Show modal in loading state
-  title.textContent    = pdfName;
-  content.style.display  = 'none';
-  loading.style.display  = 'block';
-  modal.style.display    = 'flex';
+/* ══════════════════════════════════════════════════════════════
+   #248 — TXT VIEW / EDIT MODAL
+   ─────────────────────────────────────────────────────────────
+   Modal state machine
+     mode: 'view' | 'edit' | 'diff'
+     modalState.originalText  — text as loaded from server
+     modalState.currentFile   — { pdfName, txtFilename }
+     modalState.isDirty       — textarea differs from originalText
+
+   Toolbar interactions:
+     tbEdit   → toggle view ↔ edit
+     tbDiff   → toggle diff panel (only while in edit mode)
+     tbFind   → toggle find & replace bar
+     tbSave   → PUT /processed-files/:txtFilename
+     tbCancel → revert + exit edit mode (warns if dirty)
+
+   Unsaved guard fires on:
+     • Close button click
+     • Backdrop click
+     • Escape key
+     • tbCancel click (when dirty)
+══════════════════════════════════════════════════════════════ */
+
+/* ── Modal element refs ───────────────────────────────────────── */
+const txtModal        = document.getElementById('txtModal');
+const txtModalTitle   = document.getElementById('txtModalTitle');
+const txtUnsavedBadge = document.getElementById('txtUnsavedBadge');
+const txtModalLoading = document.getElementById('txtModalLoading');
+const txtModalContent = document.getElementById('txtModalContent');  // <pre>
+const txtModalEditor  = document.getElementById('txtModalEditor');   // <textarea>
+const txtDiffView     = document.getElementById('txtDiffView');
+const diffOriginal    = document.getElementById('diffOriginal');
+const diffCurrent     = document.getElementById('diffCurrent');
+const fnrBar          = document.getElementById('fnrBar');
+const fnrFind         = document.getElementById('fnrFind');
+const fnrReplace      = document.getElementById('fnrReplace');
+const fnrReplaceOne   = document.getElementById('fnrReplaceOne');
+const fnrReplaceAll   = document.getElementById('fnrReplaceAll');
+const fnrCount        = document.getElementById('fnrCount');
+const tbEdit          = document.getElementById('tbEdit');
+const tbDiff          = document.getElementById('tbDiff');
+const tbFind          = document.getElementById('tbFind');
+const tbSave          = document.getElementById('tbSave');
+const tbCancel        = document.getElementById('tbCancel');
+const saveToast       = document.getElementById('saveToast');
+
+/* ── Modal state ──────────────────────────────────────────────── */
+const modalState = {
+  mode:         'view',       // 'view' | 'edit' | 'diff'
+  originalText: '',           // text as fetched from server
+  currentFile:  null,         // { pdfName, txtFilename }
+  isDirty:      false,
+  showingFnr:   false,
+};
+
+/* ── isDirty helper ───────────────────────────────────────────── */
+function setDirty(dirty) {
+  modalState.isDirty = dirty;
+  txtUnsavedBadge.classList.toggle('visible', dirty);
+  tbSave.disabled = !dirty;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   applyModalMode(mode)
+   Handles all DOM show/hide transitions between view, edit, diff.
+───────────────────────────────────────────────────────────────── */
+function applyModalMode(mode) {
+  modalState.mode = mode;
+
+  const isEdit = mode === 'edit';
+  const isDiff = mode === 'diff';
+  const isView = mode === 'view';
+
+  // <pre> visible in view mode only
+  txtModalContent.style.display = isView ? 'block' : 'none';
+
+  // <textarea> visible in edit mode only (display:block to fill flex parent correctly)
+  txtModalEditor.style.display  = isEdit ? 'block' : 'none';
+
+  // Diff panel visible in diff mode only
+  txtDiffView.classList.toggle('visible', isDiff);
+
+  // Toolbar states
+  tbEdit.classList.toggle('active', isEdit || isDiff);
+  tbEdit.textContent = (isEdit || isDiff) ? '✏️ Stop Editing' : '✏️ Edit';
+
+  tbDiff.disabled = isView;
+  tbDiff.classList.toggle('active', isDiff);
+
+  // Save / Cancel only visible while editing
+  tbSave.style.display   = (isEdit || isDiff) ? '' : 'none';
+  tbCancel.style.display = (isEdit || isDiff) ? '' : 'none';
+
+  // Focus textarea when entering edit mode
+  if (isEdit) {
+    txtModalEditor.focus();
+  }
+
+  // Rebuild diff whenever entering diff mode
+  if (isDiff) {
+    renderDiff();
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   openTxtModal(pdfName, txtFilename)
+   Entry point — fetches text, resets state, shows modal.
+───────────────────────────────────────────────────────────────── */
+async function openTxtModal(pdfName, txtFilename) {
+  // Reset state
+  modalState.currentFile  = { pdfName, txtFilename };
+  modalState.originalText = '';
+  modalState.isDirty      = false;
+  modalState.showingFnr   = false;
+
+  // Reset UI to view mode
+  applyModalMode('view');
+  setDirty(false);
+  fnrBar.classList.remove('visible');
+  tbFind.classList.remove('active');
+  fnrFind.value    = '';
+  fnrReplace.value = '';
+  fnrCount.textContent = '';
+
+  txtModalTitle.textContent  = pdfName;
+  txtModalContent.textContent = '';
+  txtModalEditor.value        = '';
+  txtModalLoading.style.display = 'block';
+  txtModalContent.style.display = 'none';
+
+  txtModal.style.display = 'flex';
 
   try {
     const res = await fetch(`/ocr-result/${encodeURIComponent(txtFilename)}`);
@@ -640,32 +687,319 @@ async function openTxtModal(pdfName, txtFilename) {
       throw new Error(body.error || `Server responded with ${res.status}`);
     }
     const text = await res.text();
-    content.textContent   = text;
-    content.style.display = 'block';
-    loading.style.display = 'none';
+    modalState.originalText     = text;
+    txtModalContent.textContent = text;
+    txtModalEditor.value        = text;
+    txtModalLoading.style.display = 'none';
+    txtModalContent.style.display = 'block';
   } catch (err) {
-    content.textContent   = `❌ Could not load OCR text: ${err.message}`;
-    content.style.display = 'block';
-    loading.style.display = 'none';
+    txtModalContent.textContent   = `❌ Could not load OCR text: ${err.message}`;
+    txtModalContent.style.display = 'block';
+    txtModalLoading.style.display = 'none';
   }
 }
 
+/* ─────────────────────────────────────────────────────────────────
+   closeTxtModal()
+   Guards against accidental close when there are unsaved changes.
+───────────────────────────────────────────────────────────────── */
 function closeTxtModal() {
-  document.getElementById('txtModal').style.display = 'none';
+  if (modalState.isDirty) {
+    if (!confirm('You have unsaved changes. Close without saving?')) return;
+  }
+  txtModal.style.display = 'none';
+  // Reset to view mode for next open
+  applyModalMode('view');
+  setDirty(false);
 }
 
-// Close modal on backdrop click
-document.getElementById('txtModal')
-  .addEventListener('click', e => { if (e.target.id === 'txtModal') closeTxtModal(); });
+/* ─────────────────────────────────────────────────────────────────
+   TOOLBAR — Edit toggle
+───────────────────────────────────────────────────────────────── */
+tbEdit.addEventListener('click', () => {
+  const currently = modalState.mode;
 
-// Close on Escape key
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTxtModal(); });
+  if (currently === 'view') {
+    // Enter edit mode
+    txtModalEditor.value = txtModalContent.textContent;
+    applyModalMode('edit');
+  } else {
+    // Exit edit/diff — warn if dirty
+    if (modalState.isDirty) {
+      if (!confirm('Discard unsaved changes and return to view?')) return;
+    }
+    // Revert textarea to original
+    txtModalEditor.value = modalState.originalText;
+    setDirty(false);
+    applyModalMode('view');
+
+    // Hide find bar
+    fnrBar.classList.remove('visible');
+    tbFind.classList.remove('active');
+    modalState.showingFnr = false;
+  }
+});
+
+/* ── Textarea change → dirty tracking ─────────────────────────── */
+txtModalEditor.addEventListener('input', () => {
+  const dirty = txtModalEditor.value !== modalState.originalText;
+  setDirty(dirty);
+
+  // If diff panel is open, refresh it live
+  if (modalState.mode === 'diff') {
+    renderDiff();
+  }
+
+  // Update fnr match count if bar is open
+  if (modalState.showingFnr) {
+    updateFnrCount();
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────────
+   TOOLBAR — Diff toggle
+───────────────────────────────────────────────────────────────── */
+tbDiff.addEventListener('click', () => {
+  if (modalState.mode === 'diff') {
+    // Return to edit mode
+    applyModalMode('edit');
+  } else {
+    // Enter diff mode (textarea stays as backing store)
+    applyModalMode('diff');
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────────
+   DIFF RENDERER
+   Line-by-line comparison of originalText vs current textarea.
+   Removed lines shown in left pane, added lines in right pane,
+   unchanged lines shown in both with no highlight.
+───────────────────────────────────────────────────────────────── */
+function renderDiff() {
+  const origLines = modalState.originalText.split('\n');
+  const currLines = txtModalEditor.value.split('\n');
+  const maxLen    = Math.max(origLines.length, currLines.length);
+
+  diffOriginal.innerHTML = '';
+  diffCurrent.innerHTML  = '';
+
+  for (let i = 0; i < maxLen; i++) {
+    const origLine = origLines[i] ?? '';
+    const currLine = currLines[i] ?? '';
+    const changed  = origLine !== currLine;
+
+    const origSpan = document.createElement('span');
+    origSpan.textContent = origLine + '\n';
+    if (changed) {
+      origSpan.className = origLine === '' ? 'diff-line-removed' : 'diff-line-changed';
+    }
+    diffOriginal.appendChild(origSpan);
+
+    const currSpan = document.createElement('span');
+    currSpan.textContent = currLine + '\n';
+    if (changed) {
+      currSpan.className = currLine === '' ? 'diff-line-added' : 'diff-line-changed';
+    }
+    diffCurrent.appendChild(currSpan);
+  }
+
+  // Sync scroll between panes
+  syncDiffScroll();
+}
+
+function syncDiffScroll() {
+  const left  = diffOriginal;
+  const right = diffCurrent;
+  let syncing = false;
+
+  const handler = (source, target) => () => {
+    if (syncing) return;
+    syncing = true;
+    target.scrollTop = source.scrollTop;
+    syncing = false;
+  };
+
+  left.onscroll  = handler(left, right);
+  right.onscroll = handler(right, left);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   TOOLBAR — Save
+   PUT /processed-files/:txtFilename  with text/plain body
+───────────────────────────────────────────────────────────────── */
+tbSave.addEventListener('click', async () => {
+  if (!modalState.currentFile) return;
+  const { txtFilename } = modalState.currentFile;
+  const newText = txtModalEditor.value;
+
+  // Disable save while in flight
+  tbSave.disabled   = true;
+  tbSave.innerHTML  = '<span class="tb-spinner"></span>Saving…';
+
+  try {
+    const res = await fetch(`/processed-files/${encodeURIComponent(txtFilename)}`, {
+      method:  'PUT',
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      body:    newText,
+    });
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || `Server responded with ${res.status}`);
+    }
+
+    // Update original baseline so diff & dirty tracking reflect saved state
+    modalState.originalText     = newText;
+    txtModalContent.textContent = newText;   // keep <pre> current
+    setDirty(false);
+
+    // Return to view mode
+    applyModalMode('view');
+    fnrBar.classList.remove('visible');
+    tbFind.classList.remove('active');
+    modalState.showingFnr = false;
+
+    showSaveToast();
+    console.log(`[upload.js] #248 Saved edits to ${txtFilename}`);
+  } catch (err) {
+    alert(`Save failed: ${err.message}`);
+    console.error('[upload.js] Save failed:', err.message);
+    // Re-enable save so user can retry
+    setDirty(true);
+  } finally {
+    tbSave.innerHTML = '💾 Save';
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────────
+   TOOLBAR — Cancel
+───────────────────────────────────────────────────────────────── */
+tbCancel.addEventListener('click', () => {
+  if (modalState.isDirty) {
+    if (!confirm('Discard all unsaved changes?')) return;
+  }
+  txtModalEditor.value = modalState.originalText;
+  setDirty(false);
+  applyModalMode('view');
+
+  fnrBar.classList.remove('visible');
+  tbFind.classList.remove('active');
+  modalState.showingFnr = false;
+});
+
+/* ─────────────────────────────────────────────────────────────────
+   TOOLBAR — Find & Replace toggle
+───────────────────────────────────────────────────────────────── */
+tbFind.addEventListener('click', () => {
+  modalState.showingFnr = !modalState.showingFnr;
+  fnrBar.classList.toggle('visible', modalState.showingFnr);
+  tbFind.classList.toggle('active', modalState.showingFnr);
+
+  if (modalState.showingFnr) {
+    fnrFind.focus();
+    updateFnrCount();
+  } else {
+    fnrCount.textContent = '';
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────────
+   FIND & REPLACE LOGIC
+   Operates on txtModalEditor.value. Works in both edit and diff
+   mode (diff refreshes automatically after replacement).
+───────────────────────────────────────────────────────────────── */
+function getFnrRegex() {
+  const term = fnrFind.value;
+  if (!term) return null;
+  try {
+    return new RegExp(escapeRegex(term), 'g');
+  } catch (_) {
+    return null;
+  }
+}
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function updateFnrCount() {
+  const regex   = getFnrRegex();
+  const enabled = !!regex && txtModalEditor.value.length > 0;
+  fnrReplaceOne.disabled = !enabled;
+  fnrReplaceAll.disabled = !enabled;
+
+  if (!regex) {
+    fnrCount.textContent = '';
+    return;
+  }
+
+  const matches = txtModalEditor.value.match(regex);
+  const count   = matches ? matches.length : 0;
+  fnrCount.textContent = count === 0
+    ? 'No matches'
+    : `${count} match${count !== 1 ? 'es' : ''}`;
+}
+
+fnrFind.addEventListener('input', updateFnrCount);
+
+fnrReplaceOne.addEventListener('click', () => {
+  const regex = getFnrRegex();
+  if (!regex) return;
+
+  const text = txtModalEditor.value;
+  // Replace only the first occurrence
+  const oneRegex = new RegExp(escapeRegex(fnrFind.value));
+  const updated  = text.replace(oneRegex, fnrReplace.value);
+
+  if (updated === text) return;
+
+  txtModalEditor.value = updated;
+  setDirty(updated !== modalState.originalText);
+  updateFnrCount();
+  if (modalState.mode === 'diff') renderDiff();
+});
+
+fnrReplaceAll.addEventListener('click', () => {
+  const regex = getFnrRegex();
+  if (!regex) return;
+
+  const updated = txtModalEditor.value.replace(regex, fnrReplace.value);
+  if (updated === txtModalEditor.value) return;
+
+  txtModalEditor.value = updated;
+  setDirty(updated !== modalState.originalText);
+  updateFnrCount();
+  if (modalState.mode === 'diff') renderDiff();
+});
+
+/* ─────────────────────────────────────────────────────────────────
+   CLOSE BUTTON & BACKDROP & ESCAPE
+───────────────────────────────────────────────────────────────── */
+document.getElementById('txtModalCloseBtn')
+  .addEventListener('click', closeTxtModal);
+
+txtModal.addEventListener('click', e => {
+  if (e.target === txtModal) closeTxtModal();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && txtModal.style.display === 'flex') {
+    closeTxtModal();
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────────
+   SAVE TOAST
+───────────────────────────────────────────────────────────────── */
+function showSaveToast() {
+  saveToast.classList.add('show');
+  setTimeout(() => saveToast.classList.remove('show'), 2400);
+}
 
 /* ══════════════════════════════════════════════════════════════
    INIT
-   Load persisted files first, then open SSE for live updates.
 ══════════════════════════════════════════════════════════════ */
 (async () => {
-  await loadProcessedFiles();   // populate from OCR-processed directory
-  connectProcessedFilesSSE();   // keep list live as new files arrive
+  await loadProcessedFiles();
+  connectProcessedFilesSSE();
 })();
