@@ -12,7 +12,7 @@ def update_config(municipality: str, sconfig: dict):
     )
 
 def get_config_list(num_results:int = 1) -> list[dict]:
-    return SCRAPY_CONFIG_COLLECTION.find(limit=num_results).to_list()
+    return SCRAPY_CONFIG_COLLECTION.find({}, {"_id": 0}).to_list()
 
 # Method to return scrapy config based on city
 def get_config(municipality: str) -> list[dict]:

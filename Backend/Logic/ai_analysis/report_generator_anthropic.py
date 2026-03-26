@@ -1,8 +1,8 @@
 import os
 import anthropic
 from  Backend.Logic.mongo_db.scrapy_config import get_config_list
-from Backend.Logic.ai_analysis.rubric_analyzer_anthropic import analyze_and_format
 from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
+from Backend.Logic.extraction.text_extraction import extractURL
 
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 MODEL = "claude-3-5-sonnet-latest"
@@ -48,8 +48,11 @@ def AI_Generate_Report(analyze):
     
     print(response.content[0].text)
 
-if __name__ == "__main__":
-    # TODO: Feed web links
+if __name__ == "__main__":    
+    configList = get_config_list()
     
-    configList = get_config_list
-    print(configList)
+    for config in configList:
+        # start_urls is an array, so grab the first element
+        start_urls = config.get("start_urls", [])
+        url = start_urls[0] if start_urls else None
+        extractURL(url)
