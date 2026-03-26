@@ -1,6 +1,6 @@
 import os
-import json
 import anthropic
+from  Backend.Logic.mongo_db.scrapy_config import get_config_list
 from Backend.Logic.ai_analysis.rubric_analyzer_anthropic import analyze_and_format
 from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
 
@@ -50,6 +50,6 @@ def AI_Generate_Report(analyze):
 
 if __name__ == "__main__":
     # TODO: Feed web links
-    docs = getAllExtractions()
-    for doc in docs:
-        AI_Generate_Report(doc.get("keyword_contexts"))
+    
+    configList = get_config_list
+    print(configList)
