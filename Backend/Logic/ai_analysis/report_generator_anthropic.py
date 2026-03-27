@@ -56,3 +56,14 @@ if __name__ == "__main__":
         start_urls = config.get("start_urls", [])
         url = start_urls[0] if start_urls else None
         extractURL(url)
+        
+    docs = getAllExtractions()
+    for doc in docs:
+        contexts = []
+        for terms in doc.get("keyword_contexts", {}).values():
+            for arr in terms.values():
+                contexts.extend(arr)
+        
+        text = " ".jon(contexts)
+        
+        AI_Generate_Report(text)
