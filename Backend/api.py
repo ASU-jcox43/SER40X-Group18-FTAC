@@ -29,9 +29,6 @@ jobstores = {'default': MongoDBJobStore(client=CLIENT, database='CapstoneDB', co
 scheduler = BackgroundScheduler(jobstores=jobstores)
 
 def run_document_scraper(*municipalities):
-    #configs: list[dict] = [get_config(m) for m in municipalities] # TODO make this only do 1 database query
-    #logging.log(msg=configs, level=40)
-
     os.chdir('Backend/Logic/scrapers')
     for config in municipalities:
         config['municipality_name'] = config['_id']
@@ -43,11 +40,7 @@ def run_document_scraper(*municipalities):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     scheduler.start()
-    def run_daily_document_scraper(*municipalities):
-        
-        run_document_scraper(municipalities)
-        pass
-    scheduler.add_job(run_daily_document_scraper, trigger=CronTrigger(hour=0, minute=0, second=0), args=get_daily_document_update(), misfire_grace_time=30, coalesce=True)
+    scheduler.add_job(run_document_scraper, trigger=CronTrigger(hour=0, minute=0, second=0), args=get_daily_document_update(), misfire_grace_time=30, coalesce=True)
     yield
 
 api_app = FastAPI(lifespan=lifespan)
@@ -64,6 +57,10 @@ class ScrapyFilter(BaseModel):
     regex: str | None = None
     xpath: str | None = None
 
+class CalenderDay(BaseModel):
+    month: int
+    day: int
+
 class ScrapyConfig(BaseModel):
     start_urls: list[str] | None = None
     allowed_domains: list[str] | None = None
@@ -71,7 +68,7 @@ class ScrapyConfig(BaseModel):
     get_pdfs: bool | None = False
     layer_filter: ScrapyFilter | None = None
     next_page_filter: ScrapyFilter | None = None
-    update_at: list[datetime]
+    update_at: list[CalenderDay]
 
 class PostExtractDocs(BaseModel):
     urls: list[str] # List of document urls
@@ -115,8 +112,6 @@ async def search_configs():
 
 @api_app.put("/scrapy_config")
 async def edit_config(req: ScrapyConfig, municipality: str):
-    if (len(req.update_at) != 2):
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Must have 2 update days in a year.")
     update_config(municipality,req.model_dump(exclude_unset=True))
     return f"updated {municipality}"
 
