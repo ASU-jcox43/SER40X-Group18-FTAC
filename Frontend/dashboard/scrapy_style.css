@@ -1,53 +1,107 @@
-body {
-  font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 16px;       /* base font size */
-  line-height: 1.5;      /* clean spacing between lines */
-  color: #333;           /* neutral dark text */
+/* #253 – site-consistent styling (fonts, colours, card, panel-header) */
+
+#scrapingPage {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 2rem;
+  min-height: calc(100vh - 100px);
+  box-sizing: border-box;
+}
+
+.sc-container {
+  width: 100%;
+  max-width: 1100px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 1px 2px 12px rgba(0,0,0,0.08);
+  border-bottom: 1px solid #e2e2e2;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sc-container .panel-header {
+  display: flex;
+  align-items: center;
+  padding: 1.25rem 2rem;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #fff;
+  background-color: #254441;
+  border-radius: 10px 10px 0 0;
+}
+
+.sc-body {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sc-section-label {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 0.75rem 0;
+}
+
+.sc-divider {
+  border: none;
+  border-top: 1px solid #eaeaea;
   margin: 0;
-  padding: 0;
-  background-color: #f9f7f4; /* subtle cream background for page */
-  min-height: 500px;
 }
 
-#municipalitySearchResult > li {
-    cursor: pointer;
+.sc-search-form {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
 }
 
-#municipalitySearchResult > li:hover {
-    background-color: rgba(0, 0, 0, 0.02);
+.sc-search-input {
+  flex: 1;
+  padding: 0.5rem 0.85rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.2s;
 }
 
-#container {
-    margin: 0.5em;
-    display: flex;
-    flex-direction: row;
-    min-height: 500px;
+.sc-search-input:focus {
+  border-color: #254441;
 }
 
-#container > div {
-    margin: 0.2em;
-    padding: 0.5em;
-    border: 2px solid#333;
-    min-height: 100px;
+.sc-results-row {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
 }
 
-ul#municipalitySearchResult, ul#scrapyOutputList {
-    list-style: none;
-    padding-left: 2em;
-    padding-right: 2em;
+.sc-config-panel { flex: 1 1 280px; }
+.sc-links-panel  { flex: 2 1 380px; }
+
+.sc-btn-primary {
+  padding: 0.45rem 1.1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  background-color: #254441;
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s;
 }
 
-#municipalitySearchResult, #selectedConfig {
-    min-width: 30%;
-    flex: 2;
-}
+.sc-btn-primary:hover { background-color: #1b312f; }
 
-#municipalityLinkList {
-    min-width: 40%;
-    max-width: 40%;
-    flex: 4;
-}
-
-.innerFormDict, .innerFormList {
-    padding-left: 2em;
+.innerFormDict,
+.innerFormList {
+  padding-left: 1.25rem;
+  border-left: 2px solid #e4eded;
+  margin: 0.5rem 0;
 }

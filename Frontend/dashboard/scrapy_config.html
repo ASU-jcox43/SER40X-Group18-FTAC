@@ -27,45 +27,34 @@
 
     <!-- Scraping Config Page -->
     <div id="scrapingPage">
-
         <div class="sc-container">
-
-            <!-- Panel header matching site style -->
+ 
             <div class="panel-header">
                 <span>Scraping Config</span>
             </div>
-
+ 
             <div class="sc-body">
-
-                <!-- Search -->
                 <div id="municipalitySearch" class="sc-section">
                     <p class="sc-section-label">Search Municipality</p>
                     <form id="searchForm" class="sc-search-form">
-                        <input
-                            type="text"
-                            name="searchInput"
-                            id="searchInput"
-                            placeholder="e.g. toronto"
-                            class="sc-search-input"
-                        >
+                        <input type="text" name="searchInput" id="searchInput"
+                               placeholder="e.g. toronto" class="sc-search-input">
                         <button type="submit" class="sc-btn-primary">Search</button>
                     </form>
-                    <!-- Search results injected here -->
                 </div>
-
+ 
                 <hr class="sc-divider">
-
-                <!-- Config form + link list rendered side-by-side -->
+ 
                 <div class="sc-results-row">
                     <div id="selectedConfig" class="sc-config-panel"></div>
                     <div id="municipalityLinkList" class="sc-links-panel"></div>
                 </div>
-
             </div>
+ 
         </div>
-
     </div>
-
+ 
     <script src="scrapy_config.js"></script>
 </body>
 </html>
+ 
