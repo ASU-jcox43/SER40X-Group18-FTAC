@@ -383,15 +383,35 @@
       align-items: center;
       gap: 0.55rem;
       flex: 1;
-      min-width: 0;
+      min-width: 0;         /* lets flex children shrink below their content width */
+      overflow: hidden;
     }
 
+    /* The filename span — must truncate, not push buttons off screen */
+    .completed-name > span:not(.item-badge):not(.completed-date) {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 500;
+      color: #333;
+      min-width: 0;
+      flex-shrink: 1;
+    }
+
+    /* Also keep the explicit class working */
     .completed-name .file-name-text {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       font-weight: 500;
       color: #333;
+      min-width: 0;
+      flex-shrink: 1;
+    }
+
+    /* Badge and date never shrink — they stay readable */
+    .completed-name .item-badge {
+      flex-shrink: 0;
     }
 
     .completed-date {
@@ -406,6 +426,7 @@
       display: flex;
       gap: 0.4rem;
       flex-shrink: 0;
+      flex-wrap: nowrap;    /* buttons never drop to a second line */
     }
 
     .completed-actions button {
