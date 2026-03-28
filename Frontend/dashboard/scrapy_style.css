@@ -105,3 +105,101 @@
   border-left: 2px solid #e4eded;
   margin: 0.5rem 0;
 }
+
+
+/* #258 – responsiveness & usability additions */
+
+/* Scrollable search results so they don't blow out the layout */
+#municipalitySearchResult {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0 0;
+  border: 1px solid #e4eded;
+  border-radius: 6px;
+  overflow: hidden;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+#municipalitySearchResult li {
+  padding: 0.6rem 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.15s;
+}
+
+#municipalitySearchResult li:last-child { border-bottom: none; }
+#municipalitySearchResult li:hover      { background-color: #f0f5f4; }
+
+/* Prevent search input collapsing on narrow screens */
+.sc-search-input { min-width: 180px; }
+
+/* Search form wraps on small screens */
+.sc-search-form  { flex-wrap: wrap; }
+
+/* Results row stacks on small screens */
+.sc-results-row  { flex-wrap: wrap; }
+
+.sc-config-panel,
+.sc-links-panel  { min-width: 0; }
+
+/* Link list items wrap long URLs cleanly */
+.sc-link-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid #e4eded;
+  border-left: 3px solid #a8bfbd;
+  border-radius: 6px;
+  background-color: #f7faf9;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  flex-wrap: wrap;
+}
+
+#scrapyOutputList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+#add_link_input {
+  flex: 1;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  min-width: 120px;
+}
+
+.sc-btn-secondary {
+  padding: 0.3rem 0.8rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid #203a82;
+  border-radius: 5px;
+  background: none;
+  color: #203a82;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.sc-btn-secondary:hover { background-color: #203a82; color: #fff; }
+
+/* breakpoint */
+@media (max-width: 640px) {
+  #scrapingPage    { padding: 1rem; }
+  .sc-body         { padding: 1.25rem; }
+  .sc-results-row  { flex-direction: column; }
+  .sc-config-panel,
+  .sc-links-panel  { width: 100%; }
+}
