@@ -1123,9 +1123,8 @@ def extractURL(url: str):
                 matches.append(entry)
         if matches:
             results[category] = matches
-
     urlJSON = {
-        "file": url,   # use the URL as the document ID
+        "file": url,
         "keyword_contexts": results,
     }
 

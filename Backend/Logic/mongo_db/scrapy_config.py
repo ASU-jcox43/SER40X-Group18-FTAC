@@ -26,3 +26,6 @@ def get_daily_document_update() -> list[str]:
             "$lt": today_start + timedelta(days=1)
             }}}
     ).distinct("_id")
+    
+def get_config_list_with_id(num_results:int = 1) -> list[dict]:
+    return SCRAPY_CONFIG_COLLECTION.find({}).to_list()
