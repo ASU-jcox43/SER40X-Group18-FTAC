@@ -429,27 +429,42 @@
       flex-wrap: nowrap;    /* buttons never drop to a second line */
     }
 
+    /* Icon-only action buttons — 28px square, SVG inside, tooltip via title */
     .completed-actions button {
-      padding: 0.2rem 0.6rem;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.76rem;
-      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
       border-radius: 5px;
       cursor: pointer;
-      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
-      white-space: nowrap;
+      transition: background-color 0.18s, color 0.18s, border-color 0.18s;
+      flex-shrink: 0;
     }
 
-    .btn-view-txt    { border: 1px solid #203a82; background: none; color: #203a82; }
+    .completed-actions button svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      pointer-events: none;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .btn-view-txt     { border: 1px solid #203a82; background: none; color: #203a82; }
     .btn-view-txt:hover { background-color: #203a82; color: #fff; }
 
     .btn-download-txt { border: 1px solid #254441; background: none; color: #254441; }
     .btn-download-txt:hover { background-color: #254441; color: #fff; }
 
-    .btn-rerun-ocr  { border: 1px solid #e67e22; background: none; color: #e67e22; }
+    .btn-rerun-ocr    { border: 1px solid #e67e22; background: none; color: #e67e22; }
     .btn-rerun-ocr:hover { background-color: #e67e22; color: #fff; }
 
-    .btn-delete-file { border: 1px solid #e2e2e2; background: none; color: #888; }
+    .btn-delete-file  { border: 1px solid #e2e2e2; background: none; color: #aaa; }
     .btn-delete-file:hover { border-color: #c0392b; color: #c0392b; }
 
     /* ═══════════════════════════════════════════════════════════════

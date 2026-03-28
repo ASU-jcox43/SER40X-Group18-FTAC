@@ -186,10 +186,22 @@ function addCompletedRow({ pdfName, txtFilename, processedAt }) {
       ${dateLabel ? `<span class="completed-date">${dateLabel}</span>` : ''}
     </span>
     <div class="completed-actions">
-      <button class="btn-view-txt"     title="View OCR text">View</button>
-      <button class="btn-download-txt" title="Download .txt file">⬇ Download</button>
-      <button class="btn-rerun-ocr"    title="Re-queue for OCR">↺ Re-run OCR</button>
-      <button class="btn-delete-file"  title="Delete from server">🗑 Delete</button>
+      <!-- View: eye -->
+      <button class="btn-view-txt" title="View OCR text">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+      <!-- Download: arrow down to line -->
+      <button class="btn-download-txt" title="Download .txt file">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="M8 12l4 4 4-4"/><path d="M3 20h18"/></svg>
+      </button>
+      <!-- Re-run OCR: refresh -->
+      <button class="btn-rerun-ocr" title="Re-run OCR">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+      </button>
+      <!-- Delete: trash -->
+      <button class="btn-delete-file" title="Delete from server">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>
     </div>
   `;
 
