@@ -77,12 +77,6 @@ def save_report(doc: dict, report: str):
         f.write(report)
     print(f"Report saved: {filepath}")
 
-# TODO: Remember to delete after testing
-def test_one_doc():
-    doc = getExtraction("https://www.regina.ca/bylaws-permits-licences/bylaws/")
-    report = AI_Generate_Report(doc)
-    save_report(doc, report)
-
 if __name__ == "__main__":
     # Step 1 — scrape and extract all URLs from config
     configList = get_config_list_with_id()
@@ -94,17 +88,16 @@ if __name__ == "__main__":
 
     # Step 2 — make sure the reports folder exists
     os.makedirs(REPORTS_DIR, exist_ok=True)
-    test_one_doc()
     # Step 3 — generate a report for each extracted document
-    # docs = getAllExtractions()
-    # for doc in docs:
-    #     report = AI_Generate_Report(doc)
+    docs = getAllExtractions()
+    for doc in docs:
+        report = AI_Generate_Report(doc)
 
-    #     # Step 4 — save each report as a markdown file
-    #     filename = doc.get("file", "unknown").replace("/", "_").replace(".", "_")
-    #     filepath = os.path.join(REPORTS_DIR, f"{filename}_report.md")
+        # Step 4 — save each report as a markdown file
+        filename = doc.get("file", "unknown").replace("/", "_").replace(".", "_")
+        filepath = os.path.join(REPORTS_DIR, f"{filename}_report.md")
 
-    #     with open(filepath, "w", encoding="utf-8") as f:
-    #         f.write(report)
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(report)
 
-    #     print(f"Report saved: {filepath}")
+        print(f"Report saved: {filepath}")
