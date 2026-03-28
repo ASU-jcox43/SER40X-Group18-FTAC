@@ -6,8 +6,27 @@
 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
-
+from pymongo import MongoClient
 
 class DocumentScraperPipeline:
-    def process_item(self, item, spider):
+    MONGO_DB = MongoClient("mongodb://ftac-mongo:27017").get_database("ftac")
+    
+    def __init__(self, crawler):
+        self.crawler = crawler
+        self.municipality_name = crawler.spider.municipality_name
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(crawler)
+    
+    def process_item(self, item):
+        # db.scrapy_output.updateOne({"_id": self.municipality_name}, {$push: {"links": ItemAdapter(item).asdict()}, $set: {"valid": False}})
+        self.MONGO_DB["scrapy_output"].update_one(
+            filter={"_id": self.municipality_name},
+            update={
+                "$push": {"urls": ItemAdapter(item).asdict()['url']},
+                "$set": {"valid": False}
+            },
+            upsert=True
+        )
         return item

@@ -1,20 +1,31 @@
-# Don't use .venv
-
 from typing import Union
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, BackgroundTasks, status, Body
 from pydantic import BaseModel
-from .tasks import *
 from fastapi.middleware.cors import CORSMiddleware
-api_app = FastAPI()
-
+import os
+import subprocess
+from .Logic.scrapers.document_scraper.spiders.DocumentScraper import *
+from .Logic.OCRProcessor.ocr_processor import process_pdfs
+from .Logic.extraction.text_extraction import extract
+from .Logic.mongo_db.scrapy_config import update_config, get_config_list, get_daily_document_update, get_config
+from .Logic.mongo_db.scrapy_output import get_links, remove_link, add_link
+from .Logic.mongo_db.connection import CLIENT
 from Backend.Logic.reports.report_generator import generate_report
 from pathlib import Path
 from fastapi.responses import FileResponse
 import zipfile
 import tempfile
-from fastapi import Body
 from fastapi.responses import StreamingResponse
 from io import BytesIO
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.jobstores.mongodb import MongoDBJobStore
+from apscheduler.triggers.cron import CronTrigger
+
+api_app = FastAPI()
+
+jobstores = {'default': MongoDBJobStore(client=CLIENT, database='CapstoneDB', collection='cronjobs')}
+scheduler = BackgroundScheduler(jobstores=jobstores)
+scheduler.start()
 
 api_app.add_middleware(
     CORSMiddleware,
@@ -24,26 +35,45 @@ api_app.add_middleware(
     allow_headers=["*"],
 )
 
-class PostIngestDocs(BaseModel):
-    start_url: str
-    layers: int
-    get_pdfs: bool | str
+class ScrapyFilter(BaseModel):
     regex: str | None = None
+    xpath: str | None = None
+
+class ScrapyConfig(BaseModel):
+    start_urls: list[str] | None = None
+    allowed_domains: list[str] | None = None
+    layers: int | None = None
+    get_pdfs: bool | None = False
+    layer_filter: ScrapyFilter | None = None
+    next_page_filter: ScrapyFilter | None = None
 
 class PostExtractDocs(BaseModel):
     urls: list[str] # List of document urls
 
+#@scheduler.scheduled_job(trigger=CronTrigger(hour=0, minute=0), args=get_daily_document_update())
+def run_document_scraper(*municipalities):
+    configs: list[dict] = [get_config(m) for m in municipalities] # TODO make this only do 1 database query
+
+    os.chdir('Backend/Logic/scrapers')
+    for config in configs:
+        config['municipality_name'] = config['_id']
+        config.pop('_id')
+        config.pop('update_at')
+        subprocess.Popen(['scrapy', 'crawl', '-a', f'config={str(config)}', 'DocumentScraper'], text=True)
+    os.chdir('../../..')
+
 @api_app.post("/ingest-docs")
-async def ingest_docs(req:PostIngestDocs):
-    """
-    :return: path to the extracted links Service/Links/municipality_items.json
-    """
-    return run_document_scraper(req.start_url, layers=req.layers, get_pdfs=req.get_pdfs, rex=req.regex)
+async def ingest_docs(municipality: str, background_tasks: BackgroundTasks):
+    if not get_config(municipality):
+        raise HTTPException(status_code=404, detail="municipality not found")
+    
+    background_tasks.add_task(run_document_scraper, municipality)
+    return "crawl start"
 
 @api_app.post("/extract")
 async def extract_docs(req:PostExtractDocs):
-    print(req)
-    run_ocr_and_extraction_process(req.urls)
+    process_pdfs('Logic/OCRProcessor/bylawDocuments')
+    extract()
     return "extraction started"
 
 @api_app.get("/extract")
@@ -64,6 +94,47 @@ async def search_docs(
         {"municipality":"Quebec City",    "url":"ville.quebec.qc.ca/bylaws/businessess3/40.html"},
         {"municipality":"York",           "url":"york.ca/bylaws/36.html"}
     ]
+
+@api_app.get("/scrapy_config")
+async def search_configs():
+    return get_config_list(50)
+
+@api_app.put("/scrapy_config")
+async def edit_config(req: ScrapyConfig, municipality: str):
+    update_config(municipality,req.model_dump(exclude_unset=True))
+    return f"updated {municipality}"
+
+@api_app.get("/scrapy_config/output")
+async def get_scrapy_output(municipality: str):
+    return get_links(municipality)
+
+@api_app.delete("/scrapy_config/output")
+async def remove_scrapy_link(municipality: str, link: str):
+    remove_link(municipality,link)
+    return f"removed {link} from {municipality}"
+
+@api_app.post("/scrapy_config/output")
+async def add_scrapy_link(municipality: str, link: str):
+    success = add_link(municipality,link)
+    if success:
+        return {"new_link": link}
+    else:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="link could not be added")
+
+@api_app.get("/scrapy_config/export_output")
+async def export_scrapy_output(municipality: str):
+    def item_stream():
+        items:list[str] = get_links(municipality)
+        for i in items:
+            yield f"{i}\n"
+
+    return StreamingResponse(
+        item_stream(),
+        media_type="text/plain",
+        headers={
+            "Content-Disposition": f"attachment; filename={municipality}.csv"
+        }
+    )
 
 @api_app.post("/Frontend/generate-report")
 async def generate_report_endpoint():

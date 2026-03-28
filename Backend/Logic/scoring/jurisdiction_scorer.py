@@ -14,6 +14,11 @@ from pathlib import Path
 import flatdict
 from functools import reduce
 
+from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
+from Backend.Logic.mongo_db.scoring_collection import upsertSummary
+
+BASE_DIR = Path(__file__).resolve().parent
+MODELS_DIR = BASE_DIR / "scoring_models"
 
 def score_categories(text, category: str, model: dict[str, str]):
     """
@@ -32,10 +37,14 @@ def score_categories(text, category: str, model: dict[str, str]):
     pattern = model.get(category)
     if not pattern:
         return False
+    if isinstance(text, dict):
+        text = text.get("sentence")
+    if not isinstance(text, str):
+        return False
     return bool(re.search(pattern, text, re.IGNORECASE))
 
 
-def score_json_file(path, model: dict[str, str]):
+def score_json_data(data: dict, model: dict[str, str]):
     """
         Calculates the friendliness score for a single JSON file.
 
@@ -49,22 +58,21 @@ def score_json_file(path, model: dict[str, str]):
         Returns:
             The score rounded to two decimal points.
     """
-    with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
     keyword_sentences = flatdict.FlatDict(data.get("keyword_contexts", {}), delimiter='/')
 
     matched_keywords = []
+    matched_sentences = {}
     for sentence_list in keyword_sentences.keys():
         keyword = sentence_list.split('/')[0]
         if keyword not in matched_keywords and isinstance(keyword_sentences[sentence_list], list):
-            paragraph = reduce(lambda x, y: f"{x} {y}", keyword_sentences[sentence_list])
-            if score_categories(paragraph, keyword, model):
+            sentences = keyword_sentences[sentence_list]
+            if any(score_categories(sentence, keyword, model) for sentence in sentences):
                 matched_keywords.append(keyword)
+                matched_sentences[keyword] = [sentence for sentence in sentences if score_categories(sentence, keyword, model)]
     return round((len(matched_keywords) / len(model.keys())) * 100, 2)
 
 
-def score_jurisdictions(path, models: dict[str, dict[str, str]]):
+def score_jurisdictions(models: dict[str, dict[str, str]]):
     """
         Iterates through all JSON files in a folder.
 
@@ -74,21 +82,22 @@ def score_jurisdictions(path, models: dict[str, dict[str, str]]):
             path: The file path to the folder of JSON files.
             models: The scoring models that will be used.
     """
+    extractionJSON = getAllExtractions()
     results = {}
-    folder = Path(path)
-
-    for file_path in folder.glob("*.json"):
-        results[file_path.name] = {}
+    
+    for extraction in extractionJSON:
+        filename = extraction["file"]
+        filename = filename.split(".")[0]
+        results[filename] = {}
         try:
             for model in models.keys():
-                score = score_json_file(file_path, models[model])
-                results[file_path.name][model] = score
+                print("models: ", models.keys())
+                score = score_json_data(extraction, models[model])
+                results[filename][model] = score
         except Exception as e:
-            print(f"Error reading {file_path.name}: {e}")
+            print(f"Error reading {extraction['file']} from mongoDB: {e}")
 
-    filename = "friendliness_summary.json"
-    with open(filename, "w") as f:
-        json.dump(results, f, indent=2)
+    upsertSummary(results)
 
 
 def import_models(path: str):
@@ -100,11 +109,9 @@ def import_models(path: str):
     scoring_models = {}
     scoring_models_dir = Path(path)
     for scoring_model_file in scoring_models_dir.glob("*.json"):
-        scoring_models[str(scoring_model_file)[len(scoring_models_dir.name) + 1:-5]] = json.load(
-            open(scoring_model_file, 'r'))
+        model_name = scoring_model_file.stem
+        scoring_models[model_name] = json.load(open(scoring_model_file, 'r'))
     return scoring_models
 
-
 if __name__ == "__main__":
-    # TODO: replace with MongoDB code
-    score_jurisdictions("../analysis_ready", import_models("scoring_models"))
+    score_jurisdictions(import_models(MODELS_DIR))

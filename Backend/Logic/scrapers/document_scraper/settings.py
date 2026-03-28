@@ -58,9 +58,9 @@ DOWNLOAD_DELAY = 1
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    "document_scraper.pipelines.DocumentScraperPipeline": 300,
-#}
+ITEM_PIPELINES = {
+    "document_scraper.pipelines.DocumentScraperPipeline": 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -84,9 +84,9 @@ DOWNLOAD_DELAY = 1
 #HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
 
 # Set settings whose default value is deprecated to a future-proof value
-FEEDS = {
-    '/scrapy_output/items.csv': {
-        'format': 'csv',
-        'encoding': 'utf-8'
-    }
-}
+#FEEDS = {
+#    '/scrapy_output/items.csv': {
+#        'format': 'csv',
+#        'encoding': 'utf-8'
+#    }
+#}

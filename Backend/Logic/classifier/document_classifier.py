@@ -1,7 +1,7 @@
 """
 Document classifier file.
 
-This module takes in text from documents, and parses each word to determine
+This module parses each word to determine
 proper classification based on a set of keywords and how often they appear.
 
     Usage example:
@@ -10,19 +10,89 @@ proper classification based on a set of keywords and how often they appear.
     classify_text(text)
 """
 
-
-import json
 import re
-from pathlib import Path
-from utils import extract_text
+from Backend.Logic.classifier.utils import checkForConflicts
+from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
+from Backend.Logic.mongo_db.classification_collection import upsertClassification
 
 # Our list of keywords that we can customize when classifying documents in a dictionary
-KEYWORDS = {"Permit Documents": ["permit", "license", "authorization", "inspection"],
-            "Financial Documents": ["invoice", "payment", "tax", "taxes"],
-            "Legal Documents": ["agreement", "contract", "terms", "bylaw", "law"],
-            "Technical Documents": ["specification", "manual", "design", "requirements"]
-            }
+KEYWORDS = {
+    "Legal and Bylaws": {
+        "bylaw": 3,
+        "by-law": 3,
+        "regulation": 2,
+        "ordinance": 3,
+        "section": 1,
+        "penalty": 2,
+        "fine": 3,
+        "enforcement": 2,
+        "compliance": 2,
+        "amend": 2,
+        "repeal": 2,
+        "supersede": 3,
+    },
+    "Licensing": {
+        "license": 2,
+        "licence": 2,
+        "permit": 2,
+        "application": 1,
+        "registration": 1,
+        "renewal": 2,
+        "certificate": 1,
+        "business licence": 3,
+        "inspection required": 3,
+        "approval": 1,
+        "Application fee + licence fee": 3
+    },
+    "Zoning": {
+        "zoning": 3,
+        "zone": 2,
+        "land use": 3,
+        "site plan": 2,
+        "occupancy": 2,
+        "setback": 2,
+        "parking": 1,
+        "traffic": 1,
+        "noise": 1,
+        "district": 2,
+    },
+    "Food Safety": {
+        "food safety": 3,
+        "public health": 2,
+        "sanitation": 2,
+        "temperature": 2,
+        "food handler": 2,
+        "haccp": 3,
+        "inspection report": 2,
+        "kitchen": 1,
+        "sanitary": 2,
+        "health officer": 3,
+    },
+    "Risk and Fire": {
+        "fire code": 3,
+        "propane": 3,
+        "suppression": 2,
+        "sprinkler": 2,
+        "extinguisher": 2,
+        "flammable": 2,
+        "hazard": 2,
+        "gas line": 3,
+        "fire department": 3,
+    },
+    "General": {
+        "overview": 1,
+        "information": 1,
+        "guide": 1,
+        "homepage": 1,
+        "requirements": 1,
+        "process": 1,
+    }
+}
 
+CITIES = {
+    "Toronto", "Ottawa", "Vancouver", "Montreal", "Calgary",
+    "Edmonton", "Winnipeg", "Quebec City", "Halifax", "Victoria"
+}
 
 def classify_text(text):
     """
@@ -42,80 +112,107 @@ def classify_text(text):
         Example:
             [Permit Documents, 0.75].
     """
-    lowercase = text.lower()
+    sentences = re.split(r'(?<=[.!?])\s+', text)
+    
     scores = {}
+    keywordContexts = {}
 
     # for each category and keyword in our keywords list,
-    # we count the number of matches we found looking through the text
+    # we score the number of matches we found looking through the text
     # if we don't find anything, we leave it blank (N/A) with a confidence of 0.0
     for category, keywords in KEYWORDS.items():
-        count = sum(len(re.findall(rf'\b{term}\b', lowercase)) for term in keywords)
-        if count > 0:
-            scores[category] = count
+        totalScore = 0
+
+        for term, weight in keywords.items():
+            matches = []
+            for sentence in sentences:
+                if re.search(r'\b' + re.escape(term) + r'\b', sentence, re.IGNORECASE):
+                    matches.append(sentence.strip())
+                    
+            count = len(matches)
+            
+            if count > 0:
+                totalScore += count * weight
+                
+                if category not in keywordContexts:
+                    keywordContexts[category] = {}
+                    
+                keywordContexts[category][term] = matches
+
+        if totalScore > 0:
+            scores[category] = totalScore
+        
+        if category in keywordContexts:
+            print(f"{category}: {scores[category]}")
 
     if not scores:
-        return "N/A", 0.0
+        return ["N/A"], 0.0
 
-    # We pick the category in scores that has the highest number of matches,
+    # We pick the top categories in scores based on number of matches,
     # and calculate our confidence rate based on the number of matches vs the total number of terms
-    bestCategory = max(scores, key=scores.get)
-    if sum(scores.values()) == 0.0:
-        confidence = 0.0
-    else:
-        confidence = scores[bestCategory] / sum(scores.values())
-    return bestCategory, round(confidence, 2)
+    sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    
+    max_score = sorted_scores[0][1]
+    
+    top_categories = [ # Only include categories that are close to the top score
+        category for category, score in sorted_scores
+        if score >= max_score * 0.3
+    ]
+    
+    confidence = max_score / sum(scores.values())
+    
+    return top_categories, round(confidence, 2), keywordContexts
 
-
-def classify_files(folder_path):
+# TODO: Update markdown
+def classify_files():
     """
-    Classify all files in a designated folder into the correct categories.
+    Classify all files in a MongoDB Database into the correct categories.
 
-    This function goes through all the files in a specified directionry, extracts the text
-    using the "extract_text" function in utils.py, then classifies each using "classify_text."
-
-    Args:
-        folder_path: A string determining the path to the document directory.
+    This function goes through all the files in the extraction collection in the MongoDB Database
 
     Returns:
         A list of results in JSON pretty print format including:
             - filename: The name of the file.
-            - category: The classifying category.
+            - Top Categories: The top classifying categories.
             - confidence: The float score of the category.
         Example:
             [filename: examplefile.pdf,
-            category: Permits Document,
+            Top Categories: [
+                Legal and Bylaws,
+                Licensing
+                ],
             confidence: 0.87]
-
-    Raises:
-        FileNotFoundError: an error occurred trying to read a file.
     """
 
-    results = []
-    folder = Path(folder_path)
-
-    # Here we go through all the files, and run the extract_text function to get their text.
-    # We then run classify_text on that found text to get the category that best matched and
-    # its confidence score, otherwise it gives an error if the file couldn't be read.
-    for file_path in folder.glob("*.*"):
-        try:
-            text = extract_text(file_path)
-            category, confidence = classify_text(text)
-            results.append({
-                "filename": file_path.name,
-                "category": category,
-                "confidence": round(confidence, 2)
-            })
-        except Exception as e:
-            print(f"Error reading {file_path.name}: {e}")
-
-    filename = "classifications.json"
-    with open(filename, "w") as config_file:
-        json.dump(results, config_file, indent=2)
+    docs = getAllExtractions()
     
-    print(json.dumps(results, indent=2))
-    return results
+    for doc in docs:
+        result = []
+        # flatten keyword_contexts -> text string
+        contexts = []
+        for category_arr in doc.get("keyword_contexts", {}).values():
+            for item in category_arr:  # each object in the array
+                hits = item.get("hits", {})
+                
+                for hit_list in hits.values():  # each keyword's matches
+                    contexts.extend(hit_list)
+
+        text = " ".join(contexts)
+
+        print(f"{doc.get("file", "unkown")}")
+        print(text)
+        top_categories, confidence, context = classify_text(text)
+        filename = doc.get("file", "unkown")
+        result = {
+            "filename": filename,
+            "Top Categories": top_categories,
+            "Confidence": confidence,
+            "Keywords": context
+        }
+        
+        upsertClassification(result)
 
 
 if __name__ == "__main__":
-    # TODO: replace with MongoDB code
-    classify_files("../analysis_ready")
+    classify_files()
+    checkForConflicts()

@@ -22,6 +22,32 @@
         </form>
         <label for="output"></label>
         <textarea id="output" name="output" rows="10" cols="17"></textarea>
-        <script src="crawlpost.js"></script>
     </body>
 </html>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('crawlForm');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formEntries = Object.fromEntries(new FormData(form));
+
+        const reqBody = JSON.stringify({
+            start_url: formEntries["startUrl"],
+            layers: Number(formEntries["numLayers"]),
+            get_pdfs: formEntries.hasOwnProperty("getPdfs"),
+            regex: formEntries["regexFilter"]
+        });
+        
+        const response = await fetch("http://localhost:8000/ingest-docs", {
+                method: "POST",
+                body: reqBody,
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                }
+        });
+
+        const outputText = document.getElementById('output');
+        outputText.innerHTML = await response.text();
+        })})
+</script>

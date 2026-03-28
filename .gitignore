@@ -5,9 +5,7 @@
 **/*.pyc
 
 .vscode
-**/analysis_ready
 **/visualizeTest
-**/profiles
-**/friendliness_summary.json
 **/generated_reports
 **/.venv
+**/test_documents
