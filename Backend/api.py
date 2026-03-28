@@ -68,7 +68,7 @@ class ScrapyConfig(BaseModel):
     get_pdfs: bool | None = False
     layer_filter: ScrapyFilter | None = None
     next_page_filter: ScrapyFilter | None = None
-    update_at: list[CalenderDay]
+    update_at: list[CalenderDay] | None = None
 
 class PostExtractDocs(BaseModel):
     urls: list[str] # List of document urls
@@ -112,7 +112,10 @@ async def search_configs():
 
 @api_app.put("/scrapy_config")
 async def edit_config(req: ScrapyConfig, municipality: str):
-    update_config(municipality,req.model_dump(exclude_unset=True))
+    try:
+        update_config(municipality,req.model_dump(exclude_unset=True))
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="month or day out of range")
     return f"updated {municipality}"
 
 @api_app.get("/scrapy_config/output")

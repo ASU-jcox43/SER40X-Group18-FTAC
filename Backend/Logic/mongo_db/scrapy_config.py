@@ -5,13 +5,20 @@ SCRAPY_CONFIG_COLLECTION = DB["scrapy_config"]
 
 # Method that inserts or upates an already existing scrapy config
 def update_config(municipality: str, sconfig: dict):
-    if sconfig["update_at"]:
+    update_at = sconfig.get("update_at")
+
+    if not update_at:
+        update_days = get_update_days()
+        sconfig['update_at'] = [min(range(len(update_days))[1:], key=lambda i: update_days[i])]
+    else:
         sconfig['update_at'] = [
             datetime(datetime.today().year, d['month'], d['day']).timetuple().tm_yday
             for d in sconfig["update_at"]
         ]
-    else:
-        pass
+
+    if len(sconfig['update_at']) == 1:
+        sconfig['update_at'] += [((sconfig['update_at'][0] + 183) % 366) + 1]
+
     SCRAPY_CONFIG_COLLECTION.update_one(
         filter={"_id": municipality},
         update={"$set": {k: sconfig[k] for k in sconfig.keys()}},
