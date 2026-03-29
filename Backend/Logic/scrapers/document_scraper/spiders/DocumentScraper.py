@@ -1,14 +1,19 @@
+from dataclasses import dataclass
+
 import scrapy
 import logging
 from scrapy.http.response import Response
 import re
 import ast
-from scrapy.item import Item, Field
 
 logger = logging.getLogger("scraper")
 
-class DocumentScraperItem(Item):
-    url = Field()
+@dataclass
+class DocumentScraperItem:
+    url: str
+    name: str
+    number: int
+    year: int
 
 class DocumentScraperSpider(scrapy.Spider):
     name = "DocumentScraper"
@@ -21,6 +26,12 @@ class DocumentScraperSpider(scrapy.Spider):
     layer_filter_xpath: str | None = None
     next_page_filter_regex: str | re.Pattern[str] | None = None
     next_page_filter_xpath: str | None = None
+    name_filter_regex: str | re.Pattern[str] | None = None
+    name_filter_xpath: str | None = None
+    number_filter_regex: str | re.Pattern[str] | None = None
+    number_filter_xpath: str | None = None
+    year_filter_regex: str | re.Pattern[str] | None = None
+    year_filter_xpath: str | None = None
     doc_count: int = 0
 
     #def __init__(self, start_url: str, layers: int, get_pdfs, regex: str | None = None, xpath: str | None = None, municipality_name: str | None = None, **kwargs):
@@ -68,11 +79,29 @@ class DocumentScraperSpider(scrapy.Spider):
             if self.next_page_filter_regex:
                 self.next_page_filter_regex = re.compile(self.next_page_filter_regex)
             self.next_page_filter_xpath = config.get('next_page_filter').get('xpath')
+        
+        if config.get('name_filter'):
+            self.name_filter_regex = config.get('name_filter').get('regex')
+            if self.name_filter_regex:
+                self.name_filter_regex = re.compile(self.name_filter_regex)
+            self.name_filter_xpath = config.get('name_filter').get('xpath')
+
+        if config.get('number_filter'):
+            self.number_filter_regex = config.get('number_filter').get('regex')
+            if self.number_filter_regex:
+                self.number_filter_regex = re.compile(self.number_filter_regex)
+            self.number_filter_xpath = config.get('number_filter').get('xpath')
+
+        if config.get('year_filter'):
+            self.year_filter_regex = config.get('year_filter').get('regex')
+            if self.year_filter_regex:
+                self.year_filter_regex = re.compile(self.year_filter_regex)
+            self.year_filter_xpath = config.get('year_filter').get('xpath')
     
     def parse(self, response: Response):
         yield scrapy.Request(response.url, callback=self._parse_step, cb_kwargs=dict(layer=int(self.layers)))
 
-    def _parse_step(self, response, layer: int):
+    def _parse_step(self, response, layer: int, item: DocumentScraperItem|None = None):
         # Check the URL and yield it if it is a PDF.
         # You will know when you are visiting a PDF when you get a response body that starts with '%PDF-'
 
@@ -81,7 +110,8 @@ class DocumentScraperSpider(scrapy.Spider):
         if response.body.startswith(b'%PDF-') or (layer == 0 and not bool(self.get_pdfs)):
             logger.info(f'\tSCRAPED {response.url}')
             self.doc_count = self.doc_count + 1
-            yield DocumentScraperItem(url=response.url)
+            item.url = response.url
+            yield item
         elif layer > 0:
             layer_links: list[str] = response.xpath(self.layer_filter_xpath or '//@href').getall()
             next_page_links = []
@@ -104,6 +134,6 @@ class DocumentScraperSpider(scrapy.Spider):
                 else:
                     logger.info(f'\t     {response.urljoin(link)}')
                 try:
-                    yield scrapy.Request(response.urljoin(link), callback=self._parse_step, cb_kwargs=dict(layer=next_layer))
+                    yield scrapy.Request(response.urljoin(link), callback=self._parse_step, cb_kwargs=dict(layer=next_layer, item=item))
                 except ValueError:
                     logger.info(f'invalid link skipped: {link}')

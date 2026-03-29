@@ -68,6 +68,9 @@ class ScrapyConfig(BaseModel):
     get_pdfs: bool | None = False
     layer_filter: ScrapyFilter | None = None
     next_page_filter: ScrapyFilter | None = None
+    name_filter: ScrapyFilter | None = None
+    number_filter: ScrapyFilter | None = None
+    year_filter: ScrapyFilter | None = None
     update_at: list[CalenderDay] | None = None
 
 class PostExtractDocs(BaseModel):
