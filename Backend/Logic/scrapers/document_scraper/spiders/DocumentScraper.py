@@ -101,17 +101,41 @@ class DocumentScraperSpider(scrapy.Spider):
     def parse(self, response: Response):
         yield scrapy.Request(response.url, callback=self._parse_step, cb_kwargs=dict(layer=int(self.layers)))
 
-    def _parse_step(self, response, layer: int, item: DocumentScraperItem|None = None):
+    def _search_info(self, response, xpath, regex):
+        if xpath or regex:
+            if regex:
+                name_result = response.xpath(xpath or '//text()').getall()
+                for result in name_result:
+                    match = regex.search(result)
+                    if match:
+                        return match.group(1)
+                return None
+            else:
+                return response.xpath(xpath).get()
+        else:
+            return None
+
+    def _parse_step(self, response, layer: int, name: str|None = None, number: int|None = None, year: int|None = None):
         # Check the URL and yield it if it is a PDF.
         # You will know when you are visiting a PDF when you get a response body that starts with '%PDF-'
 
         logger.info(f'[ L {layer} ({response.status}) {response.urljoin(response.url)} ]')
 
+        if not name:
+            name = self._search_info(response, self.name_filter_xpath, self.name_filter_regex)
+        if not number:
+            result = self._search_info(response, self.number_filter_xpath, self.number_filter_regex)
+            number = int(result.strip()) if result else None
+        if not year:
+            result = self._search_info(response, self.year_filter_xpath, self.year_filter_regex)
+            year = int(result.strip()) if result else None
+        
+        logger.info(f'ITEM = {name}\n{number}-{year}\n{response.url}')
+
         if response.body.startswith(b'%PDF-') or (layer == 0 and not bool(self.get_pdfs)):
             logger.info(f'\tSCRAPED {response.url}')
             self.doc_count = self.doc_count + 1
-            item.url = response.url
-            yield item
+            yield DocumentScraperItem(response.url, name, number, year)
         elif layer > 0:
             layer_links: list[str] = response.xpath(self.layer_filter_xpath or '//@href').getall()
             next_page_links = []
@@ -134,6 +158,6 @@ class DocumentScraperSpider(scrapy.Spider):
                 else:
                     logger.info(f'\t     {response.urljoin(link)}')
                 try:
-                    yield scrapy.Request(response.urljoin(link), callback=self._parse_step, cb_kwargs=dict(layer=next_layer, item=item))
+                    yield scrapy.Request(response.urljoin(link), callback=self._parse_step, cb_kwargs=dict(layer=next_layer, name=name, number=number, year=year))
                 except ValueError:
                     logger.info(f'invalid link skipped: {link}')

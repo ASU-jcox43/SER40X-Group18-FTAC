@@ -40,7 +40,7 @@ def run_document_scraper(*municipalities):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     scheduler.start()
-    scheduler.add_job(run_document_scraper, trigger=CronTrigger(hour=0, minute=0, second=0), args=get_daily_document_update(), misfire_grace_time=30, coalesce=True)
+    scheduler.add_job(run_document_scraper, trigger=CronTrigger(hour=0, minute=0, timezone=datetime.now().astimezone().tzinfo), args=get_daily_document_update(), misfire_grace_time=30, coalesce=True)
     yield
 
 api_app = FastAPI(lifespan=lifespan)
@@ -81,7 +81,7 @@ async def ingest_docs(municipality: str, background_tasks: BackgroundTasks):
     if not get_config(municipality):
         raise HTTPException(status_code=404, detail="municipality not found")
     
-    background_tasks.add_task(run_document_scraper, municipality)
+    background_tasks.add_task(run_document_scraper, get_config(municipality))
     return "crawl start"
 
 @api_app.post("/extract")
