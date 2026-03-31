@@ -40,7 +40,7 @@ def run_document_scraper(*municipalities):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     scheduler.start()
-    scheduler.add_job(run_document_scraper, trigger=CronTrigger(hour=0, minute=0, timezone=datetime.now().astimezone().tzinfo), args=get_daily_document_update(), misfire_grace_time=30, coalesce=True)
+    scheduler.add_job(run_document_scraper, trigger=CronTrigger(hour=7, minute=0), args=get_daily_document_update(), misfire_grace_time=30, coalesce=True)
     yield
 
 api_app = FastAPI(lifespan=lifespan)
