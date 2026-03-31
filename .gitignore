@@ -13,3 +13,4 @@
 **/generated_reports
 **/.venv
 **/test_documents
+/FTAC_Prompt.txt
