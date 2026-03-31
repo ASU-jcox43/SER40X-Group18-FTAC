@@ -90,6 +90,7 @@ if __name__ == "__main__":
     os.makedirs(REPORTS_DIR, exist_ok=True)
     # Step 3 — generate a report for each extracted document
     docs = getAllExtractions()
+    # TODO Generate only one doc at a time
     for doc in docs:
         report = AI_Generate_Report(doc)
         save_report(doc, report)
