@@ -13,6 +13,10 @@ nlp = spacy.load("en_core_web_sm")
 # Define your keyword categories and terms
 # Category: Terms []
 KEYWORDS = {
+    "fire safety core": ["fire code", "propane", "suppression", "sprinkler", "extinguisher", "flammable", "hazard"],
+    "food safety core": ["food safety", "public health", "sanitation", "temperature", "haccp", "health officer"],
+    "zoning core": ["zoning", "zone", "land use", "site plan", "occupancy", "setback", "district"],
+    "legal structure": ["section", "enforcement", "compliance", "ammend", "repeal", "supersede"],
     "webpage": [".gov", ".ca", "municipality", "city of", "regional district"],  # covered
     "checklist": ["checklist", "requirements list", "required documents"],  # covered
     "guide to license": ["guide", "how to apply", "licensing process", "application process"],  # covered

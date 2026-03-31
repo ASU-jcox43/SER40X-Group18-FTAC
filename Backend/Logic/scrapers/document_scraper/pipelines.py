@@ -21,10 +21,16 @@ class DocumentScraperPipeline:
     
     def process_item(self, item):
         # db.scrapy_output.updateOne({"_id": self.municipality_name}, {$push: {"links": ItemAdapter(item).asdict()}, $set: {"valid": False}})
+        item_dict = ItemAdapter(item).asdict()
         self.MONGO_DB["scrapy_output"].update_one(
             filter={"_id": self.municipality_name},
             update={
-                "$push": {"urls": ItemAdapter(item).asdict()['url']},
+                "$push": {"urls": {
+                    "name": item_dict['name'],
+                    "number": item_dict['number'],
+                    "year": item_dict['year'],
+                    "url": item_dict['url']
+                    }},
                 "$set": {"valid": False}
             },
             upsert=True

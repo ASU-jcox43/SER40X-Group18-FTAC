@@ -3,8 +3,4 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/items.html
 
-from scrapy.item import Item, Field
-
-
-class DocumentScraperItem(Item):
-    url = Field()
+#from scrapy.item import Item, Field
