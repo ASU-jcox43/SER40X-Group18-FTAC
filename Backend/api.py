@@ -1,6 +1,7 @@
+from contextlib import asynccontextmanager
 from typing import Union
 from fastapi import FastAPI, HTTPException, BackgroundTasks, status, Body
-from pydantic import BaseModel
+from pydantic import BaseModel, TypeAdapter, conlist
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import subprocess
@@ -20,12 +21,29 @@ from io import BytesIO
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.mongodb import MongoDBJobStore
 from apscheduler.triggers.cron import CronTrigger
+import logging
+from datetime import datetime
 
-api_app = FastAPI()
 
 jobstores = {'default': MongoDBJobStore(client=CLIENT, database='CapstoneDB', collection='cronjobs')}
 scheduler = BackgroundScheduler(jobstores=jobstores)
-scheduler.start()
+
+def run_document_scraper(*municipalities):
+    os.chdir('Backend/Logic/scrapers')
+    for config in municipalities:
+        config['municipality_name'] = config['_id']
+        config.pop('_id')
+        config.pop('update_at')
+        subprocess.Popen(['scrapy', 'crawl', '-a', f'config={str(config)}', 'DocumentScraper'], text=True)
+    os.chdir('../../..')
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    scheduler.start()
+    scheduler.add_job(run_document_scraper, trigger=CronTrigger(hour=7, minute=0), args=get_daily_document_update(), misfire_grace_time=30, coalesce=True)
+    yield
+
+api_app = FastAPI(lifespan=lifespan)
 
 api_app.add_middleware(
     CORSMiddleware,
@@ -39,6 +57,10 @@ class ScrapyFilter(BaseModel):
     regex: str | None = None
     xpath: str | None = None
 
+class CalenderDay(BaseModel):
+    month: int
+    day: int
+
 class ScrapyConfig(BaseModel):
     start_urls: list[str] | None = None
     allowed_domains: list[str] | None = None
@@ -46,28 +68,20 @@ class ScrapyConfig(BaseModel):
     get_pdfs: bool | None = False
     layer_filter: ScrapyFilter | None = None
     next_page_filter: ScrapyFilter | None = None
+    name_filter: ScrapyFilter | None = None
+    number_filter: ScrapyFilter | None = None
+    year_filter: ScrapyFilter | None = None
+    update_at: list[CalenderDay] | None = None
 
 class PostExtractDocs(BaseModel):
     urls: list[str] # List of document urls
-
-#@scheduler.scheduled_job(trigger=CronTrigger(hour=0, minute=0), args=get_daily_document_update())
-def run_document_scraper(*municipalities):
-    configs: list[dict] = [get_config(m) for m in municipalities] # TODO make this only do 1 database query
-
-    os.chdir('Backend/Logic/scrapers')
-    for config in configs:
-        config['municipality_name'] = config['_id']
-        config.pop('_id')
-        config.pop('update_at')
-        subprocess.Popen(['scrapy', 'crawl', '-a', f'config={str(config)}', 'DocumentScraper'], text=True)
-    os.chdir('../../..')
 
 @api_app.post("/ingest-docs")
 async def ingest_docs(municipality: str, background_tasks: BackgroundTasks):
     if not get_config(municipality):
         raise HTTPException(status_code=404, detail="municipality not found")
     
-    background_tasks.add_task(run_document_scraper, municipality)
+    background_tasks.add_task(run_document_scraper, get_config(municipality))
     return "crawl start"
 
 @api_app.post("/extract")
@@ -101,7 +115,10 @@ async def search_configs():
 
 @api_app.put("/scrapy_config")
 async def edit_config(req: ScrapyConfig, municipality: str):
-    update_config(municipality,req.model_dump(exclude_unset=True))
+    try:
+        update_config(municipality,req.model_dump(exclude_unset=True))
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="month or day out of range")
     return f"updated {municipality}"
 
 @api_app.get("/scrapy_config/output")
