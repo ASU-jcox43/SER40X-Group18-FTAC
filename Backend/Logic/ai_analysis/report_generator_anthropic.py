@@ -92,12 +92,4 @@ if __name__ == "__main__":
     docs = getAllExtractions()
     for doc in docs:
         report = AI_Generate_Report(doc)
-
-        # Step 4 — save each report as a markdown file
-        filename = doc.get("file", "unknown").replace("/", "_").replace(".", "_")
-        filepath = os.path.join(REPORTS_DIR, f"{filename}_report.md")
-
-        with open(filepath, "w", encoding="utf-8") as f:
-            f.write(report)
-
-        print(f"Report saved: {filepath}")
+        save_report(doc, report)
