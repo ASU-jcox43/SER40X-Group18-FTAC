@@ -14,3 +14,4 @@
 **/.venv
 **/test_documents
 /FTAC_Prompt.txt
+**/Downloaded_Analyses

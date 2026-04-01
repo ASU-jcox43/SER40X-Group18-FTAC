@@ -28,10 +28,18 @@ def analyze(document_text: str):
     return response.content[0].text
 
 
-if __name__ == "__main__":
-    file_path = "C:/Users/Jacob/repos/SER40X/SER40X-Group18-FTAC/Backend/test_documents/Calgary_Food_Trucks_Copied_And_Pasted.txt"
-    with open(file_path, 'r', encoding="utf-8") as file:
-        file_content = file.read()
+def download_analysis(document, isFile):
+    if (isFile):
+        with open(document, 'r', encoding="utf-8") as file:
+            file_content = file.read()
+    else:
+        file_content = document
 
     report = analyze(file_content)
-    print(report)
+    with open("C:/Users/Jacob/repos/SER40X/SER40X-Group18-FTAC/Backend/Logic/ai_analysis/Downloaded_Analyses/output.md", "w", encoding="utf-8") as file:
+        file.write(report)
+
+
+if __name__ == "__main__":
+    file_path = "C:/Users/Jacob/repos/SER40X/SER40X-Group18-FTAC/Backend/test_documents/Calgary_Food_Trucks_Copied_And_Pasted.txt"
+    download_analysis(file_path, True)
