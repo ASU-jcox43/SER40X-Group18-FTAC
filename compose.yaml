@@ -9,8 +9,7 @@ services:
       - scrapy-output:/scrapy_output
     depends_on:
       - mongodb
-    environment:
-      - MONGO_URI=mongodb://ftac-mongo:27017/
+    env_file: "config.env"
     develop:
       watch:
         - action: sync

@@ -1,7 +1,6 @@
 from contextlib import asynccontextmanager
-from typing import Union
 from fastapi import FastAPI, HTTPException, BackgroundTasks, status, Body
-from pydantic import BaseModel, TypeAdapter, conlist
+from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import subprocess
@@ -21,9 +20,7 @@ from io import BytesIO
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.mongodb import MongoDBJobStore
 from apscheduler.triggers.cron import CronTrigger
-import logging
-from datetime import datetime
-
+from .Logic.email import scrape_report
 
 jobstores = {'default': MongoDBJobStore(client=CLIENT, database='CapstoneDB', collection='cronjobs')}
 scheduler = BackgroundScheduler(jobstores=jobstores)
@@ -75,6 +72,10 @@ class ScrapyConfig(BaseModel):
 
 class PostExtractDocs(BaseModel):
     urls: list[str] # List of document urls
+
+@api_app.post("/test-email")
+def send_test_email(msg: str, to_addr: str):
+    return scrape_report.labels()
 
 @api_app.post("/ingest-docs")
 async def ingest_docs(municipality: str, background_tasks: BackgroundTasks):

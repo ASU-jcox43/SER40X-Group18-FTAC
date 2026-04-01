@@ -16,10 +16,12 @@ wheel==0.46.1
 scrapy
 PyPDF2==3.0.1
 asyncio
-celery[redis]
 pdf2image
 pdfminer
 apscheduler
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
 # Core numerical and image processing
 Pillow
 
