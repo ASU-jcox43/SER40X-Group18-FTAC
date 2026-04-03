@@ -81,6 +81,27 @@ def sort_links():
     configs = get_config_list()
     for config in configs:
         start = config.get("start_urls", "unkown")
+        
+def display_extractions():
+    docs = getAllExtractions()
+    for i, doc in enumerate(docs):
+        filename = doc["file"]
+        print(f"{i}, {filename}")
+        
+    select_extraction()
+        
+def select_extraction():
+    while True:
+        print("Choose an extraction document")
+        
+        selection = input("Select extraction: ")
+        
+        file = getExtraction(selection)
+        
+        if file != None:
+            return file
+
+        print("Invalid Selection\n")
 
 if __name__ == "__main__":
     # Step 1 — scrape and extract all URLs from config
@@ -90,12 +111,8 @@ if __name__ == "__main__":
         url = start_urls[0] if start_urls else None
         if url:
             extractURL(url)
-
+    
     # Step 2 — make sure the reports folder exists
     os.makedirs(REPORTS_DIR, exist_ok=True)
-    # Step 3 — generate a report for each extracted document
-    docs = getAllExtractions()
-    # TODO Generate only one doc at a time
-    for doc in docs:
-        report = AI_Generate_Report(doc)
-        save_report(doc, report)
+    # Step 3 — generate a report for selected document
+    doc = display_extractions()
