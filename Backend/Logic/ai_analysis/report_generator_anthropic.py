@@ -88,7 +88,7 @@ def display_extractions():
         filename = doc["file"]
         print(f"{i}, {filename}")
         
-    select_extraction()
+    return select_extraction()
         
 def select_extraction():
     while True:
@@ -116,3 +116,5 @@ if __name__ == "__main__":
     os.makedirs(REPORTS_DIR, exist_ok=True)
     # Step 3 — generate a report for selected document
     doc = display_extractions()
+
+    AI_Generate_Report(doc)
