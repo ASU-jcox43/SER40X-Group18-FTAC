@@ -46,6 +46,7 @@ REPORTS_DIR = os.path.abspath(os.path.join(
 ))
 
 def AI_Generate_Report(doc: dict) -> str:
+    print("Generating report")
     response = client.messages.create(
         model=MODEL,
         max_tokens=4096,
@@ -86,7 +87,7 @@ def display_extractions():
     docs = getAllExtractions()
     for i, doc in enumerate(docs):
         filename = doc["file"]
-        print(f"{i}, {filename}")
+        print(f"{i}: {filename}")
         
     return select_extraction()
         
@@ -117,4 +118,6 @@ if __name__ == "__main__":
     # Step 3 — generate a report for selected document
     doc = display_extractions()
 
-    AI_Generate_Report(doc)
+    report = AI_Generate_Report(doc)
+    save_report(doc, report)
+    print("Report generated")
