@@ -85,22 +85,32 @@ def sort_links():
         
 def display_extractions():
     docs = getAllExtractions()
-    for i, doc in enumerate(docs):
-        filename = doc["file"]
-        print(f"{i}: {filename}")
+    filtered_docs = []
+
+    for doc in docs:
+        context = doc.get("keyword_contexts", {})
+
+        if context and any(context.values()):
+            filtered_docs.append(doc)
+
+    # Display filtered list
+    for i, doc in enumerate(filtered_docs):
+        print(f"{i}: {doc['file']}")
+
+    return select_extraction(filtered_docs)
         
-    return select_extraction()
-        
-def select_extraction():
+def select_extraction(docs):
     while True:
         print("Choose an extraction document")
-        
-        selection = input("Select extraction: ")
-        
-        file = getExtraction(selection)
-        
-        if file != None:
-            return file
+
+        try:
+            selection = int(input("Select extraction: "))
+
+            if 0 <= selection < len(docs):
+                return docs[selection]
+
+        except ValueError:
+            pass
 
         print("Invalid Selection\n")
 
@@ -117,7 +127,7 @@ if __name__ == "__main__":
     os.makedirs(REPORTS_DIR, exist_ok=True)
     # Step 3 — generate a report for selected document
     doc = display_extractions()
-
-    report = AI_Generate_Report(doc)
-    save_report(doc, report)
-    print("Report generated")
+    # TODO: Rememebr to uncomment to use the AI
+    # report = AI_Generate_Report(doc)
+    # save_report(doc, report)
+    # print("Report generated")
