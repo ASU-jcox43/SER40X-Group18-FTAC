@@ -5,6 +5,8 @@ from Backend.Logic.mongo_db.extraction_collection import upsertExtraction
 from Backend.Logic.extraction.extraction_util import cleanText, extractKeywords
 import spacy
 import re
+import requests
+from bs4 import BeautifulSoup
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -1088,6 +1090,50 @@ def extractPDF(filename):
     upsertExtraction(pdfJSON)
     print("Extracted pdf file")
 
+def extractURL(url: str):
+    # Fetch the page
+    response = requests.get(url, timeout=10, headers={
+        "User-Agent": "Mozilla/5.0"  # avoids being blocked by some sites
+    })
+    response.raise_for_status()
+
+    # Parse and strip HTML tags
+    soup = BeautifulSoup(response.text, "html.parser")
+
+    # Remove nav, footer, scripts — you only want body content
+    for tag in soup(["script", "style", "nav", "footer", "header"]):
+        tag.decompose()
+
+    rawText = soup.get_text(separator="\n")
+
+    if not rawText.strip():
+        print(f"[Warning] No text extracted from {url}")
+        return
+
+    cleaned = cleanText(rawText)
+    sentences = split_sentences(cleaned)
+    results = {}
+
+    for category, terms in KEYWORDS.items():
+        matches = []
+        for sentence in sentences:
+            hits = extractKeywords(sentence.text, terms)
+            if hits:
+                re_data = {}
+                # --- paste your full regex block here (same as in extractPDF) ---
+                entry = {"sentence": sentence.text, "hits": hits}
+                if re_data:
+                    entry["regex"] = re_data
+                matches.append(entry)
+        if matches:
+            results[category] = matches
+    urlJSON = {
+        "file": url,
+        "keyword_contexts": results,
+    }
+
+    upsertExtraction(urlJSON)
+    print(f"Extracted URL: {url}")
 
 def extract():
     print(dirname(realpath(__file__)))
