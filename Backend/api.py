@@ -4,7 +4,8 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import subprocess
-from .Logic.scrapers.document_scraper.spiders.DocumentScraper import *
+#from .Logic.scrapers.document_scraper.spiders.DocumentScraper import *
+from .Logic.scrapers.spider_runners import run_document_scraper
 from .Logic.OCRProcessor.ocr_processor import process_pdfs
 from .Logic.extraction.text_extraction import extract
 from .Logic.mongo_db.scrapy_config import update_config, get_config_list, get_daily_document_update, get_config
@@ -24,15 +25,6 @@ from .Logic.email import scrape_report
 
 jobstores = {'default': MongoDBJobStore(client=CLIENT, database='CapstoneDB', collection='cronjobs')}
 scheduler = BackgroundScheduler(jobstores=jobstores)
-
-def run_document_scraper(*municipalities):
-    os.chdir('Backend/Logic/scrapers')
-    for config in municipalities:
-        config['municipality_name'] = config['_id']
-        config.pop('_id')
-        config.pop('update_at')
-        subprocess.Popen(['scrapy', 'crawl', '-a', f'config={str(config)}', 'DocumentScraper'], text=True)
-    os.chdir('../../..')
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
