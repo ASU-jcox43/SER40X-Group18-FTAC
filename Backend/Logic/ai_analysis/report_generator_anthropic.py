@@ -113,6 +113,7 @@ def display_extractions():
     Returns:
         JSON: The selected document from the list of extractions
     """
+    
     docs = getAllExtractions()
     filtered_docs = []
 
@@ -137,6 +138,7 @@ def select_extraction(docs):
     Returns:
         JSON: The selected document from the list of extractions 
     """
+    
     while True:
         print("Choose an extraction document")
 
