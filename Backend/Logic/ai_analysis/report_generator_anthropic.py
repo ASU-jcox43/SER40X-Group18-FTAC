@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from Backend.Logic.mongo_db.scrapy_config import get_config_list_with_id, get_config_list
 from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
 from Backend.Logic.extraction.text_extraction import extractURL
+from Backend.Logic.municipality_profile import addProfile
 
 load_dotenv()
 
@@ -167,4 +168,4 @@ if __name__ == "__main__":
     # Step 3 — generate a report for selected document
     doc = display_extractions()
     # TODO: Rememebr to uncomment to use the AI
-    # report = AI_Generate_Report(doc)
+    # AI_Generate_Report(doc)
