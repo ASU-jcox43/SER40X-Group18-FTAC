@@ -4,14 +4,13 @@ import json
 import anthropic
 from dotenv import load_dotenv
 from Backend.Logic.mongo_db.scrapy_config import get_config_list_with_id, get_config_list
-from Backend.Logic.mongo_db.extraction_collection import getAllExtractions, getExtraction
+from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
 from Backend.Logic.extraction.text_extraction import extractURL
 
 load_dotenv()
 
 client = anthropic.Anthropic()
 MODEL = "claude-sonnet-4-6"
-
 SYSTEM_PROMPT = """
 You are a municipal regulatory analyst for food truck businesses.
 
@@ -46,6 +45,12 @@ REPORTS_DIR = os.path.abspath(os.path.join(
 ))
 
 def AI_Generate_Report(doc: dict) -> str:
+    """Injects the selected text extraced links into the AI system prompt to create a report
+
+    Args:
+        doc (dict): The extracted text of the selected document
+    """
+    
     print("Generating report")
     response = client.messages.create(
         model=MODEL,
@@ -58,11 +63,37 @@ def AI_Generate_Report(doc: dict) -> str:
             }
         ]
     )
-    return response.content[0].text
+    
+    save_report(doc, response)
+    print("Report Generated")
 
-def sanitize_filename(file_id: str) -> str:
+
+def save_report(doc: dict, report: str):
+    """Saves the report into the file directory Backend/Logic/reports/generated_reports
+
+    Args:
+        doc (dict): The extracted text of the selected document
+        report (str): The report generated from AI Anthropic
+    """
+    
+    filename = sanitize_filename(doc.get("file", "unknown"))
+    filepath = os.path.join(REPORTS_DIR, f"{filename}_report.md")
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(report)
+    print(f"Report saved: {filepath}")
+
+def sanitize_filename(filename: str) -> str:
+    """Clean the filename of the document to make it easier to read
+
+    Args:
+        file_id (str): _description_
+
+    Returns:
+        str: _description_
+    """
+    
     # Strip the protocol first (https://, http://)
-    name = re.sub(r'^https?://', '', file_id)
+    name = re.sub(r'^https?://', '', filename)
     # Replace any character that isn't letters, numbers, dash or underscore
     name = re.sub(r'[^a-zA-Z0-9\-_]', '_', name)
     # Collapse multiple underscores into one
@@ -70,13 +101,6 @@ def sanitize_filename(file_id: str) -> str:
     # Strip leading/trailing underscores
     name = name.strip('_')
     return name
-
-def save_report(doc: dict, report: str):
-    filename = sanitize_filename(doc.get("file", "unknown"))
-    filepath = os.path.join(REPORTS_DIR, f"{filename}_report.md")
-    with open(filepath, "w", encoding="utf-8") as f:
-        f.write(report)
-    print(f"Report saved: {filepath}")
     
 def sort_links():
     configs = get_config_list()
@@ -84,6 +108,11 @@ def sort_links():
         start = config.get("start_urls", "unkown")
         
 def display_extractions():
+    """Display the list of extractions to select from for AI Report Generation
+
+    Returns:
+        JSON: The selected document from the list of extractions
+    """
     docs = getAllExtractions()
     filtered_docs = []
 
@@ -100,6 +129,14 @@ def display_extractions():
     return select_extraction(filtered_docs)
         
 def select_extraction(docs):
+    """Function to get the selected input from the user
+
+    Args:
+        docs (JSON): The list of docs sorted
+
+    Returns:
+        JSON: The selected document from the list of extractions 
+    """
     while True:
         print("Choose an extraction document")
 
@@ -129,5 +166,3 @@ if __name__ == "__main__":
     doc = display_extractions()
     # TODO: Rememebr to uncomment to use the AI
     # report = AI_Generate_Report(doc)
-    # save_report(doc, report)
-    # print("Report generated")
