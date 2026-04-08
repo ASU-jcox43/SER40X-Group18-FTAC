@@ -803,14 +803,16 @@ function renderDiff() {
     const origSpan = document.createElement('span');
     origSpan.textContent = origLine + '\n';
     if (changed) {
-      origSpan.className = origLine === '' ? 'diff-line-removed' : 'diff-line-changed';
+      // If original line is empty, it's an addition in the current text.
+      origSpan.className = origLine === '' ? 'diff-line-added' : 'diff-line-changed';
     }
     diffOriginal.appendChild(origSpan);
 
     const currSpan = document.createElement('span');
     currSpan.textContent = currLine + '\n';
     if (changed) {
-      currSpan.className = currLine === '' ? 'diff-line-added' : 'diff-line-changed';
+      // If current line is empty, this line was removed from the current text.
+      currSpan.className = currLine === '' ? 'diff-line-removed' : 'diff-line-changed';
     }
     diffCurrent.appendChild(currSpan);
   }
