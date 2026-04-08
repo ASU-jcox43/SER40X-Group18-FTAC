@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scraping Config</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="assets/ftacLogo.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/scrapy_style.css">
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <header>
+        <nav class="header-nav">
+            <img src="assets/ftacLogo.png" alt="FTAC Logo" class="nav-logo">
+
+            <a href="#" onclick="showPanel('about')">About</a>
+            <a href="index.html" data-external>Dashboard</a>
+            <a href="generate_report.html" data-external>Reports</a>
+            <a href="#" onclick="showPanel('ai')">AI Analysis</a>
+            <a href="upload.html" data-external>Files</a>
+            <a href="scrapy_config.html" class="active-nav" data-external>Scraping</a>
+        </nav>
+    </header>
+
+    <!-- Scraping Config Page -->
+    <div id="scrapingPage">
+        <div class="sc-container">
+ 
+            <div class="panel-header">
+                <span>Scraping Config</span>
+            </div>
+ 
+            <div class="sc-body">
+                <div id="municipalitySearch" class="sc-section">
+                    <p class="sc-section-label">Search Municipality</p>
+                    <form id="searchForm" class="sc-search-form">
+                        <input type="text" name="searchInput" id="searchInput"
+                               placeholder="e.g. toronto" class="sc-search-input">
+                        <button type="submit" class="sc-btn-primary">Search</button>
+                    </form>
+                </div>
+ 
+                <hr class="sc-divider">
+ 
+                <div class="sc-results-row">
+                    <div id="selectedConfig" class="sc-config-panel"></div>
+                    <div id="municipalityLinkList" class="sc-links-panel"></div>
+                </div>
+            </div>
+ 
+        </div>
+    </div>
+ 
+    <script src="js/scrapy_config.js"></script>
+</body>
+</html>
+ 
