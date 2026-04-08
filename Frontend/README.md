@@ -19,7 +19,8 @@ A **municipality dashboard** for analyzing food truck friendliness scores across
 
 ```
 Frontend/
-├── server.js                 # Node/Express backend (upload + OCR pipeline)
+├── server/
+│   └── index.js              # Node/Express backend (upload + OCR pipeline)
 ├── package.json              # Node dependencies and scripts
 ├── public/
 │   ├── index.html            # Main dashboard page
@@ -36,8 +37,16 @@ Frontend/
 │   │   └── scrapy_config.js
 │   ├── assets/
 │   │   └── ftacLogo.png
+│   ├── pages/
+│   │   └── legacy/           # Older utility pages organized under pages/
+│   │       ├── index.html
+│   │       ├── extract.html
+│   │       └── ingest-documents.html
 │   └── testdata/
 │       └── index.json
+├── tessdata/
+│   ├── eng.traineddata
+│   └── fra.traineddata
 └── data/
     ├── uploads/              # Uploaded PDFs
     └── ocr_processed/        # OCR extracted .txt output files
