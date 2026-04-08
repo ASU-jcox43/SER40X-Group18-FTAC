@@ -8,7 +8,7 @@ A **municipality dashboard** for analyzing food truck friendliness scores across
 
 - **Dashboard** — filter municipalities by business type, province, and minimum friendliness score; sort results high to low or low to high; click any row to view a detailed breakdown
 - **File Manager** — upload one or more PDF bylaw documents; run OCR individually or in bulk; view live processing status; view extracted OCR text inline; completed files move to a separate section
-- **OCR Pipeline** — uploaded PDFs are converted page-by-page and processed with Tesseract (English + French); extracted text saved to `ocr_processed/` as `.txt` files; filenames are automatically sanitized on upload and server startup
+- **OCR Pipeline** — uploaded PDFs are converted page-by-page and processed with Tesseract (English + French); extracted text saved to `data/ocr_processed/` as `.txt` files; filenames are automatically sanitized on upload and server startup
 - **Error Handling** — per-file error messages, retry support (up to 2 attempts), graceful page-level OCR failures, file size limits, and type validation
 - **Reports** — search and download generated reports
 - **Active page indicator** — navigation highlights the current page
@@ -18,23 +18,32 @@ A **municipality dashboard** for analyzing food truck friendliness scores across
 ## Project Structure
 
 ```
-dashboard/
-├── index.html              # Main dashboard page
-├── upload.html             # PDF upload & OCR page
-├── generate_report.html    # Reports page
-├── style.css               # Shared styles
-├── script.js               # Shared dashboard logic
-├── upload.js               # File Manager page logic
-├── server.js               # Node/Express backend (upload + OCR pipeline)
-├── package.json            # Node dependencies and scripts
-├── uploads/                # Uploaded PDFs only
-├── ocr_processed/          # OCR extracted .txt output files
-├── testdata/               # Municipality JSON data files
-│   └── index.json          # Index of municipality files
-└── assets/                 # Logo and images
+Frontend/
+├── server.js                 # Node/Express backend (upload + OCR pipeline)
+├── package.json              # Node dependencies and scripts
+├── public/
+│   ├── index.html            # Main dashboard page
+│   ├── upload.html           # PDF upload & OCR page
+│   ├── generate_report.html  # Reports page
+│   ├── scrapy_config.html    # Scraping config page
+│   ├── css/
+│   │   ├── style.css
+│   │   └── scrapy_style.css
+│   ├── js/
+│   │   ├── script.js
+│   │   ├── upload.js
+│   │   ├── reportpost.js
+│   │   └── scrapy_config.js
+│   ├── assets/
+│   │   └── ftacLogo.png
+│   └── testdata/
+│       └── index.json
+└── data/
+    ├── uploads/              # Uploaded PDFs
+    └── ocr_processed/        # OCR extracted .txt output files
 ```
 
-> Both `uploads/` and `ocr_processed/` are created automatically when the server starts if they don't exist.
+> Both `data/uploads/` and `data/ocr_processed/` are created automatically when the server starts if they don't exist.
 
 ---
 
@@ -55,10 +64,10 @@ dashboard/
 
 ## Setup & Running
 
-1. Clone or download the project and navigate to the `dashboard/` folder:
+1. Clone or download the project and navigate to the `Frontend/` folder:
 
 ```bash
-cd path/to/dashboard
+cd path/to/Frontend
 ```
 
 2. Install dependencies:
@@ -87,10 +96,10 @@ http://localhost:3000
 
 PDFs uploaded through the File Manager page go through the following pipeline:
 
-1. **Upload** — PDF saved to `uploads/`, filename sanitized automatically
+1. **Upload** — PDF saved to `data/uploads/`, filename sanitized automatically
 2. **Convert** — each PDF page rendered to a PNG image via `pdf-to-img`
 3. **OCR** — Tesseract processes each page in English + French; individual page failures are skipped rather than aborting the job
-4. **Output** — extracted text saved to `ocr_processed/filename.txt`
+4. **Output** — extracted text saved to `data/ocr_processed/filename.txt`
 5. **View** — completed files show a **View** button that opens the raw OCR text in a modal
 
 OCR is triggered manually — files appear in the **Ready for OCR** queue after upload, and processing begins when the user clicks **Run OCR** (per file) or **Run OCR on All**.

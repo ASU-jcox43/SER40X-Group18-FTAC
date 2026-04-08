@@ -2,7 +2,8 @@
 node_modules/
 
 # Uploaded files (don't commit PDFs)
-uploads/
+data/uploads/
+data/ocr_processed/
 
 # Environment variables
 .env
