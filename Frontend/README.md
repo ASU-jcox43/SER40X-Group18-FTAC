@@ -71,7 +71,7 @@ Frontend/
 
 ---
 
-## Setup & Running
+## Setup & Running (Local Node)
 
 1. Clone or download the project and navigate to the `Frontend/` folder:
 
@@ -98,6 +98,35 @@ http://localhost:3000
 ```
 
 > The project must be run via the Node server — opening HTML files directly as `file://` will not work due to `fetch()` calls for JSON data and the upload/OCR API.
+
+---
+
+## Running with Docker Compose
+
+If you run the full project from the repository root, the frontend service now starts automatically alongside backend and MongoDB.
+
+From the project root:
+
+```bash
+docker compose up --build
+```
+
+Key URLs when running via Docker:
+
+- Frontend Node app: `http://localhost:3000`
+- Frontend via Nginx static mount: `http://localhost`
+- Backend API: `http://localhost:8000`
+
+To stop all services (including the frontend `npm start` process):
+
+```bash
+docker compose down
+```
+
+Notes:
+
+- The `frontend` service uses `node:20` and runs `npm install && npm start` in `/app/Frontend`.
+- `Frontend/node_modules` is backed by the named Docker volume `frontend-node-modules`.
 
 ---
 
