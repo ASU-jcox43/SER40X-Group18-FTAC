@@ -3,10 +3,8 @@ import re
 import json
 import anthropic
 from dotenv import load_dotenv
-from Backend.Logic.mongo_db.scrapy_config import get_config_list_with_id, get_config_list
 from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
 from Backend.Logic.extraction.text_extraction import extractURL
-from Backend.Logic.municipality_profile import addProfile
 
 load_dotenv()
 
@@ -103,32 +101,64 @@ def sanitize_filename(filename: str) -> str:
     name = name.strip('_')
     return name
     
-def sort_links():
-    configs = get_config_list()
-    for config in configs:
-        start = config.get("start_urls", "unkown")
-        
 def display_extractions():
-    """Display the list of extractions to select from for AI Report Generation
-
-    Returns:
-        JSON: The selected document from the list of extractions
-    """
-    
     docs = getAllExtractions()
-    filtered_docs = []
 
+    grouped_docs = {
+        "pdf": [],
+        "txt": [],
+        "web": [],
+        "bylaw": [],
+        "other": []
+    }
+
+    # Step 1 — Filter valid docs
     for doc in docs:
         context = doc.get("keyword_contexts", {})
 
-        if context and any(context.values()):
-            filtered_docs.append(doc)
+        if not (context and any(context.values())):
+            continue
 
-    # Display filtered list
-    for i, doc in enumerate(filtered_docs):
-        print(f"{i}: {doc['file']}")
+        file_name = doc.get("file", "")
+        doc_type = get_doc_type(file_name)
 
-    return select_extraction(filtered_docs)
+        grouped_docs[doc_type].append(doc)
+
+    # Step 2 — Flatten in preferred order
+    ordered_types = ["pdf", "txt", "bylaw", "web", "other"]
+    final_docs = []
+
+    index = 0
+
+    for dtype in ordered_types:
+        if not grouped_docs[dtype]:
+            continue
+
+        print(f"\n=== {dtype.upper()} DOCUMENTS ===")
+
+        for doc in grouped_docs[dtype]:
+            print(f"{index}: {doc['file']}")
+            final_docs.append(doc)
+            index += 1
+
+    return select_extraction(final_docs)
+
+def get_doc_type(file_name: str) -> str:
+    file_name = file_name.lower()
+
+    if file_name.startswith("http"):
+        return "web"
+
+    if file_name.endswith(".pdf"):
+        return "pdf"
+
+    if file_name.endswith(".txt"):
+        return "txt"
+
+    if "bylaw" in file_name or "by-law" in file_name:
+        return "bylaw"
+
+    return "other"
         
 def select_extraction(docs):
     """Function to get the selected input from the user
@@ -155,17 +185,9 @@ def select_extraction(docs):
         print("Invalid Selection\n")
 
 if __name__ == "__main__":
-    # Step 1 — scrape and extract all URLs from config
-    configList = get_config_list_with_id()
-    for config in configList:
-        start_urls = config.get("start_urls", [])
-        url = start_urls[0] if start_urls else None
-        if url:
-            extractURL(url)
-    
-    # Step 2 — make sure the reports folder exists
+    # Step 1 — make sure the reports folder exists
     os.makedirs(REPORTS_DIR, exist_ok=True)
-    # Step 3 — generate a report for selected document
+    # Step 2 — generate a report for selected document
     doc = display_extractions()
-    # TODO: Rememebr to uncomment to use the AI
+    # TODO: Rememeber to uncomment to use the AI
     # AI_Generate_Report(doc)

@@ -14,17 +14,29 @@ CITIES = {
 
 
 def addProfile(**kwargs):
+    """Adds the municipality profile into the mongodb database
+    """
+    
     profile = createMunicipalityProfile(**kwargs)
     # Save/update the profile
     upsertProfile(profile)
     print(f"Upserted profile for {profile['Geographic']['City']}")
 
-
 def findInformation(extraction: dict) -> dict:
+    """Searches through keyword contexts for references to any attirbute
+    of the municipality profile
+
+    Args:
+        extraction (dict): Extraction JSON with file and keyword contexts
+
+    Returns:
+        dict: All the attributes function could find for municpality profile
+    """
+    
     source_url = extraction["file"]
     contexts = extraction["keyword_contexts"]
 
-    # --- Flatten all sentences from every keyword context bucket ---
+    # Flatten all sentences from every keyword context bucket
     seen = set()
     all_sentences = []
     for bucket in contexts.values():
@@ -36,10 +48,7 @@ def findInformation(extraction: dict) -> dict:
 
     combined = " ".join(all_sentences).lower()
 
-    # --- City (matched against predefined CITIES list) ---
-    # Always inserts the canonical CITIES spelling regardless of how it appears in text.
-    # Sort by length descending so multi-word cities (e.g. "Quebec City") match before
-    # single-word substrings (e.g. "Quebec").
+    # Search for City reference based on CITIES dictionary
     city = None
     cities_lower = {c.lower(): c for c in CITIES}  # lookup: lowercase → canonical
     sorted_candidates = sorted(cities_lower.items(), key=lambda x: len(x[0]), reverse=True)
@@ -85,6 +94,7 @@ def findInformation(extraction: dict) -> dict:
         (r"police",                          "Police / Board of Police Commissioners"),
         (r"planning|development application","Planning & Development Office"),
     ]
+    
     contacts = []
     seen_labels = set()
     for s in all_sentences:
@@ -97,50 +107,14 @@ def findInformation(extraction: dict) -> dict:
                 })
                 seen_labels.add(label)
 
-    # --- Bylaw list (for friendliness score breakdown) ---
-    bylaw_pattern = re.compile(
-        r"([A-Za-z &]+bylaw)\s+no\.\s+([\d\-]+)\s+(.*?)(?=\.\s|$)",
-        re.IGNORECASE
-    )
-    bylaws = []
-    seen_numbers = set()
-    for s in all_sentences:
-        for match in bylaw_pattern.finditer(s):
-            number = match.group(2).strip()
-            if number not in seen_numbers:
-                bylaws.append({
-                    "name": match.group(1).strip().title(),
-                    "number": number,
-                    "description": match.group(3).strip(),
-                })
-                seen_numbers.add(number)
-
-    # --- Scoring notes ---
-    score_keywords = ["bylaw", "zoning", "licens", "permit", "enforcement",
-                      "fee", "violation", "appeal", "standard", "tax"]
-    scoring_notes = []
-    seen_notes = set()
-    for s in all_sentences:
-        if any(kw in s.lower() for kw in score_keywords) and s not in seen_notes:
-            scoring_notes.append(s.strip())
-            seen_notes.add(s)
-
     return {
         # --- Directly inferred from extraction ---
         "name":               f"City of {city}" if city else None,
         "city":               city,
         "province":           province,
         "contacts":           contacts,
-        "friendlinessScore": {
-            "Foundational":              None,
-            "Licensing Requirements":    None,
-            "Operations & Restrictions": None,
-        },
-        "friendlinessScoreBreakdown": {
-            "source":            source_url,
-            "bylaws_identified": bylaws,
-            "scoring_notes":     scoring_notes,
-        },
+        "friendlinessScore": None,
+        "friendlinessScoreBreakdown": None,
 
         # --- Requires external sources (Statistics Canada, GIS, etc.) ---
         "fb_type":              None,
