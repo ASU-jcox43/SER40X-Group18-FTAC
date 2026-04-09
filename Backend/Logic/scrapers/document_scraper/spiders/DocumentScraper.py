@@ -38,7 +38,6 @@ class DocumentScraperSpider(scrapy.Spider):
     def __init__(self, config: dict, **kwargs):
         super().__init__(**kwargs)
         print(config)
-        config = ast.literal_eval(config)
 
         logging.getLogger('scrapy.core.engine').setLevel(logging.WARNING)
         logging.getLogger('scrapy.core.scraper').setLevel(logging.WARNING)
@@ -63,7 +62,7 @@ class DocumentScraperSpider(scrapy.Spider):
         else:
             self.allowed_domains = [re.findall(r"(?<=\/\/)[\w.]*(?=\/\W?)", start_url)[0] for start_url in self.start_urls]
 
-        self.municipality_name = config['municipality_name']
+        self.municipality_name = config['municipality']
         
         self.layers = config['layers']
         self.get_pdfs = config['get_pdfs']
@@ -119,7 +118,7 @@ class DocumentScraperSpider(scrapy.Spider):
         # Check the URL and yield it if it is a PDF.
         # You will know when you are visiting a PDF when you get a response body that starts with '%PDF-'
 
-        logger.info(f'[ L {layer} ({response.status}) {response.urljoin(response.url)} ]')
+        print(f'[ L {layer} ({response.status}) {response.urljoin(response.url)} ]')
 
         if not name:
             name = self._search_info(response, self.name_filter_xpath, self.name_filter_regex)
@@ -130,10 +129,10 @@ class DocumentScraperSpider(scrapy.Spider):
             result = self._search_info(response, self.year_filter_xpath, self.year_filter_regex)
             year = int(result.strip()) if result else None
         
-        logger.info(f'ITEM = {name}\n{number}-{year}\n{response.url}')
+        print(f'ITEM = {name}\n{number}-{year}\n{response.url}')
 
         if response.body.startswith(b'%PDF-') or (layer == 0 and not bool(self.get_pdfs)):
-            logger.info(f'\tSCRAPED {response.url}')
+            print(f'\tSCRAPED {response.url}')
             self.doc_count = self.doc_count + 1
             yield DocumentScraperItem(response.url, name, number, year)
         elif layer > 0:
@@ -154,10 +153,10 @@ class DocumentScraperSpider(scrapy.Spider):
             for link in layer_links:
                 next_layer = layer - (0 if link in next_page_links else 1)
                 if link in next_page_links:
-                    logger.info(f'\tNEXT {response.urljoin(link)}')
+                    print(f'\tNEXT {response.urljoin(link)}')
                 else:
-                    logger.info(f'\t     {response.urljoin(link)}')
+                    print(f'\t     {response.urljoin(link)}')
                 try:
                     yield scrapy.Request(response.urljoin(link), callback=self._parse_step, cb_kwargs=dict(layer=next_layer, name=name, number=number, year=year))
                 except ValueError:
-                    logger.info(f'invalid link skipped: {link}')
+                    print(f'invalid link skipped: {link}')

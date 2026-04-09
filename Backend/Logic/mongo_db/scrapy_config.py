@@ -30,7 +30,12 @@ def get_config_list(num_results:int = 1) -> list[dict]:
 
 # Method to return scrapy config based on city
 def get_config(municipality: str) -> dict:
-    return dict(SCRAPY_CONFIG_COLLECTION.find_one(filter={"_id": municipality}))
+    config = dict(SCRAPY_CONFIG_COLLECTION.find_one(filter={"_id": municipality}))
+
+    if config:
+        config['municipality'] = municipality
+    
+    return config
 
 def get_daily_document_update() -> list[str]:
     return list(SCRAPY_CONFIG_COLLECTION.find(

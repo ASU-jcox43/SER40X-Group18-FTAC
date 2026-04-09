@@ -71,10 +71,11 @@ def send_test_email(msg: str, to_addr: str):
 
 @api_app.post("/ingest-docs")
 async def ingest_docs(municipality: str, background_tasks: BackgroundTasks):
-    if not get_config(municipality):
+    config = get_config(municipality)
+    if not config:
         raise HTTPException(status_code=404, detail="municipality not found")
     
-    background_tasks.add_task(run_document_scraper, get_config(municipality))
+    background_tasks.add_task(run_document_scraper, config)
     return "crawl start"
 
 @api_app.post("/extract")
