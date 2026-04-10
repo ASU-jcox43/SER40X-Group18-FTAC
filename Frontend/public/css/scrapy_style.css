@@ -1,287 +1,384 @@
-/* #253 – site-consistent styling (fonts, colours, card, panel-header) */
+/* ── Scraping Config Page ───────────────────────────────────────────────── */
 
 #scrapingPage {
   display: flex;
-  justify-content: center;
-  padding: 1.5rem 2rem;
+  gap: 1.25rem;
+  padding: 1rem 2rem;
   min-height: calc(100vh - 100px);
-  box-sizing: border-box;
 }
 
-.sc-container {
-  width: 100%;
-  max-width: 1100px;
-  background-color: #fff;
+/* ── Left Sidebar ───────────────────────────────────────────────────────── */
+
+#municipalitySearch {
+  width: 220px;
+  flex-shrink: 0;
+  background: #fff;
   border-radius: 10px;
   box-shadow: 1px 2px 12px rgba(0,0,0,0.08);
   border-bottom: 1px solid #e2e2e2;
-  display: flex;
-  flex-direction: column;
   overflow: hidden;
-}
-
-.sc-container .panel-header {
-  display: flex;
-  align-items: center;
-  padding: 1.25rem 2rem;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 600;
-  font-size: 1.1rem;
-  color: #fff;
-  background-color: #254441;
-  border-radius: 10px 10px 0 0;
-}
-
-.sc-body {
-  padding: 2rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
 }
 
-.sc-section-label {
+#municipalitySearch .panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
   font-family: 'Poppins', sans-serif;
-  font-size: 0.95rem;
   font-weight: 600;
-  color: #333;
-  margin: 0 0 0.75rem 0;
-}
-
-.sc-divider {
-  border: none;
-  border-top: 1px solid #eaeaea;
+  font-size: 0.95rem;
+  background-color: #254441;
+  color: #fff;
+  border-radius: 10px 10px 0 0;
   margin: 0;
 }
 
-.sc-search-form {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.sc-search-input {
-  flex: 1;
-  padding: 0.5rem 0.85rem;
+.sc-muni-badge {
   font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  outline: none;
-  transition: border-color 0.2s;
+  font-size: 0.75rem;
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  padding: 0.2rem 0.7rem;
+  border-radius: 20px;
 }
 
-.sc-search-input:focus {
-  border-color: #254441;
-}
-
-.sc-results-row {
+.sc-sidebar-body {
+  padding: 1.25rem;
   display: flex;
-  gap: 1.5rem;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+  overflow: hidden;
 }
 
-.sc-config-panel { flex: 1 1 280px; }
-.sc-links-panel  { flex: 2 1 380px; }
+/* ── Search ─────────────────────────────────────────────────────────────── */
 
-.sc-btn-primary {
-  padding: 0.45rem 1.1rem;
+.sc-search-wrap {
+  position: relative;
+}
+
+.sc-search-wrap input {
+  width: 100%;
+  padding: 0.45rem 0.75rem 0.45rem 2rem;
+  border: 1px solid #e2e2e2;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  background: #f9f9f9;
+  color: #333;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.sc-search-wrap input:focus {
+  outline: none;
+  border-color: #254441;
+  background: #fff;
+}
+
+.sc-search-icon {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+/* ── Labels ─────────────────────────────────────────────────────────────── */
+
+.sc-section-label {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+
+/* ── Municipality List ──────────────────────────────────────────────────── */
+
+#municipalityListAll {
+  border: 1px solid #e2e2e2;
+  border-radius: 6px;
+  overflow-y: auto;
+  flex: 1;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#municipalityListAll li {
+  padding: 0.7rem 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  color: #333;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-transform: capitalize;
+  line-height: 1.4;
+}
+
+#municipalityListAll li:last-child {
+  border-bottom: none;
+}
+
+#municipalityListAll li:hover {
+  background: #f0f5f4;
+}
+
+#municipalityListAll li.active {
+  background: #e8efee;
+  color: #254441;
+  font-weight: 600;
+  border-left: 3px solid #254441;
+  padding-left: calc(1rem - 2px);
+}
+
+#municipalityListAll li.sc-hidden {
+  display: none;
+}
+
+.sc-no-results {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  color: #aaa;
+  text-align: center;
+  padding: 1rem 0.5rem;
+  display: none;
+}
+
+/* ── Right Panel ────────────────────────────────────────────────────────── */
+
+#scrapingRight {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+/* ── Cards ─────────────────────────────────────────────────────────────── */
+
+.sc-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 1px 2px 12px rgba(0,0,0,0.08);
+  border-bottom: 1px solid #e2e2e2;
+  overflow: hidden;
+  margin: 0.1rem;
+}
+
+.sc-card .panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background-color: #254441;
+  color: #fff;
+  border-radius: 10px 10px 0 0;
+  margin: 0;
+}
+
+.sc-card-body {
+  padding: 1.75rem;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+
+.sc-btn-header,
+.sc-btn-run {
+  padding: 0.35rem 1rem;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.sc-btn-header:hover,
+.sc-btn-run:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+/* ── Config Form ───────────────────────────────────────────────────────── */
+
+#scrapyConfigForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sc-fields-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.sc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sc-field.full {
+  grid-column: 1 / -1;
+}
+
+.sc-field label {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sc-field input[type="text"],
+.sc-field input[type="number"] {
+  padding: 0.4rem 0.7rem;
+  border: 1px solid #e2e2e2;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  color: #333;
+  background: #f9f9f9;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sc-field input:focus {
+  outline: none;
+  border-color: #254441;
+  background: #fff;
+}
+
+.sc-field input[type="checkbox"] {
+  accent-color: #254441;
+  margin-right: 0.4rem;
+}
+
+.sc-checkbox-row {
+  display: flex;
+  align-items: center;
+  padding-top: 0.25rem;
+}
+
+/* ── Nested ────────────────────────────────────────────────────────────── */
+
+.sc-nested {
+  padding: 1rem;
+  border-left: 2px solid #c8d8d6;
+  margin-top: 0.5rem;
+  background: #f9fafa;
+  border-radius: 0 6px 6px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* ── Divider ───────────────────────────────────────────────────────────── */
+
+.sc-form-divider {
+  border: none;
+  border-top: 1px solid #eaeaea;
+  margin: 1.5rem 0;
+}
+
+/* ── Save Row ─────────────────────────────────────────────────────────── */
+
+.sc-save-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.sc-btn-save {
+  padding: 0.4rem 1.1rem;
+  background: #254441;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
   font-family: 'Inter', sans-serif;
   font-size: 0.875rem;
   font-weight: 600;
-  border: none;
-  border-radius: 6px;
-  background-color: #254441;
-  color: #fff;
   cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.2s;
 }
 
-.sc-btn-primary:hover { background-color: #1b312f; }
-
-.innerFormDict,
-.innerFormList {
-  padding-left: 1.25rem;
-  border-left: 2px solid #e4eded;
-  margin: 0.5rem 0;
+.sc-btn-save:hover {
+  background: #1b312f;
 }
 
-
-/* #258 – responsiveness & usability additions */
-
-/* Scrollable search results so they don't blow out the layout */
-#municipalitySearchResult {
-  list-style: none;
-  padding: 0;
-  margin: 0.75rem 0 0 0;
-  border: 1px solid #e4eded;
-  border-radius: 6px;
-  overflow: hidden;
-  max-height: 260px;
-  overflow-y: auto;
-}
-
-#municipalitySearchResult li {
-  padding: 0.6rem 1rem;
+.sc-confirmation {
   font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
-  cursor: pointer;
-  border-bottom: 1px solid #f0f0f0;
-  transition: background-color 0.15s;
+  font-size: 0.82rem;
+  color: #1e8449;
+  background: #d5f5e3;
+  padding: 0.35rem 0.8rem;
+  border-radius: 6px;
+  font-weight: 600;
+  display: none;
 }
 
-#municipalitySearchResult li:last-child { border-bottom: none; }
-#municipalitySearchResult li:hover      { background-color: #f0f5f4; }
+/* ── Links Section ─────────────────────────────────────────────────────── */
 
-/* Prevent search input collapsing on narrow screens */
-.sc-search-input { min-width: 180px; }
+.sc-links-body {
+  padding: 1.25rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
 
-/* Search form wraps on small screens */
-.sc-search-form  { flex-wrap: wrap; }
-
-/* Results row stacks on small screens */
-.sc-results-row  { flex-wrap: wrap; }
-
-.sc-config-panel,
-.sc-links-panel  { min-width: 0; }
-
-/* Link list items wrap long URLs cleanly */
 .sc-link-item {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.55rem 0.9rem;
+  padding: 0.6rem 1rem;
   border: 1px solid #e4eded;
   border-left: 3px solid #a8bfbd;
   border-radius: 6px;
-  background-color: #f7faf9;
+  background: #f7faf9;
   font-family: 'Inter', sans-serif;
-  font-size: 0.875rem;
-  flex-wrap: wrap;
+  font-size: 0.82rem;
 }
 
-#scrapyOutputList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.sc-add-row {
   display: flex;
-  flex-direction: column;
   gap: 0.5rem;
+  margin-top: 0.5rem;
 }
 
-#add_link_input {
-  flex: 1;
-  padding: 0.35rem 0.65rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.875rem;
-  min-width: 120px;
-}
+/* ── Responsive ───────────────────────────────────────────────────────── */
 
-.sc-btn-secondary {
-  padding: 0.3rem 0.8rem;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.8rem;
-  font-weight: 600;
-  border: 1px solid #203a82;
-  border-radius: 5px;
-  background: none;
-  color: #203a82;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.2s, color 0.2s;
-}
+@media (max-width: 700px) {
+  #scrapingPage {
+    flex-direction: column;
+    padding: 1rem;
+  }
 
-.sc-btn-secondary:hover { background-color: #203a82; color: #fff; }
+  #municipalitySearch {
+    width: 100%;
+  }
 
-/* Mobile breakpoint */
-@media (max-width: 640px) {
-  #scrapingPage    { padding: 1rem; }
-  .sc-body         { padding: 1.25rem; }
-  .sc-results-row  { flex-direction: column; }
-  .sc-config-panel,
-  .sc-links-panel  { width: 100%; }
-}
+  .sc-fields-grid {
+    grid-template-columns: 1fr;
+  }
 
-
-/* #257 – UI/UX bug fixes */
-
-/* Fix: long links overflow flex container */
-.sc-link-item a {
-  flex: 1;
-  color: #203a82;
-  text-decoration: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-}
-
-.sc-link-item a:hover { text-decoration: underline; }
-
-/* Fix: remove button styling (was unstyled) */
-.sc-btn-remove {
-  padding: 0.2rem 0.6rem;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.78rem;
-  border: 1px solid #e2e2e2;
-  border-radius: 5px;
-  background: none;
-  color: #888;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: border-color 0.2s, color 0.2s;
-}
-
-.sc-btn-remove:hover { border-color: #c0392b; color: #c0392b; }
-
-/* Fix: save confirmation was a <p1> (invalid tag), now a styled <p> */
-.sc-confirmation {
-  margin-top: 0.75rem;
-  padding: 0.5rem 0.85rem;
-  background-color: #d5f5e3;
-  color: #1e8449;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 600;
-  border-radius: 6px;
-}
-
-/* Fix: municipality names capitalised (were raw _id values) */
-#municipalitySearchResult li { text-transform: capitalize; }
-
-/* Fix: config form labels readable */
-#scrapyConfigForm label {
-  display: block;
-  font-weight: 600;
-  font-size: 0.8rem;
-  color: #555;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin: 0.75rem 0 0.25rem 0;
-}
-
-#scrapyConfigForm input[type="text"],
-#scrapyConfigForm input[type="number"] {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0.4rem 0.7rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.875rem;
-  transition: border-color 0.2s;
-}
-
-#scrapyConfigForm input[type="text"]:focus,
-#scrapyConfigForm input[type="number"]:focus {
-  border-color: #254441;
-  outline: none;
-}
-
-#scrapyConfigForm input[type="checkbox"] {
-  margin-right: 0.4rem;
-  accent-color: #254441;
+  .sc-field.full {
+    grid-column: 1;
+  }
 }
