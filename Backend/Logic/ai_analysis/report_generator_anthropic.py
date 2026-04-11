@@ -2,9 +2,9 @@ import os
 import re
 import json
 import anthropic
+from collections import defaultdict
 from dotenv import load_dotenv
 from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
-from Backend.Logic.extraction.text_extraction import extractURL
 
 load_dotenv()
 
@@ -102,17 +102,18 @@ def sanitize_filename(filename: str) -> str:
     return name
     
 def display_extractions():
+    """Displays a list of filtered list of extraction and groups extraction docs
+    by file type/title
+
+    Returns:
+        JSON: Selected document for AI Report generation
+    """
+    
     docs = getAllExtractions()
 
-    grouped_docs = {
-        "pdf": [],
-        "txt": [],
-        "web": [],
-        "bylaw": [],
-        "other": []
-    }
+    grouped_docs = defaultdict(list)
 
-    # Step 1 — Filter valid docs
+    # Step 1 — Filter + group
     for doc in docs:
         context = doc.get("keyword_contexts", {})
 
@@ -124,19 +125,14 @@ def display_extractions():
 
         grouped_docs[doc_type].append(doc)
 
-    # Step 2 — Flatten in preferred order
-    ordered_types = ["pdf", "txt", "bylaw", "web", "other"]
+    # Step 2 — Display groups (no ordering)
     final_docs = []
-
     index = 0
 
-    for dtype in ordered_types:
-        if not grouped_docs[dtype]:
-            continue
-
+    for dtype, doc_list in grouped_docs.items():
         print(f"\n=== {dtype.upper()} DOCUMENTS ===")
 
-        for doc in grouped_docs[dtype]:
+        for doc in doc_list:
             print(f"{index}: {doc['file']}")
             final_docs.append(doc)
             index += 1
@@ -144,20 +140,32 @@ def display_extractions():
     return select_extraction(final_docs)
 
 def get_doc_type(file_name: str) -> str:
+    """Searches for document type through file name
+
+    Args:
+        file_name (str): Name of the file
+
+    Returns:
+        str: file type
+    """
+    
     file_name = file_name.lower()
-
-    if file_name.startswith("http"):
-        return "web"
-
-    if file_name.endswith(".pdf"):
-        return "pdf"
-
-    if file_name.endswith(".txt"):
-        return "txt"
 
     if "bylaw" in file_name or "by-law" in file_name:
         return "bylaw"
+    
+    if "license" in file_name or "permit" in file_name:
+        return "license"
+    
+    if "guide" in file_name:
+        return "guide"
 
+    if "municipal code" in file_name:
+        return "municipal code"
+    
+    if "brochure" in file_name:
+        return "brochure"
+    
     return "other"
         
 def select_extraction(docs):
@@ -171,7 +179,7 @@ def select_extraction(docs):
     """
     
     while True:
-        print("Choose an extraction document")
+        print("\nChoose an extraction document")
 
         try:
             selection = int(input("Select extraction: "))
