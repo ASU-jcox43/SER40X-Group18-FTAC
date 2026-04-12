@@ -6,9 +6,7 @@
   <title>Bylaw Dashboard</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" href="assets/ftacLogo.png" type="image/png">
-  <link href="https://fonts.googleapis.com/css2?
-  family=Poppins:wght@400;500;600&family=Inter:wght@400;500;600&display=swap"
-   rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -17,8 +15,7 @@
         <nav class="header-nav">
             <img src="assets/ftacLogo.png" alt="FTAC Logo" class="nav-logo">
 
-            <!-- Current Page: Do not navigate-->
-             <a href="#" onclick="showPanel('about')">About</a>
+            <a href="#" onclick="showPanel('about')">About</a>
             <a href="#" class="active-nav" onclick="showPanel('dashboard')">Dashboard</a>
             <a href="generate_report.html" data-external>Reports</a>
             <a href="#" onclick="showPanel('ai')">AI Analysis</a>
@@ -47,8 +44,8 @@
                     </div>
                 </div>
             </div>
-            
-           <div class="filter-item">
+
+            <div class="filter-item">
                 <label>Province</label>
                 <div class="checkbox-scroll">
                     <div class="checkbox-group" id="province">
@@ -70,16 +67,13 @@
                 </div>
             </div>
 
-
             <div class="filter-item">
                 <label for="minScore">Minimum Score: <span id="minScoreValue">50</span></label>
-                <input type="range" id="minScore" min="0" max="100" value="50" 
-                    oninput="document.getElementById('minScoreValue')
-                    .innerText = this.value">
+                <input type="range" id="minScore" min="0" max="100" value="50"
+                    oninput="document.getElementById('minScoreValue').innerText = this.value">
             </div>
 
-
-            <div>  
+            <div>
                 <button class="apply-filters" onclick="applyFilters()">Apply Filters</button>
             </div>
         </aside>
@@ -114,8 +108,7 @@
             </div>
         </main>
 
-        <!-- Right Details Panel -->
-        <!-- Panel Header -->
+        <!-- Right Details Panel (kept for future use, hidden by default) -->
         <aside id="detailsPanel" class="hidden">
             <div class="panel-header">
                 <span>DETAILS</span>
@@ -124,12 +117,11 @@
                 </button>
             </div>
 
-            <!-- Panel Content/Body -->
             <div class="panel-content">
                 <div class="detail-section">
                     <h3>
-                    <span id="municipalityName"></span>,
-                    <span id="municipalityProvince"></span>
+                        <span id="municipalityName"></span>,
+                        <span id="municipalityProvince"></span>
                     </h3>
                 </div>
 
@@ -142,12 +134,11 @@
                     </div>
                 </div>
 
-
                 <div class="detail-section">
                     <button class="collapse-toggle" onclick="toggleSection(this)">
                         Key Requirements <span class="arrow">▾</span>
                     </button>
-                     <div class="collapse-content">
+                    <div class="collapse-content">
                         <ul id="requirementsList"></ul>
                     </div>
                 </div>
@@ -163,6 +154,84 @@
             </div>
         </aside>
 
+    </div>
+
+    <!-- AI Analysis Modal -->
+    <div id="aiAnalysisOverlay" class="ai-overlay hidden">
+        <div class="ai-modal">
+            <div class="ai-modal-header">
+                <div class="ai-modal-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 16v-4M12 8h.01"></path>
+                    </svg>
+                    <span>AI Analysis — <span id="aiPanelMunicipalityName">Select a municipality</span></span>
+                </div>
+                <button class="ai-close-btn" onclick="closeAIPanel()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="ai-modal-body">
+                <!-- Left column: municipality snapshot -->
+                <div class="ai-col ai-col-left">
+                    <div class="ai-section">
+                        <h4 class="ai-section-title">Municipality Snapshot</h4>
+                        <div class="ai-snapshot-grid">
+                            <div class="ai-snapshot-item">
+                                <span class="ai-snapshot-label">Score</span>
+                                <span class="ai-snapshot-value" id="aiSnapScore">—</span>
+                            </div>
+                            <div class="ai-snapshot-item">
+                                <span class="ai-snapshot-label">Index</span>
+                                <span class="ai-snapshot-value" id="aiSnapIndex">—</span>
+                            </div>
+                            <div class="ai-snapshot-item">
+                                <span class="ai-snapshot-label">Population</span>
+                                <span class="ai-snapshot-value" id="aiSnapPop">—</span>
+                            </div>
+                            <div class="ai-snapshot-item">
+                                <span class="ai-snapshot-label">Median Income</span>
+                                <span class="ai-snapshot-value" id="aiSnapIncome">—</span>
+                            </div>
+                            <div class="ai-snapshot-item">
+                                <span class="ai-snapshot-label">Min. Wage</span>
+                                <span class="ai-snapshot-value" id="aiSnapWage">—</span>
+                            </div>
+                            <div class="ai-snapshot-item">
+                                <span class="ai-snapshot-label">Business Type</span>
+                                <span class="ai-snapshot-value" id="aiSnapBizType">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ai-section">
+                        <h4 class="ai-section-title">Score Breakdown</h4>
+                        <div id="aiBreakdownList" class="ai-breakdown-list"></div>
+                    </div>
+                </div>
+
+                <!-- Right column: AI analysis content -->
+                <div class="ai-col ai-col-right">
+                    <div class="ai-section">
+                        <h4 class="ai-section-title">AI Summary</h4>
+                        <div class="ai-analysis-box" id="aiAnalysisContent">
+                            <p class="ai-placeholder">Select a municipality from the dashboard to generate an AI analysis.</p>
+                        </div>
+                    </div>
+
+                    <div class="ai-section">
+                        <h4 class="ai-section-title">Key Contacts</h4>
+                        <div id="aiContactsList" class="ai-contacts-list">
+                            <p class="ai-placeholder">No contacts loaded.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="js/script.js"></script>
