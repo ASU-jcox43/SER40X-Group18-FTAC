@@ -413,3 +413,260 @@ header.floating {
 #jurisdictionTable tbody tr:hover {
   background-color: rgba(0, 0, 0, 0.02);
 }
+
+
+/* ── Panel header actions ───────────────────────────────────────────────── */
+.panel-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.panel-action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+
+.panel-action-btn:hover {
+  color: #a8c5c1;
+}
+
+/* ── AI Analysis Overlay ────────────────────────────────────────────────── */
+.ai-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 45, 44, 0.55);
+  backdrop-filter: blur(3px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: overlayFadeIn 0.2s ease;
+}
+
+.ai-overlay.hidden {
+  display: none;
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── AI Modal ───────────────────────────────────────────────────────────── */
+.ai-modal {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  width: 90vw;
+  max-width: 1000px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalSlideIn 0.25s ease;
+}
+
+@keyframes modalSlideIn {
+  from { transform: translateY(16px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ── AI Modal Header ────────────────────────────────────────────────────── */
+.ai-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 2rem;
+  background-color: #254441;
+  color: #fff;
+  border-radius: 12px 12px 0 0;
+  border-bottom: 1px solid #3a6560;
+  flex-shrink: 0;
+}
+
+.ai-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+}
+
+.ai-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.ai-close-btn:hover {
+  color: #a8c5c1;
+  background: rgba(255,255,255,0.08);
+}
+
+/* ── AI Modal Body ──────────────────────────────────────────────────────── */
+.ai-modal-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.ai-col {
+  padding: 1.75rem;
+  overflow-y: auto;
+}
+
+.ai-col-left {
+  flex: 0 0 320px;
+  border-right: 1px solid #eaeaea;
+  background: #f9f8f6;
+}
+
+.ai-col-right {
+  flex: 1;
+}
+
+/* ── AI Sections ────────────────────────────────────────────────────────── */
+.ai-section {
+  margin-bottom: 1.75rem;
+}
+
+.ai-section-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #254441;
+  margin: 0 0 0.85rem 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid #254441;
+}
+
+/* ── Snapshot Grid ──────────────────────────────────────────────────────── */
+.ai-snapshot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.ai-snapshot-item {
+  background: #fff;
+  border: 1px solid #e2e2e2;
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ai-snapshot-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ai-snapshot-value {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #203a82;
+}
+
+/* ── Score Breakdown ────────────────────────────────────────────────────── */
+.ai-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ai-breakdown-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ai-breakdown-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  color: #555;
+  display: flex;
+  justify-content: space-between;
+}
+
+.ai-breakdown-bar-track {
+  background: #eaeaea;
+  border-radius: 99px;
+  height: 6px;
+  overflow: hidden;
+}
+
+.ai-breakdown-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #254441, #3a8a80);
+  transition: width 0.5s ease;
+}
+
+/* ── AI Analysis Box ────────────────────────────────────────────────────── */
+.ai-analysis-box {
+  background: #f9f8f6;
+  border: 1px solid #e2e2e2;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  color: #444;
+  line-height: 1.65;
+  min-height: 100px;
+}
+
+.ai-placeholder {
+  color: #aaa;
+  font-style: italic;
+  margin: 0;
+}
+
+/* ── Contacts List ──────────────────────────────────────────────────────── */
+.ai-contacts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ai-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  color: #444;
+  padding: 0.5rem 0.75rem;
+  background: #f9f8f6;
+  border: 1px solid #e2e2e2;
+  border-radius: 6px;
+}
+
+.ai-contact-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #254441;
+  flex-shrink: 0;
+}
