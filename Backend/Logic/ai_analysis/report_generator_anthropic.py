@@ -4,7 +4,8 @@ import json
 import anthropic
 from collections import defaultdict
 from dotenv import load_dotenv
-from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
+from Backend.Logic.mongo_db.extraction_collection import getExtraction
+from Backend.Logic.mongo_db.profile_collection import getAllProfiles
 
 load_dotenv()
 
@@ -101,7 +102,7 @@ def sanitize_filename(filename: str) -> str:
     name = name.strip('_')
     return name
     
-def display_extractions():
+def display_profiles():
     """Displays a list of filtered list of extraction and groups extraction docs
     by file type/title
 
@@ -109,23 +110,24 @@ def display_extractions():
         JSON: Selected document for AI Report generation
     """
     
-    docs = getAllExtractions()
+    profiles = getAllProfiles()
 
     grouped_docs = defaultdict(list)
 
     # Step 1 — Filter + group
-    for doc in docs:
+    for profile in profiles:
+        filename = profile["file"]
+        
+        # Check if extraction version of profile is not empty
+        doc = getExtraction(filename)
         context = doc.get("keyword_contexts", {})
-
         if not (context and any(context.values())):
             continue
+        
+        title = profile["Title"]
+        grouped_docs[title].append(doc)
 
-        file_name = doc.get("file", "")
-        doc_type = get_doc_type(file_name)
-
-        grouped_docs[doc_type].append(doc)
-
-    # Step 2 — Display groups (no ordering)
+    # Step 2 — Display groups
     final_docs = []
     index = 0
 
@@ -138,35 +140,6 @@ def display_extractions():
             index += 1
 
     return select_extraction(final_docs)
-
-def get_doc_type(file_name: str) -> str:
-    """Searches for document type through file name
-
-    Args:
-        file_name (str): Name of the file
-
-    Returns:
-        str: file type
-    """
-    
-    file_name = file_name.lower()
-
-    if "bylaw" in file_name or "by-law" in file_name:
-        return "bylaw"
-    
-    if "license" in file_name or "permit" in file_name:
-        return "license"
-    
-    if "guide" in file_name:
-        return "guide"
-
-    if "municipal code" in file_name:
-        return "municipal code"
-    
-    if "brochure" in file_name:
-        return "brochure"
-    
-    return "other"
         
 def select_extraction(docs):
     """Function to get the selected input from the user
@@ -196,6 +169,7 @@ if __name__ == "__main__":
     # Step 1 — make sure the reports folder exists
     os.makedirs(REPORTS_DIR, exist_ok=True)
     # Step 2 — generate a report for selected document
-    doc = display_extractions()
+    doc = display_profiles()
+    print(doc["file"])
     # TODO: Rememeber to uncomment to use the AI
     # AI_Generate_Report(doc)

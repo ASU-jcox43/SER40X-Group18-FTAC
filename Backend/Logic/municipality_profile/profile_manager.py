@@ -64,6 +64,8 @@ def createEconomy(income, min_wage, comm_tax_rates):
 
 def createMunicipalityProfile(
     name,
+    title,
+    file,
     fb_type,
     city,
     province,
@@ -89,6 +91,8 @@ def createMunicipalityProfile(
 
     profile = {
         "Name": name,
+        "Title": title,
+        "file": file,
         "fb_type": fb_type,
         "Demographic": createDemographic(
             population, avgAge, ethnicityComposition, houseSize, educationLevel
