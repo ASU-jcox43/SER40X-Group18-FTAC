@@ -176,63 +176,11 @@ function applyFilters() {
   });
 }
 
-// Show details
+// Show details — opens AI modal directly on row click
 function showDetails(m) {
-  const panel = document.getElementById("detailsPanel");
-  panel.classList.remove("hidden");
-
-  // Header info
-  document.getElementById("municipalityName").textContent = m.city ?? "Unknown";
-  document.getElementById("municipalityProvince").textContent = getProvinceAbbreviation(m.province);
-
-  /* SUMMARY */
-  const summaryEl = document.querySelector(
-    "#detailsPanel .detail-section:nth-of-type(2) .collapse-content p"
-  );
-
-  if (summaryEl) {
-    const score = m.friendlinessScore?.Score ?? 0;
-    const indexLabel = m.friendlinessScore?.["Friendliness Index"] ?? "N/A";
-
-    summaryEl.innerText = `
-Friendliness Score: ${score.toFixed(1)}
-Index: ${indexLabel}
-
-Population: ${m.population?.toLocaleString() ?? "N/A"}
-Median Income: $${m.income?.toLocaleString() ?? "N/A"}
-Minimum Wage: ${m.min_wage ?? "N/A"}
-    `.trim();
-  }
-
-  /* KEY REQUIREMENTS */
-  const reqList = document.getElementById("requirementsList");
-  if (reqList) {
-    reqList.innerHTML = "";
-
-    if (m.contacts && m.contacts.length > 0) {
-      m.contacts.forEach(contact => {
-        const li = document.createElement("li");
-        li.textContent = contact.Department;
-        reqList.appendChild(li);
-      });
-    } else {
-      reqList.innerHTML = "<li>No requirements available</li>";
-    }
-  }
-
-  /* SCORE BREAKDOWN */
-  const scoreList = document.getElementById("scoreBreakdownList");
-  if (scoreList) {
-    scoreList.innerHTML = "";
-
-    const breakdown = m.friendlinessScoreBreakdown || {};
-
-    Object.entries(breakdown).forEach(([section, data]) => {
-      const li = document.createElement("li");
-      li.innerHTML = `<strong>${section}</strong>: ${data.Percentage} — ${data["Friendliness Index"]}`;
-      scoreList.appendChild(li);
-    });
-  }
+  currentMunicipality = m;
+  populateAIPanel(m);
+  openAIPanel();
 }
 
 function getProvinceAbbreviation(fullName) {
@@ -257,30 +205,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let selectedFile = null;
 
-  // --- Shared PDF validation helper ---
   function validatePDF(file) {
-    if (!file) {
-      return { valid: false, message: "❌ No file selected." };
-    }
-    if (file.type !== "application/pdf") {
-      return {
-        valid: false,
-        message: `❌ "${file.name}" was refused — only PDF files are accepted (received: ${file.type || "unknown type"}).`
-      };
-    }
-    if (file.size === 0) {
-      return {
-        valid: false,
-        message: `❌ "${file.name}" was refused — file is empty.`
-      };
-    }
+    if (!file) return { valid: false, message: "❌ No file selected." };
+    if (file.type !== "application/pdf") return {
+      valid: false,
+      message: `❌ "${file.name}" was refused — only PDF files are accepted (received: ${file.type || "unknown type"}).`
+    };
+    if (file.size === 0) return {
+      valid: false,
+      message: `❌ "${file.name}" was refused — file is empty.`
+    };
     return { valid: true, message: "" };
   }
 
-  // --- Shared handler for accepted / rejected files ---
   function handleFileSelection(file) {
     const result = validatePDF(file);
-
     if (result.valid) {
       selectedFile = file;
       fileName.textContent = `Selected file: ${selectedFile.name}`;
@@ -297,9 +236,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- Drag & Drop ---
   ["dragenter", "dragover"].forEach(eventName => {
-    dropArea.addEventListener(eventName, e => {
+    dropArea?.addEventListener(eventName, e => {
       e.preventDefault();
       e.stopPropagation();
       dropArea.classList.add("dragover");
@@ -307,26 +245,17 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   ["dragleave", "drop"].forEach(eventName => {
-    dropArea.addEventListener(eventName, e => {
+    dropArea?.addEventListener(eventName, e => {
       e.preventDefault();
       e.stopPropagation();
       dropArea.classList.remove("dragover");
     });
   });
 
-  dropArea.addEventListener("drop", e => {
-    const file = e.dataTransfer.files[0];
-    handleFileSelection(file);
-  });
+  dropArea?.addEventListener("drop", e => handleFileSelection(e.dataTransfer.files[0]));
+  pdfInput?.addEventListener("change", () => handleFileSelection(pdfInput.files[0]));
 
-  // --- File input selection ---
-  pdfInput.addEventListener("change", () => {
-    const file = pdfInput.files[0];
-    handleFileSelection(file);
-  });
-
-  // --- Upload button ---
-  uploadBtn.addEventListener("click", async () => {
+  uploadBtn?.addEventListener("click", async () => {
     if (!selectedFile) return;
 
     const formData = new FormData();
@@ -338,48 +267,43 @@ document.addEventListener("DOMContentLoaded", () => {
     progressBar.style.width = "0%";
     progressBar.textContent = "0%";
 
-    try {
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", "/upload");
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/upload");
 
-      xhr.upload.onprogress = e => {
-        if (e.lengthComputable) {
-          const percent = Math.round((e.loaded / e.total) * 100);
-          progressBar.style.width = percent + "%";
-          progressBar.textContent = percent + "%";
-        }
-      };
+    xhr.upload.onprogress = e => {
+      if (e.lengthComputable) {
+        const percent = Math.round((e.loaded / e.total) * 100);
+        progressBar.style.width = percent + "%";
+        progressBar.textContent = percent + "%";
+      }
+    };
 
-      xhr.onload = () => {
-        if (xhr.status === 200) {
-          status.textContent = "✅ Upload successful!";
-          status.className = "";
-          uploadBtn.disabled = true;
-          fileName.textContent = "";
-          pdfInput.value = "";
-          selectedFile = null;
-          progressContainer.style.display = "none";
-          listUploadedFiles();
-        } else {
-          status.textContent = "❌ Upload failed — server returned an error.";
-          status.className = "error";
-        }
-      };
-
-      xhr.onerror = () => {
-        status.textContent = "❌ Server error — please try again.";
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        status.textContent = "✅ Upload successful!";
+        status.className = "";
+        uploadBtn.disabled = true;
+        fileName.textContent = "";
+        pdfInput.value = "";
+        selectedFile = null;
+        progressContainer.style.display = "none";
+        listUploadedFiles();
+      } else {
+        status.textContent = "❌ Upload failed — server returned an error.";
         status.className = "error";
-      };
+      }
+    };
 
-      xhr.send(formData);
-    } catch (err) {
-      status.textContent = "❌ Upload error — please try again.";
+    xhr.onerror = () => {
+      status.textContent = "❌ Server error — please try again.";
       status.className = "error";
-    }
+    };
+
+    xhr.send(formData);
   });
 
-  // --- List uploaded files ---
   async function listUploadedFiles() {
+    if (!uploadedFiles) return;
     uploadedFiles.innerHTML = "";
     try {
       const res = await fetch("/files");
@@ -398,6 +322,78 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Initial load
   listUploadedFiles();
 });
+
+// ── AI Analysis Panel ─────────────────────────────────────────────────────
+// currentMunicipality is set in showDetails() whenever a row is clicked
+let currentMunicipality = null;
+
+function openAIPanel() {
+  const overlay = document.getElementById("aiAnalysisOverlay");
+  overlay.classList.remove("hidden");
+}
+
+function closeAIPanel() {
+  document.getElementById("aiAnalysisOverlay").classList.add("hidden");
+}
+
+// Close on backdrop click
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("aiAnalysisOverlay")?.addEventListener("click", function(e) {
+    if (e.target === this) closeAIPanel();
+  });
+});
+
+function populateAIPanel(m) {
+  const score = m.friendlinessScore?.Score ?? 0;
+
+  // Header name
+  document.getElementById("aiPanelMunicipalityName").textContent =
+    `${m.city ?? "Unknown"}, ${getProvinceAbbreviation(m.province)}`;
+
+  // Snapshot cards
+  document.getElementById("aiSnapScore").textContent   = score.toFixed(1);
+  document.getElementById("aiSnapIndex").textContent   = m.friendlinessScore?.["Friendliness Index"] ?? "N/A";
+  document.getElementById("aiSnapPop").textContent     = m.population?.toLocaleString() ?? "N/A";
+  document.getElementById("aiSnapIncome").textContent  = m.income ? `$${m.income.toLocaleString()}` : "N/A";
+  document.getElementById("aiSnapWage").textContent    = m.min_wage ?? "N/A";
+  document.getElementById("aiSnapBizType").textContent = capitalize(m.fb_type) || "N/A";
+
+  // Score breakdown bars
+  const breakdownEl = document.getElementById("aiBreakdownList");
+  breakdownEl.innerHTML = "";
+  const breakdown = m.friendlinessScoreBreakdown || {};
+  Object.entries(breakdown).forEach(([section, data]) => {
+    const pct = parseFloat(data.Percentage) || 0;
+    breakdownEl.innerHTML += `
+      <div class="ai-breakdown-item">
+        <div class="ai-breakdown-label">
+          <span>${section}</span>
+          <span>${data.Percentage} — ${data["Friendliness Index"]}</span>
+        </div>
+        <div class="ai-breakdown-bar-track">
+          <div class="ai-breakdown-bar-fill" style="width: ${Math.min(pct, 100)}%"></div>
+        </div>
+      </div>`;
+  });
+
+  // Contacts
+  const contactsEl = document.getElementById("aiContactsList");
+  contactsEl.innerHTML = "";
+  if (m.contacts && m.contacts.length > 0) {
+    m.contacts.forEach(c => {
+      contactsEl.innerHTML += `
+        <div class="ai-contact-item">
+          <div class="ai-contact-dot"></div>
+          <span>${c.Department}</span>
+        </div>`;
+    });
+  } else {
+    contactsEl.innerHTML = `<p class="ai-placeholder">No contacts available.</p>`;
+  }
+
+  // AI summary placeholder — replaced in ticket #287
+  document.getElementById("aiAnalysisContent").innerHTML =
+    `<p class="ai-placeholder">AI-generated analysis will appear here (linked in #287).</p>`;
+}
