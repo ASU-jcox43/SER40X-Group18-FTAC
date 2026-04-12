@@ -40,9 +40,9 @@ DOWNLOAD_DELAY = 1
 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
-#    "document_scraper.middlewares.DocumentScraperSpiderMiddleware": 543,
-#}
+SPIDER_MIDDLEWARES = {
+    'document_scraper.middlewares.DocumentScraperSpiderMiddleware': 543,
+}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
@@ -59,7 +59,7 @@ DOWNLOAD_DELAY = 1
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    "document_scraper.pipelines.DocumentScraperPipeline": 300,
+    "document_scraper.pipelines.DocumentScraperPipeline": 300
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -84,9 +84,9 @@ ITEM_PIPELINES = {
 #HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
 
 # Set settings whose default value is deprecated to a future-proof value
-#FEEDS = {
-#    '/scrapy_output/items.csv': {
-#        'format': 'csv',
-#        'encoding': 'utf-8'
-#    }
-#}
+FEEDS = {
+    '/scrapy_output/%(timestamp)s_%(municipality_name)s_items.csv': {
+        'format': 'csv',
+        'encoding': 'utf-8'
+    }
+}

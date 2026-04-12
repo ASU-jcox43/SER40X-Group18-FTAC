@@ -5,6 +5,7 @@ import logging
 from scrapy.http.response import Response
 import re
 import ast
+from datetime import datetime
 
 logger = logging.getLogger("scraper")
 
@@ -33,6 +34,7 @@ class DocumentScraperSpider(scrapy.Spider):
     year_filter_regex: str | re.Pattern[str] | None = None
     year_filter_xpath: str | None = None
     doc_count: int = 0
+    timestamp: str
 
     #def __init__(self, start_url: str, layers: int, get_pdfs, regex: str | None = None, xpath: str | None = None, municipality_name: str | None = None, **kwargs):
     def __init__(self, config: dict, **kwargs):
@@ -67,6 +69,7 @@ class DocumentScraperSpider(scrapy.Spider):
         
         self.layers = config['layers']
         self.get_pdfs = config['get_pdfs']
+        self.timestamp = config['timestamp']
 
         if config.get('layer_filter'):
             self.layer_filter_regex = config.get('layer_filter').get('regex')
@@ -130,7 +133,7 @@ class DocumentScraperSpider(scrapy.Spider):
             result = self._search_info(response, self.year_filter_xpath, self.year_filter_regex)
             year = int(result.strip()) if result else None
         
-        logger.info(f'ITEM = {name}\n{number}-{year}\n{response.url}')
+        logger.info(f'ITEM = {name} {number}-{year} {response.url}')
 
         if response.body.startswith(b'%PDF-') or (layer == 0 and not bool(self.get_pdfs)):
             logger.info(f'\tSCRAPED {response.url}')

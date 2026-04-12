@@ -7,6 +7,9 @@ from scrapy import signals
 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
+import logging
+
+error_logger = logging.getLogger('scrapy_errors')
 
 
 class DocumentScraperSpiderMiddleware:
@@ -37,11 +40,11 @@ class DocumentScraperSpiderMiddleware:
             yield i
 
     def process_spider_exception(self, response, exception, spider):
-        # Called when a spider or process_spider_input() method
-        # (from other spider middleware) raises an exception.
-
-        # Should return either None or an iterable of Request or item objects.
-        pass
+        error_logger.error(
+            f"[{spider.name}] Exception at URL: {response.url}\n\t{exception}",
+            exc_info=True
+        )
+        return None  
 
     async def process_start(self, start):
         # Called with an async iterator over the spider start() method or the
@@ -50,6 +53,7 @@ class DocumentScraperSpiderMiddleware:
             yield item_or_request
 
     def spider_opened(self, spider):
+        error_logger.addHandler(logging.FileHandler('/scrapy_output/%s_%s_errors.txt' % (spider.timestamp, spider.municipality_name)))
         spider.logger.info("Spider opened: %s" % spider.name)
 
 
@@ -85,16 +89,6 @@ class DocumentScraperDownloaderMiddleware:
         # - return a Request object
         # - or raise IgnoreRequest
         return response
-
-    def process_exception(self, request, exception, spider):
-        # Called when a download handler or a process_request()
-        # (from other downloader middleware) raises an exception.
-
-        # Must either:
-        # - return None: continue processing this exception
-        # - return a Response object: stops process_exception() chain
-        # - return a Request object: stops process_exception() chain
-        pass
 
     def spider_opened(self, spider):
         spider.logger.info("Spider opened: %s" % spider.name)

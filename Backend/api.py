@@ -21,18 +21,38 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.mongodb import MongoDBJobStore
 from apscheduler.triggers.cron import CronTrigger
 from .Logic.email import scrape_report
+from datetime import datetime
+import asyncio
 
 jobstores = {'default': MongoDBJobStore(client=CLIENT, database='CapstoneDB', collection='cronjobs')}
 scheduler = BackgroundScheduler(jobstores=jobstores)
 
+def document_scraper_email(process:subprocess.Popen, timestamp:str, municipality:str):
+    print(f'<START {municipality}> {process}, {timestamp}')
+    process.wait()
+    print(f'END {process}, {timestamp}, {municipality}')
+
 def run_document_scraper(*municipalities):
     os.chdir('Backend/Logic/scrapers')
+    scrapy_processes = []
     for config in municipalities:
         config['municipality_name'] = config['_id']
+        config['timestamp'] = str(datetime.now())
         config.pop('_id')
         config.pop('update_at')
-        subprocess.Popen(['scrapy', 'crawl', '-a', f'config={str(config)}', 'DocumentScraper'], text=True)
+        print(f'proc={config['municipality_name']}')
+        process = subprocess.Popen(['scrapy', 'crawl', '-a', f'config={str(config)}', 'DocumentScraper'], text=True)
+
+        scrapy_processes.append({
+            'process': process,
+            'timestamp': config['timestamp'],
+            'municipality_name': config['municipality_name']
+        })
     os.chdir('../../..')
+
+    for p in scrapy_processes:
+        print(f'proc={p['process']}')
+        document_scraper_email(p['process'], p['timestamp'], p['municipality_name'])
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

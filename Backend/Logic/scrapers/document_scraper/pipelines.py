@@ -25,13 +25,12 @@ class DocumentScraperPipeline:
         self.MONGO_DB["scrapy_output"].update_one(
             filter={"_id": self.municipality_name},
             update={
-                "$push": {"urls": {
+                "$addToSet": {"urls": {
                     "name": item_dict['name'],
                     "number": item_dict['number'],
                     "year": item_dict['year'],
                     "url": item_dict['url']
-                    }},
-                "$set": {"valid": False}
+                    }}
             },
             upsert=True
         )
