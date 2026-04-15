@@ -78,8 +78,10 @@ def save_report(doc: dict, report: str):
     
     filename = sanitize_filename(doc.get("file", "unknown"))
     filepath = os.path.join(REPORTS_DIR, f"{filename}_report.md")
+    
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(report)
+        
     print(f"Report saved: {filepath}")
 
 def sanitize_filename(filename: str) -> str:
@@ -100,6 +102,7 @@ def sanitize_filename(filename: str) -> str:
     name = re.sub(r'_+', '_', name)
     # Strip leading/trailing underscores
     name = name.strip('_')
+    
     return name
     
 def display_profiles():
@@ -114,7 +117,7 @@ def display_profiles():
 
     grouped_docs = defaultdict(list)
 
-    # Step 1 — Filter + group
+    # Filter + group
     for profile in profiles:
         filename = profile["file"]
         
@@ -127,7 +130,7 @@ def display_profiles():
         title = profile["Title"]
         grouped_docs[title].append(doc)
 
-    # Step 2 — Display groups
+    # Display groups
     final_docs = []
     index = 0
 
@@ -166,10 +169,11 @@ def select_extraction(docs):
         print("Invalid Selection\n")
 
 if __name__ == "__main__":
-    # Step 1 — make sure the reports folder exists
+    # Make sure the reports folder exists
     os.makedirs(REPORTS_DIR, exist_ok=True)
-    # Step 2 — generate a report for selected document
+    
+    # Display profiles for users to select
     doc = display_profiles()
-    print(doc["file"])
-    # TODO: Rememeber to uncomment to use the AI
-    # AI_Generate_Report(doc)
+    
+    # Generate report AI
+    AI_Generate_Report(doc)
