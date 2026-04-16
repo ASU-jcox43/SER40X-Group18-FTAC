@@ -6,4 +6,6 @@ RUN apt-get -y install libgirepository-2.0-dev gcc libcairo2-dev pkg-config pyth
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 RUN python -m spacy download en_core_web_sm
 COPY ./Backend /app/Backend
+COPY ./credentials.json /app/credentials.json
+COPY ./token.json /app/token.json
 CMD fastapi run ./Backend/api.py

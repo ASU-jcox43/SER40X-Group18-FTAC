@@ -20,7 +20,7 @@ from io import BytesIO
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.mongodb import MongoDBJobStore
 from apscheduler.triggers.cron import CronTrigger
-from .Logic.email import scrape_report
+from .Logic.email import gmail
 from datetime import datetime
 import asyncio
 
@@ -28,9 +28,8 @@ jobstores = {'default': MongoDBJobStore(client=CLIENT, database='CapstoneDB', co
 scheduler = BackgroundScheduler(jobstores=jobstores)
 
 def document_scraper_email(process:subprocess.Popen, timestamp:str, municipality:str):
-    print(f'<START {municipality}> {process}, {timestamp}')
     process.wait()
-    print(f'END {process}, {timestamp}, {municipality}')
+    gmail.send_message('hasmtest0@gmail.com','benjaminstefl@gmail.com',None,None,'Scrape report',f'{timestamp}\n{municipality}')
 
 def run_document_scraper(*municipalities):
     os.chdir('Backend/Logic/scrapers')

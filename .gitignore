@@ -11,4 +11,6 @@
 **/test_documents
 
 config.env
+credentials.json
+token.json
 Backend/Logic/email/credentials.json
