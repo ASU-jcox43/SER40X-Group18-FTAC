@@ -5,7 +5,7 @@ client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 MODEL = "claude-haiku-4-5"
 
 # Guidance prompt text is loaded in here
-with open("FTAC_Prompt.txt", "r", encoding="utf-8") as prompt:
+with open("FTAC_Prompt2.txt", "r", encoding="utf-8") as prompt:
     SYSTEM_PROMPT = prompt.read()
 
 def analyze(document_text: str):
