@@ -1,14 +1,11 @@
 from os.path import join, abspath, dirname, realpath
 from os import listdir
-from PyPDF2 import PdfReader
-from Backend.Logic.mongo_db.extraction_collection import upsertExtraction
-from Backend.Logic.extraction.extraction_util import cleanText, extractKeywords
-import spacy
 import re
 import requests
 from bs4 import BeautifulSoup
-
-nlp = spacy.load("en_core_web_sm")
+from PyPDF2 import PdfReader
+from Backend.Logic.mongo_db.extraction_collection import upsertExtraction
+from Backend.Logic.extraction.extraction_util import cleanText, extractKeywords, splitSentences, computeConfidence, extractMeaning
 
 # Define your keyword categories and terms
 # Category: Terms []
@@ -70,16 +67,6 @@ KEYWORDS = {
                                        "exterior look", "color", "color contrast", "colour", "colour contrast",
                                        "identification markings"]  # covered
 }
-
-
-def split_sentences(text):
-    text = re.sub(r'\n+', '\n', text)
-    text = re.sub(r'\n([a-z])', r' \1', text)
-    text = re.sub(r'\n\s*(?:\d+\.|\(\w\)|•|-)\s+', '\n', text)
-    text = re.sub(r';', '. ', text)
-    doc = nlp(text)
-    return [sent for sent in doc.sents if sent.text.strip()]
-
 
 # TODO: Change to where files need to be stored
 FILEPATH = abspath(join(dirname(__file__), "..", "..", "test_documents"))
@@ -303,7 +290,6 @@ AUTHORITY_WORDS = {
 }
 
 
-# TODO: Add all other RE layers for the other categories and extractions.
 def extract_physical_measurements(sentence):
     text = sentence.text.lower()
     matches = MEASUREMENT_RE.findall(sentence.text)
@@ -407,142 +393,6 @@ BYLAW_WEIGHTS = {"bylaw": 0.4, "ordinance": 0.4, "municipal code": 0.4,
                  "chapter": 0.2, "section": 0.2}
 
 
-def bylaw_context_score(text):
-    score = 0.0
-    lower = text.lower()
-    for keyword, weight in BYLAW_WEIGHTS.items():
-        if keyword in lower:
-            score += weight
-    return min(score, 1.0)
-
-
-def guide_context_score(text):
-    score = 0.0
-    lower = text.lower()
-    for keyword, weight in GUIDE_WEIGHTS.items():
-        if keyword in lower:
-            score += weight
-    return min(score, 1.0)
-
-
-def checklist_context_score(text):
-    score = 0.0
-    lower = text.lower()
-    for keyword, weight in CHECKLIST_WEIGHTS.items():
-        if keyword in lower:
-            score += weight
-    return min(score, 1.0)
-
-
-def operational_context_score(text):
-    score = 0.0
-    lower = text.lower()
-    for keyword, weight in OPERATIONAL_WEIGHTS.items():
-        if keyword in lower:
-            score += weight
-    return min(score, 1.0)
-
-
-def authority_context_score(text):
-    score = 0.0
-    lower = text.lower()
-    for keyword, weight in AUTHORITY_WEIGHTS.items():
-        if keyword in lower:
-            score += weight
-    return min(score, 1.0)
-
-
-def license_context_score(text):
-    score = 0.0
-    lower = text.lower()
-    for keyword, weight in LICENSE_WEIGHTS.items():
-        if keyword in lower:
-            score += weight
-    return min(score, 1.0)
-
-
-def distance_context_score(text):
-    score = 0.0
-    lower = text.lower()
-    for keyword, weight in DISTANCE_WEIGHTS.items():
-        if keyword in lower:
-            score += weight
-    return min(score, 1.0)
-
-
-def modality(sentence):
-    modals = {"shall", "must", "may"}
-    for word in sentence:
-        if word.text.lower() in modals:
-            return 0.2
-    return 0.0
-
-
-def negation(sentence):
-    negations = {"except", "unless", "not applicable", "not required", "exempt", "exemption", "does not require"}
-    lower = sentence.text.lower()
-    for negation in negations:
-        if negation in lower:
-            return -0.3
-    return 0.0
-
-
-def guide_confidence(sentence):
-    score = 0.4
-    score += guide_context_score(sentence.text)
-    score += modality(sentence)
-    score += negation(sentence)
-    return round(max(0, min(score, 1.0)), 2)
-
-
-def bylaw_confidence(sentence):
-    score = 0.4
-    score += bylaw_context_score(sentence.text)
-    score += modality(sentence)
-    score += negation(sentence)
-    return round(max(0, min(score, 1.0)), 2)
-
-
-def checklist_confidence(sentence):
-    score = 0.4
-    score += checklist_context_score(sentence.text)
-    score += modality(sentence)
-    score += negation(sentence)
-    return round(max(0, min(score, 1.0)), 2)
-
-
-def operational_confidence(sentence):
-    score = 0.4
-    score += operational_context_score(sentence.text)
-    score += modality(sentence)
-    score += negation(sentence)
-    return round(max(0, min(score, 1.0)), 2)
-
-
-def authority_confidence(sentence):
-    score = 0.4
-    score += authority_context_score(sentence.text)
-    score += modality(sentence)
-    score += negation(sentence)
-    return round(max(0, min(score, 1.0)), 2)
-
-
-def license_confidence(sentence):
-    score = 0.4
-    score += license_context_score(sentence.text)
-    score += modality(sentence)
-    score += negation(sentence)
-    return round(max(0, min(score, 1.0)), 2)
-
-
-def distance_confidence(sentence):
-    score = 0.4
-    score += distance_context_score(sentence.text)
-    score += modality(sentence)
-    score += negation(sentence)
-    return round(max(0, min(score, 1.0)), 2)
-
-
 def checklist_criteria(sentence):
     if not CHECKLIST_RE.search(sentence.text):
         return None
@@ -555,7 +405,7 @@ def checklist_criteria(sentence):
     return {
         "criteria": "license_checklist",
         "documents": documents if documents else None,
-        "confidence": checklist_confidence(sentence),
+        "confidence": computeConfidence(sentence, CHECKLIST_WEIGHTS),
         "source": sentence.text
     }
 
@@ -569,7 +419,7 @@ def license_guide_criteria(sentence):
     return {
         "criteria": "license_guide",
         "steps_detected": steps if steps else None,
-        "confidence": guide_confidence(sentence),
+        "confidence": computeConfidence(sentence, GUIDE_WEIGHTS),
         "source": sentence.text
     }
 
@@ -580,7 +430,7 @@ def bylaw_criteria(sentence):
 
     return {
         "criteria": "bylaw_reference",
-        "confidence": bylaw_confidence(sentence),
+        "confidence": computeConfidence(sentence, BYLAW_WEIGHTS),
         "source": sentence.text
     }
 
@@ -590,12 +440,7 @@ def exterior_appearance_criteria(sentence):
         return None
     text = sentence.text.lower()
 
-    if "shall not" in text or "must not" in text:
-        meaning = "prohibited"
-    elif "shall" in text or "must" in text or "required" in text:
-        meaning = "required"
-    else:
-        meaning = "guideline"
+    meaning = extractMeaning(text)
 
     attributes = []
     for keyword in ["signage", "business name", "logo", "branding", "color", "colour", "contrast", "legible",
@@ -607,7 +452,7 @@ def exterior_appearance_criteria(sentence):
         "criteria": "exterior_appearance_guideline",
         "meaning": meaning,
         "attributes": attributes if attributes else None,
-        "confidence": operational_confidence(sentence),
+        "confidence": computeConfidence(sentence, OPERATIONAL_WEIGHTS),
         "source": sentence.text
     }
 
@@ -617,12 +462,7 @@ def physical_truck_criteria(sentence):
         return None
     text = sentence.text.lower()
 
-    if "shall not" in text or "must not" in text:
-        meaning = "prohibited"
-    elif "shall" in text or "must" in text or "required" in text:
-        meaning = "required"
-    else:
-        meaning = "mentioned"
+    meaning = extractMeaning(text)
 
     equipment = []
     for keyword in ["fire suppression", "sink", "refrigeration", "generator", "propane", "electrical", "vin",
@@ -637,7 +477,7 @@ def physical_truck_criteria(sentence):
         "meaning": meaning,
         "measurements": measurements,
         "equipment": equipment if equipment else None,
-        "confidence": operational_confidence(sentence),
+        "confidence": computeConfidence(sentence, OPERATIONAL_WEIGHTS),
         "source": sentence.text
     }
 
@@ -647,17 +487,12 @@ def traffic_criteria(sentence):
         return None
     text = sentence.text.lower()
 
-    if "shall not" in text or "must not" in text:
-        meaning = "prohibited"
-    elif "shall" in text or "must" in text or "required" in text:
-        meaning = "required"
-    else:
-        meaning = "unknown"
+    meaning = extractMeaning(text)
 
     return {
         "criteria": "traffic_bylaw",
         "meaning": meaning,
-        "confidence": operational_confidence(sentence),
+        "confidence": computeConfidence(sentence, OPERATIONAL_WEIGHTS),
         "source": sentence.text
     }
 
@@ -667,15 +502,12 @@ def private_property_criteria(sentence):
         return None
     text = sentence.text.lower()
 
-    if "required" in text or "must" in text or "shall" in text:
-        meaning = "permission_required"
-    else:
-        meaning = "mentioned"
+    meaning = extractMeaning(text)
 
     return {
         "criteria": "private_property_operation",
         "meaning": meaning,
-        "confidence": operational_confidence(sentence),
+        "confidence": computeConfidence(sentence, OPERATIONAL_WEIGHTS),
         "source": sentence.text
     }
 
@@ -686,7 +518,7 @@ def parking_location_criteria(sentence):
 
     return {
         "criteria": "parking_location",
-        "confidence": operational_confidence(sentence),
+        "confidence": computeConfidence(sentence, OPERATIONAL_WEIGHTS),
         "source": sentence.text
     }
 
@@ -699,7 +531,7 @@ def parking_fee_criteria(sentence):
     return {
         "criteria": "parking_fee",
         "fees": fees if fees else None,
-        "confidence": operational_confidence(sentence),
+        "confidence": computeConfidence(sentence, OPERATIONAL_WEIGHTS),
         "source": sentence.text
     }
 
@@ -709,19 +541,12 @@ def curbside_criteria(sentence):
         return None
     text = sentence.text.lower()
 
-    if "shall not" in text or "must not" in text or "prohibited" in text:
-        meaning = "prohibited"
-    elif "shall" in text or "must" in text or "required" in text:
-        meaning = "required"
-    elif "may" in text or "permitted" in text:
-        meaning = "permitted"
-    else:
-        meaning = "unknown"
+    meaning = extractMeaning(text)
 
     return {
         "criteria": "curbside_vending",
         "meaning": meaning,
-        "confidence": operational_confidence(sentence),
+        "confidence": computeConfidence(sentence, OPERATIONAL_WEIGHTS),
         "source": sentence.text
     }
 
@@ -732,16 +557,9 @@ def operational_criteria(sentence):
         return None
     text = sentence.text.lower()
 
-    if "shall not" in text or "must not" in text or "prohibited" in text:
-        meaning = "prohibited"
-    elif "shall" in text or "must" in text or "required" in text:
-        meaning = "required"
-    elif "may" in text or "permitted" in text:
-        meaning = "optional"
-    else:
-        meaning = "unknown"
+    meaning = extractMeaning(text)
 
-    confidence = operational_confidence(sentence)
+    confidence = computeConfidence(sentence, OPERATIONAL_WEIGHTS)
 
     times = TIME_RE.findall(sentence.text)
     fines = CURRENCY_RE.findall(sentence.text)
@@ -792,7 +610,7 @@ def authority_criteria(sentence):
     else:
         meaning = "unknown"
 
-    confidence = authority_confidence(sentence)
+    confidence = computeConfidence(sentence, AUTHORITY_WEIGHTS)
 
     return {
         "criteria": "authority_contact",
@@ -809,14 +627,7 @@ def license_criteria(sentence):
         return None
     text = sentence.text.lower()
 
-    if "shall not" in text or "must not" in text or "not required" in text:
-        meaning = "not_required"
-    elif "shall" in text or "must" in text or "required" in text:
-        meaning = "required"
-    elif "may" in text:
-        meaning = "optional"
-    else:
-        meaning = "unknown"
+    meaning = extractMeaning(text)
 
     subject = None
     for token in sentence:
@@ -830,7 +641,7 @@ def license_criteria(sentence):
             action = token.lemma_
             break
 
-    confidence = license_confidence(sentence)
+    confidence = computeConfidence(sentence, LICENSE_WEIGHTS)
 
     return {
         "criteria": "license_requirement",
@@ -849,12 +660,7 @@ def distance_criteria(sentence):
         return None
     text = sentence.text.lower()
 
-    if "shall not" in text or "must not" in text:
-        meaning = "prohibited"
-    elif "shall" in text or "must" in text:
-        meaning = "required"
-    else:
-        meaning = "unknown"
+    meaning = extractMeaning(text)
 
     relations = None
     for key in ["within", "from", "of", "no closer than", "at least"]:
@@ -874,7 +680,7 @@ def distance_criteria(sentence):
             action = token.lemma_
             break
 
-    confidence = distance_confidence(sentence)
+    confidence = computeConfidence(sentence, DISTANCE_WEIGHTS)
 
     return {
         "criteria": "distance_restriction",
@@ -887,253 +693,131 @@ def distance_criteria(sentence):
         "source": sentence.text
     }
 
+RULE_DISPATCH = {
+    "checklist": ("checklist_criteria", checklist_criteria),
+    "guide to license": ("guide_to_license_criteria", license_guide_criteria),
+    "bylaws": ("bylaw_criteria", bylaw_criteria),
+    "physical requirements for trucks": ("physical_requirements_criteria", physical_truck_criteria),
+    "exterior appearance guidelines": ("appearance_criteria", exterior_appearance_criteria),
+    "private property operation": ("private_criteria", private_property_criteria),
+    "additional private restrictions": ("private_criteria", private_property_criteria),
+    "traffic bylaws": ("traffic_criteria", traffic_criteria),
+    "parking locations": ("parking_locations_criteria", parking_location_criteria),
+    "parking fees": ("parking_fees_criteria", parking_fee_criteria),
+    "curbside vending": ("curbside_criteria", curbside_criteria),
 
-def extractTXT(filename):
-    txtPath = join(FILEPATH, filename)
-    # Read plain text
-    with open(txtPath, "r", encoding="utf-8") as file:
-        txtRaw = file.read()
+    "penalties": ("operational_criteria", operational_criteria),
+    "noise bylaws": ("operational_criteria", operational_criteria),
+    "operation hours": ("operational_criteria", operational_criteria),
+    "insurance requirements": ("operational_criteria", operational_criteria),
+    "branded consumer goods": ("operational_criteria", operational_criteria),
 
-    if not txtRaw:
-        print(
-            "[Warning] No text could be extracted from the TXT. It may be scanned (use OCR)."
-        )
-        return
+    "webpage": ("authority_criteria", authority_criteria),
+    "direct link to authority": ("authority_criteria", authority_criteria),
+    "name of local authority": ("authority_criteria", authority_criteria),
 
-    txtCleaned = cleanText(txtRaw)
-    sentences = split_sentences(txtCleaned)
-    txtResults = {}
+    "provincial business license": ("license_criteria", license_criteria),
+    "provincial food business license": ("license_criteria", license_criteria),
+    "municipal business license": ("license_criteria", license_criteria),
+    "municipal food business license": ("license_criteria", license_criteria),
+    "retail license for CPG": ("license_criteria", license_criteria),
 
-    for category, terms in KEYWORDS.items():
-        matches = []
-        for sentence in sentences:
-            hits = extractKeywords(sentence.text, terms)
-            if hits:
-                re_data = {}
-                if category in ["checklist"]:
-                    checklist_rule = checklist_criteria(sentence)
-                    if checklist_rule:
-                        re_data["checklist_criteria"] = checklist_rule
-                if category in ["guide to license"]:
-                    guide_rule = license_guide_criteria(sentence)
-                    if guide_rule:
-                        re_data["guide_to_license_criteria"] = guide_rule
-                if category in ["bylaws"]:
-                    bylaw_rule = bylaw_criteria(sentence)
-                    if bylaw_rule:
-                        re_data["bylaw_criteria"] = bylaw_rule
-                if category in ["physical requirements for trucks"]:
-                    physical_rule = physical_truck_criteria(sentence)
-                    if physical_rule:
-                        re_data["physical_requirements_criteria"] = physical_rule
-                if category in ["exterior appearance guidelines"]:
-                    appearance_rule = exterior_appearance_criteria(sentence)
-                    if appearance_rule:
-                        re_data["appearance_criteria"] = appearance_rule
-                if category in ["private property operation", "additional private restrictions"]:
-                    private_rule = private_property_criteria(sentence)
-                    if private_rule:
-                        re_data["private_criteria"] = private_rule
-                if category in ["traffic bylaws"]:
-                    traffic_rule = traffic_criteria(sentence)
-                    if traffic_rule:
-                        re_data["traffic_criteria"] = traffic_rule
-                if category in ["parking locations"]:
-                    parking_locations_rule = parking_location_criteria(sentence)
-                    if parking_locations_rule:
-                        re_data["parking_locations_criteria"] = parking_locations_rule
-                if category in ["parking fees"]:
-                    parking_fee_rule = parking_fee_criteria(sentence)
-                    if parking_fee_rule:
-                        re_data["parking_fees_criteria"] = parking_fee_rule
-                if category in ["curbside vending"]:
-                    curbside_rule = curbside_criteria(sentence)
-                    if curbside_rule:
-                        re_data["curbside_criteria"] = curbside_rule
-                if category in ["penalties", "noise bylaws", "operation hours", "insurance requirements",
-                                "branded consumer goods"]:
-                    operational_rule = operational_criteria(sentence)
-                    if operational_rule:
-                        re_data["operational_criteria"] = operational_rule
-                if category in ["webpage", "direct link to authority", "name of local authority"]:
-                    authority_rule = authority_criteria(sentence)
-                    if authority_rule:
-                        re_data["authority_criteria"] = authority_rule
-                if category in ["provincial business license", "provincial food business license",
-                                "municipal business license", "municipal food business license",
-                                "retail license for CPG"]:
-                    license_rule = license_criteria(sentence)
-                    if license_rule:
-                        re_data["license_criteria"] = license_rule
-                if category in ["min distance to restaurant", "min distance to food truck", "proximity regulations",
-                                "non-food service proximity restrictions",
-                                "min distance proximity from other business"]:
-                    distance_rule = distance_criteria(sentence)
-                    if distance_rule:
-                        re_data["distance_criteria"] = distance_rule
-                entry = {"sentence": sentence.text, "hits": hits}
-                if re_data:
-                    entry["regex"] = re_data
-                matches.append(entry)
-        if matches:
-            txtResults[category] = matches
-
-    txtJSON = {
-        "file": filename,
-        "keyword_contexts": txtResults,
-    }
-
-    upsertExtraction(txtJSON)
-    print("Extracted txt file")
+    "min distance to restaurant": ("distance_criteria", distance_criteria),
+    "min distance to food truck": ("distance_criteria", distance_criteria),
+    "proximity regulations": ("distance_criteria", distance_criteria),
+    "non-food service proximity restrictions": ("distance_criteria", distance_criteria),
+    "min distance proximity from other business": ("distance_criteria", distance_criteria),
+}
 
 
-def extractPDF(filename):
-    pdfPath = join(FILEPATH, filename)
-
-    # Read PDF file
-    with open(pdfPath, "rb") as pdf_file:
-        reader = PdfReader(pdf_file)
-        pdfRaw = ""
-        for page in reader.pages:
-            pdfRaw += page.extract_text() or ""
-
-    if not pdfRaw.strip():
-        print(
-            "[Warning] No text could be extracted from the PDF. It may be scanned (use OCR)."
-        )
-        return
-
-    # Clean and analyze
-    pdfCleaned = cleanText(pdfRaw)
-    sentences = split_sentences(pdfCleaned)
-    pdfResults = {}
-
-    for category, terms in KEYWORDS.items():
-        matches = []
-        for sentence in sentences:
-            hits = extractKeywords(sentence.text, terms)
-            if hits:
-                re_data = {}
-                if category in ["checklist"]:
-                    checklist_rule = checklist_criteria(sentence)
-                    if checklist_rule:
-                        re_data["checklist_criteria"] = checklist_rule
-                if category in ["guide to license"]:
-                    guide_rule = license_guide_criteria(sentence)
-                    if guide_rule:
-                        re_data["guide_to_license_criteria"] = guide_rule
-                if category in ["bylaws"]:
-                    bylaw_rule = bylaw_criteria(sentence)
-                    if bylaw_rule:
-                        re_data["bylaw_criteria"] = bylaw_rule
-                if category in ["physical requirements for trucks"]:
-                    physical_rule = physical_truck_criteria(sentence)
-                    if physical_rule:
-                        re_data["physical_requirements_criteria"] = physical_rule
-                if category in ["exterior appearance guidelines"]:
-                    appearance_rule = exterior_appearance_criteria(sentence)
-                    if appearance_rule:
-                        re_data["appearance_criteria"] = appearance_rule
-                if category in ["private property operation", "additional private restrictions"]:
-                    private_rule = private_property_criteria(sentence)
-                    if private_rule:
-                        re_data["private_criteria"] = private_rule
-                if category in ["traffic bylaws"]:
-                    traffic_rule = traffic_criteria(sentence)
-                    if traffic_rule:
-                        re_data["traffic_criteria"] = traffic_rule
-                if category in ["parking locations"]:
-                    parking_locations_rule = parking_location_criteria(sentence)
-                    if parking_locations_rule:
-                        re_data["parking_locations_criteria"] = parking_locations_rule
-                if category in ["parking fees"]:
-                    parking_fee_rule = parking_fee_criteria(sentence)
-                    if parking_fee_rule:
-                        re_data["parking_fees_criteria"] = parking_fee_rule
-                if category in ["curbside vending"]:
-                    curbside_rule = curbside_criteria(sentence)
-                    if curbside_rule:
-                        re_data["curbside_criteria"] = curbside_rule
-                if category in ["penalties", "noise bylaws", "operation hours", "insurance requirements",
-                                "branded consumer goods"]:
-                    operational_rule = operational_criteria(sentence)
-                    if operational_rule:
-                        re_data["operational_criteria"] = operational_rule
-                if category in ["webpage", "direct link to authority", "name of local authority"]:
-                    authority_rule = authority_criteria(sentence)
-                    if authority_rule:
-                        re_data["authority_criteria"] = authority_rule
-                if category in ["provincial business license", "provincial food business license",
-                                "municipal business license", "municipal food business license",
-                                "retail license for CPG"]:
-                    license_rule = license_criteria(sentence)
-                    if license_rule:
-                        re_data["license_criteria"] = license_rule
-                if category in ["min distance to restaurant", "min distance to food truck", "proximity regulations",
-                                "non-food service proximity restrictions",
-                                "min distance proximity from other business"]:
-                    distance_rule = distance_criteria(sentence)
-                    if distance_rule:
-                        re_data["distance_criteria"] = distance_rule
-                entry = {"sentence": sentence.text, "hits": hits}
-                if re_data:
-                    entry["regex"] = re_data
-                matches.append(entry)
-        if matches:
-            pdfResults[category] = matches
-
-    pdfJSON = {
-        "file": filename,
-        "keyword_contexts": pdfResults,
-    }
-
-    upsertExtraction(pdfJSON)
-    print("Extracted pdf file")
-
-def extractURL(url: str):
-    # Fetch the page
-    response = requests.get(url, timeout=10, headers={
-        "User-Agent": "Mozilla/5.0"  # avoids being blocked by some sites
-    })
-    response.raise_for_status()
-
-    # Parse and strip HTML tags
-    soup = BeautifulSoup(response.text, "html.parser")
-
-    # Remove nav, footer, scripts — you only want body content
-    for tag in soup(["script", "style", "nav", "footer", "header"]):
-        tag.decompose()
-
-    rawText = soup.get_text(separator="\n")
-
-    if not rawText.strip():
-        print(f"[Warning] No text extracted from {url}")
-        return
-
-    cleaned = cleanText(rawText)
-    sentences = split_sentences(cleaned)
+def extractDocument(text, filename, sourceType):
+    cleaned = cleanText(text)
+    sentences = splitSentences(cleaned)
     results = {}
 
     for category, terms in KEYWORDS.items():
         matches = []
+
         for sentence in sentences:
             hits = extractKeywords(sentence.text, terms)
-            if hits:
-                re_data = {}
-                # --- paste your full regex block here (same as in extractPDF) ---
-                entry = {"sentence": sentence.text, "hits": hits}
-                if re_data:
-                    entry["regex"] = re_data
-                matches.append(entry)
+            if not hits:
+                continue
+
+            re_data = {}
+
+            if category in RULE_DISPATCH:
+                key, func = RULE_DISPATCH[category]
+                result = func(sentence)
+                if result:
+                    re_data[key] = result
+
+            entry = {
+                "sentence": sentence.text,
+                "hits": hits
+            }
+
+            if re_data:
+                entry["regex"] = re_data
+
+            matches.append(entry)
+
         if matches:
             results[category] = matches
-    urlJSON = {
-        "file": url,
-        "keyword_contexts": results,
-    }
 
-    upsertExtraction(urlJSON)
-    print(f"Extracted URL: {url}")
+    upsertExtraction({
+        "file": filename,
+        "source": sourceType,
+        "keyword_contexts": results
+    })
+
+    print(f"Extracted {sourceType}: {filename}")
+    
+
+def extractTXT(filename):
+    path = join(FILEPATH, filename)
+
+    with open(path, "r", encoding="utf-8") as f:
+        text = f.read()
+
+    if not text:
+        print("[Warning] empty txt")
+        return
+
+    extractDocument(text, filename, "txt")
+
+
+def extractPDF(filename):
+    path = join(FILEPATH, filename)
+
+    with open(path, "rb") as f:
+        reader = PdfReader(f)
+        text = "".join(page.extract_text() or "" for page in reader.pages)
+
+    if not text.strip():
+        print("[Warning] empty pdf")
+        return
+
+    extractDocument(text, filename, "pdf")
+
+
+def extractURL(url: str):
+    response = requests.get(url, timeout=10, headers={
+        "User-Agent": "Mozilla/5.0"
+    })
+    response.raise_for_status()
+
+    soup = BeautifulSoup(response.text, "html.parser")
+    for tag in soup(["script", "style", "nav", "footer", "header"]):
+        tag.decompose()
+
+    text = soup.get_text(separator="\n")
+
+    if not text.strip():
+        print(f"[Warning] empty url: {url}")
+        return
+
+    extractDocument(text, url, "url")
+
 
 def extract():
     print(dirname(realpath(__file__)))
