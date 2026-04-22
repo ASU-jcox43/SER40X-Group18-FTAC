@@ -17,7 +17,7 @@ def update_config(municipality: str, sconfig: dict):
         ]
 
     if len(sconfig['update_at']) == 1:
-        sconfig['update_at'] += [((sconfig['update_at'][0] + 183) % 366) + 1]
+        sconfig['update_at'] += [((sconfig['update_at'][0] + 183) % 365) + 1]
 
     SCRAPY_CONFIG_COLLECTION.update_one(
         filter={"_id": municipality},
