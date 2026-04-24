@@ -9,7 +9,11 @@ def update_config(municipality: str, sconfig: dict):
 
     if not update_at:
         update_days = get_update_days()
-        sconfig['update_at'] = [min(range(len(update_days))[1:], key=lambda i: update_days[i])]
+
+        if len(update_days) == 0:
+            sconfig['update_at'] = [1,184]
+        else:
+            sconfig['update_at'] = [min(range(len(update_days))[1:], key=lambda i: update_days[i])]
     else:
         sconfig['update_at'] = [
             datetime(datetime.today().year, d['month'], d['day']).timetuple().tm_yday
@@ -36,14 +40,6 @@ def get_config_list_with_id(num_results:int = 1) -> list[dict]:
     return SCRAPY_CONFIG_COLLECTION.find({}).to_list()
 
 def get_daily_document_update() -> list[str]:
-    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-    return SCRAPY_CONFIG_COLLECTION.find(
-        {"update_at": {"$elemMatch": {
-            "$gte": today_start,
-            "$lt": today_start + timedelta(days=1)
-            }}}
-    ).distinct("_id")
-    
     return list(SCRAPY_CONFIG_COLLECTION.find(
         {"update_at": {"$elemMatch": {"$eq": datetime.now().timetuple().tm_yday}}}
     ))

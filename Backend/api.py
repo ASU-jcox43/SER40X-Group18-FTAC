@@ -40,7 +40,10 @@ def run_document_scraper(*municipalities):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     scheduler.start()
-    scheduler.add_job(run_document_scraper, trigger=CronTrigger(hour=7, minute=0), args=get_daily_document_update(), misfire_grace_time=30, coalesce=True)
+    try:
+        scheduler.add_job(run_document_scraper, trigger=CronTrigger(hour=7, minute=0), args=get_daily_document_update(), misfire_grace_time=30, coalesce=True)
+    except RuntimeError:
+        pass
     yield
 
 api_app = FastAPI(lifespan=lifespan)
@@ -118,7 +121,7 @@ async def edit_config(req: ScrapyConfig, municipality: str):
     try:
         update_config(municipality,req.model_dump(exclude_unset=True))
     except ValueError:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="month or day out of range")
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="month or day out of range").with_traceback()
     return f"updated {municipality}"
 
 @api_app.get("/scrapy_config/output")
