@@ -1,3 +1,22 @@
+"""
+Text Extraction Module
+
+This module processes documents (TXT, PDF, and URLs) to extract structured
+information based on predefined keyword categories and regex-based criteria.
+
+Main Responsibilities:
+- Load and clean document text
+- Split text into sentences
+- Match sentences against keyword categories
+- Apply rule-based extraction (regex + NLP helpers)
+- Store extracted results into MongoDB
+
+Dependencies:
+- BeautifulSoup (HTML parsing)
+- PyPDF2 (PDF parsing)
+- Custom utilities (cleanText, extractKeywords, etc.)
+"""
+
 from os.path import join, abspath, dirname, realpath
 from os import listdir
 import re
@@ -7,79 +26,100 @@ from PyPDF2 import PdfReader
 from Backend.Logic.mongo_db.extraction_collection import upsertExtraction
 from Backend.Logic.extraction.extraction_util import cleanText, extractKeywords, splitSentences, computeConfidence, extractMeaning
 
-# Define your keyword categories and terms
-# Category: Terms []
+
+# KEYWORD DEFINITIONS
+
+# Dictionary mapping category names to keyword lists.
+# These keywords are used to identify relevant sentences.
 KEYWORDS = {
+    # Core regulatory categories
     "fire safety core": ["fire code", "propane", "suppression", "sprinkler", "extinguisher", "flammable", "hazard"],
     "food safety core": ["food safety", "public health", "sanitation", "temperature", "haccp", "health officer"],
     "zoning core": ["zoning", "zone", "land use", "site plan", "occupancy", "setback", "district"],
     "legal structure": ["section", "enforcement", "compliance", "ammend", "repeal", "supersede"],
-    "webpage": [".gov", ".ca", "municipality", "city of", "regional district"],  # covered
-    "checklist": ["checklist", "requirements list", "required documents"],  # covered
-    "guide to license": ["guide", "how to apply", "licensing process", "application process"],  # covered
-    "bylaws": ["bylaw", "regulation", "municipal code", "ordinance"],  # covered
-    "penalties": ["fine", "fee", "penalty", "violation", "infraction"],  # covered
+
+    # Web and document structure
+    "webpage": [".gov", ".ca", "municipality", "city of", "regional district"],
+    "checklist": ["checklist", "requirements list", "required documents"],
+    "guide to license": ["guide", "how to apply", "licensing process", "application process"],
+    "bylaws": ["bylaw", "regulation", "municipal code", "ordinance"],
+
+    # Financial / penalties
+    "penalties": ["fine", "fee", "penalty", "violation", "infraction"],
+
+    # Licensing categories
     "provincial business license": ["provincial business license", "provincial permit", "provincial approval",
-                                    # covered
                                     "provincial business name certificate"],
-    "provincial food business license": ["provincial food business license", "food establishment permit",  # covered
+    "provincial food business license": ["provincial food business license", "food establishment permit",
                                          "provincial food vendor license"],
     "municipal business license": ["municipal business license", "local business permit", "city business license"],
-    # covered
-    "municipal food business license": ["municipal food business license", "mobile food vendor license",  # covered
+    "municipal food business license": ["municipal food business license", "mobile food vendor license",
                                         "street food vendor license"],
-    "retail license for CPG": ["consumer packaged good", "CPG", "retail goods", "branded retail products"],  # covered
-    "curbside vending": ["curbside vending", "street vending", "mobile vending", "sidewalk vending"],  # covered
-    "parking fees": ["parking fee", "metered parking", "vending zone", "designated vending area"],  # covered
-    "noise bylaws": ["noise", "noise bylaw", "sound regulation", "amplified sound"],  # covered
+
+    # Operational constraints
+    "retail license for CPG": ["consumer packaged good", "CPG", "retail goods", "branded retail products"],
+    "curbside vending": ["curbside vending", "street vending", "mobile vending", "sidewalk vending"],
+    "parking fees": ["parking fee", "metered parking", "vending zone", "designated vending area"],
+    "noise bylaws": ["noise", "noise bylaw", "sound regulation", "amplified sound"],
     "traffic bylaws": ["traffic bylaw", "traffic regulation", "vehicle restriction", "road use", "traffic act"],
-    # covered
     "operation hours": ["operating hours", "business hours", "hours of operation", "time limit", "maximum duration",
-                        "hours at any one time"],  # covered
-    "branded consumer goods": ["branding", "branded products", "product labeling", "consumer goods"],  # covered
+                        "hours at any one time"],
+
+    # Physical + business rules
+    "branded consumer goods": ["branding", "branded products", "product labeling", "consumer goods"],
     "private property operation": ["private property", "private lot", "owner permission", "property consent"],
-    # covered
     "proximity regulations": ["proximity regulation", "distance restriction", "buffer zone", "proximity limit"],
-    # covered
-    "min distance to restaurant": ["distance to restaurant", "separation from restaurant",  # covered
+    "min distance to restaurant": ["distance to restaurant", "separation from restaurant",
                                    "nearby restaurant restriction", "from an open and operating restaurant"],
     "min distance to food truck": ["distance to other food trucks", "food truck spacing", "vendor proximity"],
-    # covered
-    "non-food service proximity restrictions": ["proximity restriction", "non-food vendor proximity",  # covered
+    "non-food service proximity restrictions": ["proximity restriction", "non-food vendor proximity",
                                                 "distance from other vendors"],
     "min distance proximity from other business": ["proximity to other business", "distance between vendors"],
-    # covered
     "num food trucks allowed in geographic area": ["number of food trucks allowed", "maximum food trucks per area",
-                                                   "vendor density limit", "food trucks per block"],  # covered
+                                                   "vendor density limit", "food trucks per block"],
     "parking locations": ["designated parking", "allowed parking", "approved vending location", "vending area",
-                          "public road vending"],  # covered
+                          "public road vending"],
+
+    # Authority and compliance
     "additional private restrictions": ["private restrictions", "additional property rules", "landowner conditions"],
-    # covered
     "name of local authority": ["local authority", "licensing department", "municipal licensing office", "city clerk",
-                                "regulatory agency"],  # covered
-    "direct link to authority": ["reach out", "contact", "reach", "office", "call", "email", "phone"],  # covered
+                                "regulatory agency"],
+    "direct link to authority": ["reach out", "contact", "reach", "office", "call", "email", "phone"],
+
+    # Requirements
     "insurance requirements": ["insurance", "liability coverage", "certificate of insurance", "proof of insurance"],
-    # covered
     "physical requirements for trucks": ["vehicle requirements", "truck must have", "equipment standards",
                                          "vehicle condition", "inspection requirements", "plate number",
-                                         "license number", "business name", "client's name"],  # covered
+                                         "license number", "business name", "client's name"],
     "exterior appearance guidelines": ["paint", "painted", "appearance", "vehicle signage", "branding on truck",
                                        "exterior look", "color", "color contrast", "colour", "colour contrast",
-                                       "identification markings"]  # covered
+                                       "identification markings"]
 }
 
-# TODO: Change to where files need to be stored
+
+# FILE CONFIGURATION
+
+# Base directory for test documents
 FILEPATH = abspath(join(dirname(__file__), "..", "..", "test_documents"))
 
+
+# REGEX PATTERNS
+
+# Regex patterns used to detect structured information
 DISTANCE_RE = re.compile(
     r'(\d+(?:\.\d+)?)\s*(?:linear|horizontal|vertical|approx(?:\.|imately)?|about)?\s*'
     r'(m|meter|meters|metre|metres|km|kilometer|kilometers|kilometre|kilometres)\b',
     re.IGNORECASE)
+
 LICENSE_RE = re.compile(
     r'(provincial|municipal|city|local)?\s*'
     r'(business|food)?\s*'
     r'(license|licence|permit|approval|certificate)',
     re.IGNORECASE)
+
+
+# EXTRACTION HELPER FUNCTIONS
+
 WEBPAGE_RE = re.compile(
     r'https?://[^\s)"]+|'
     r'\b[\w\-]+\.(?:gov|gov\.ca|ca)\b|'
@@ -291,13 +331,25 @@ AUTHORITY_WORDS = {
 
 
 def extract_physical_measurements(sentence):
+    """
+    Extracts physical measurement values (e.g., height, width) from a sentence.
+
+    Args:
+        sentence: NLP sentence object
+
+    Returns:
+        List of measurement dictionaries or None
+    """
     text = sentence.text.lower()
     matches = MEASUREMENT_RE.findall(sentence.text)
     if not matches:
         return None
+
     found = []
     for value, unit in matches:
         attribute = None
+
+        # Determine measurement type (height, width, etc.)
         for attr, keywords in MEASUREMENT_WORDS.items():
             for keyword in keywords:
                 if keyword in text:
@@ -305,6 +357,7 @@ def extract_physical_measurements(sentence):
                     break
             if attribute:
                 break
+
         found.append({
             "value": float(value),
             "unit": unit.lower(),
@@ -315,59 +368,95 @@ def extract_physical_measurements(sentence):
 
 
 def extract_operational(sentence):
+    """
+    Identifies operational-related keywords (e.g., hours, noise, insurance).
+
+    Args:
+        sentence (str): sentence text
+
+    Returns:
+        List of operational categories or None
+    """
     text = sentence.lower()
     found = []
+
     for operational_type, phrases in OPERATIONAL_WORDS.items():
         for phrase in phrases:
             if phrase in text:
                 found.append(operational_type)
                 break
-    if found:
-        return list(set(found))
-    else:
-        return None
+
+    return list(set(found)) if found else None
 
 
 def extract_authority(sentence):
+    """
+    Extracts authority-related references (e.g., department, contact info).
+
+    Args:
+        sentence (str)
+
+    Returns:
+        List of authority types or None
+    """
     text = sentence.lower()
     found = []
+
     for authority_type, phrases in AUTHORITY_WORDS.items():
         for phrase in phrases:
             if phrase in text:
                 found.append(authority_type)
                 break
-    if found:
-        return list(set(found))
-    else:
-        return None
+
+    return list(set(found)) if found else None
 
 
 def extract_license(sentence):
+    """
+    Detects license-related phrases and categorizes them.
+
+    Args:
+        sentence (str)
+
+    Returns:
+        List of license types or None
+    """
     text = sentence.lower()
     found = []
+
     for license_type, phrases in LICENSE_WORDS.items():
         for phrase in phrases:
             if phrase in text:
                 found.append(license_type)
                 break
+
     if not found and LICENSE_RE.search(text):
         found.append("other_license")
-    if found:
-        return list(set(found))
-    else:
-        return None
+
+    return list(set(found)) if found else None
 
 
 def extract_distance(sentence):
+    """
+    Extracts distance values from text.
+
+    Args:
+        sentence (str)
+
+    Returns:
+        List of distance dictionaries or None
+    """
     matches = DISTANCE_RE.findall(sentence)
     if not matches:
         return None
-    values = []
-    for value, unit in matches:
-        values.append({"value": float(value), "unit": unit.lower()})
-    return values
+
+    return [{"value": float(value), "unit": unit.lower()} for value, unit in matches]
 
 
+# CRITERIA FUNCTIONS
+
+# Each function evaluates a sentence for a specific rule type
+# and returns structured extraction results if matched.
 DISTANCE_WEIGHTS = {"shall": 0.2, "must": 0.2, "shall not": 0.3,
                     "must not": 0.3, "within": 0.2, "no closer than": 0.3,
                     "at least": 0.2, "minimum": 0.2, "distance": 0.2,
@@ -394,6 +483,7 @@ BYLAW_WEIGHTS = {"bylaw": 0.4, "ordinance": 0.4, "municipal code": 0.4,
 
 
 def checklist_criteria(sentence):
+    """Extracts checklist-style requirements from a sentence."""
     if not CHECKLIST_RE.search(sentence.text):
         return None
 
@@ -410,6 +500,12 @@ def checklist_criteria(sentence):
     }
 
 
+# RULE DISPATCH
+
+"""
+Maps keyword categories to their corresponding extraction functions.
+This allows dynamic routing of sentence processing.
+"""
 def license_guide_criteria(sentence):
     if not LICENSE_GUIDE_RE.search(sentence.text):
         return None
@@ -693,6 +789,7 @@ def distance_criteria(sentence):
         "source": sentence.text
     }
 
+
 RULE_DISPATCH = {
     "checklist": ("checklist_criteria", checklist_criteria),
     "guide to license": ("guide_to_license_criteria", license_guide_criteria),
@@ -730,7 +827,24 @@ RULE_DISPATCH = {
 }
 
 
+# MAIN DOCUMENT PROCESSING
+
 def extractDocument(text, filename, sourceType):
+    """
+    Core extraction pipeline.
+
+    Steps:
+    1. Clean text
+    2. Split into sentences
+    3. Match keywords per category
+    4. Apply rule-based extraction
+    5. Store results in MongoDB
+
+    Args:
+        text (str): document content
+        filename (str): source identifier
+        sourceType (str): 'txt', 'pdf', or 'url'
+    """
     cleaned = cleanText(text)
     sentences = splitSentences(cleaned)
     results = {}
@@ -745,6 +859,7 @@ def extractDocument(text, filename, sourceType):
 
             re_data = {}
 
+            # Apply rule-based extraction if category is mapped
             if category in RULE_DISPATCH:
                 key, func = RULE_DISPATCH[category]
                 result = func(sentence)
@@ -764,6 +879,7 @@ def extractDocument(text, filename, sourceType):
         if matches:
             results[category] = matches
 
+    # Save results to MongoDB
     upsertExtraction({
         "file": filename,
         "source": sourceType,
@@ -771,9 +887,12 @@ def extractDocument(text, filename, sourceType):
     })
 
     print(f"Extracted {sourceType}: {filename}")
-    
+
+
+# FILE HANDLERS
 
 def extractTXT(filename):
+    """Processes a TXT file."""
     path = join(FILEPATH, filename)
 
     with open(path, "r", encoding="utf-8") as f:
@@ -787,6 +906,7 @@ def extractTXT(filename):
 
 
 def extractPDF(filename):
+    """Processes a PDF file."""
     path = join(FILEPATH, filename)
 
     with open(path, "rb") as f:
@@ -801,12 +921,20 @@ def extractPDF(filename):
 
 
 def extractURL(url: str):
+    """
+    Fetches and processes text from a URL.
+
+    - Removes scripts, styles, and layout elements
+    - Extracts visible text only
+    """
     response = requests.get(url, timeout=10, headers={
         "User-Agent": "Mozilla/5.0"
     })
     response.raise_for_status()
 
     soup = BeautifulSoup(response.text, "html.parser")
+
+    # Remove non-content elements
     for tag in soup(["script", "style", "nav", "footer", "header"]):
         tag.decompose()
 
@@ -819,9 +947,16 @@ def extractURL(url: str):
     extractDocument(text, url, "url")
 
 
+# ENTRY POINT
+
 def extract():
+    """
+    Iterates through all files in FILEPATH and processes them.
+    Supports TXT and PDF files.
+    """
     print(dirname(realpath(__file__)))
     print(FILEPATH)
+
     for file_name in listdir(FILEPATH):
         if file_name.lower().endswith(".txt"):
             extractTXT(file_name)
