@@ -32,7 +32,7 @@ def get_config_list(num_results:int = 1) -> list[dict]:
 def get_config(municipality: str) -> dict:
     return dict(SCRAPY_CONFIG_COLLECTION.find_one(filter={"_id": municipality}))
 
-def get_config_list_with_id(num_results:int = 1) -> list[dict]:
+def get_config_list_with_id() -> list[dict]:
     return SCRAPY_CONFIG_COLLECTION.find({}).to_list()
 
 def get_daily_document_update() -> list[str]:

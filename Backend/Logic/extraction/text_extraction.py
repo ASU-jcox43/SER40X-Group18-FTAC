@@ -3,6 +3,7 @@ from os import listdir
 from PyPDF2 import PdfReader
 from Backend.Logic.mongo_db.extraction_collection import upsertExtraction
 from Backend.Logic.extraction.extraction_util import cleanText, extractKeywords
+from Backend.Logic.mongo_db.scrapy_config import get_config_list_with_id
 import spacy
 import re
 import requests
@@ -1143,6 +1144,14 @@ def extract():
             extractTXT(file_name)
         elif file_name.lower().endswith(".pdf"):
             extractPDF(file_name)
+            
+    # Step 1 — scrape and extract all URLs from config
+    configList = get_config_list_with_id()
+    for config in configList:
+        start_urls = config.get("start_urls", [])
+        url = start_urls[0] if start_urls else None
+        if url:
+            extractURL(url)
 
 
 if __name__ == "__main__":
