@@ -1,9 +1,26 @@
+"""
+Extraction Collection
+
+This module insert new documents with keywords extracted from given documents
+and URLs
+
+Main Responsibilities:
+- Inserts extraction documents
+- Get extraction document based on filename
+- Fethces all extraction documents
+"""
+
 from .connection import DB
 
 EXTRACTION_COLLECTION = DB["extraction"]
 
-# Method that inserts or updates an already existing extractions
 def upsertExtraction(file: dict):
+    """
+    Inserts extraction file into the extraction collection
+
+    Args:
+        file (dict): Extraction document with keywords
+    """
     fileName = file["file"]
     file["_id"] = fileName
     
@@ -13,10 +30,23 @@ def upsertExtraction(file: dict):
         upsert=True
     )
     
-# Method to return profile based on city
 def getExtraction(filename):
+    """
+    Gets a document from extraction collection based on filename
+
+    Args:
+        filename (String): Keyword document for filename
+
+    Returns:
+        JSON: Document with filename from collection
+    """
     return EXTRACTION_COLLECTION.find_one({"_id": filename})
 
-# Method to return json list of all documents in extraction collection
 def getAllExtractions():
-    return list(EXTRACTION_COLLECTION.find({}, {"_id": 0})) # get all documents in collection and exlude _id, cast as json
+    """
+    Returns all the documents from extraction collection in JSON format and exludes _id
+
+    Returns:
+        JSON: List of documents from extraction collection
+    """
+    return list(EXTRACTION_COLLECTION.find({}, {"_id": 0}))

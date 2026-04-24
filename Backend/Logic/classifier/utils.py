@@ -135,7 +135,6 @@ def collectData():
                     data["insurance_amount"] = value
                 data["requirements"].append("insurance_required")
 
-            # TODO: Only handles numbers that are not spelled out
             hours = _extract_number(lower, r'(\d+)\s+hours?')
             if hours:
                 data["max_operating_hours"] = hours
