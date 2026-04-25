@@ -29,13 +29,15 @@ jobstores = {'default': MongoDBJobStore(client=CLIENT, database='CapstoneDB', co
 scheduler = BackgroundScheduler(jobstores=jobstores)
 
 def run_document_scraper(*municipalities):
-    os.chdir('Backend/Logic/scrapers')
+    
+    os.chdir('/app/Backend/Logic/scrapers')
     for config in municipalities:
         config['municipality_name'] = config['_id']
         config.pop('_id')
-        config.pop('update_at')
+        if config.get('update_at'):
+            config.pop('update_at')
         subprocess.Popen(['scrapy', 'crawl', '-a', f'config={str(config)}', 'DocumentScraper'], text=True)
-    os.chdir('../../..')
+    os.chdir('/app/Backend')
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

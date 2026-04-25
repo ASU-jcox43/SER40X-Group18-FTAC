@@ -31,7 +31,7 @@
 **/secrets.dev.yaml
 **/values.dev.yaml
 /test
-/test_data
+scrapy_configs.json
 /test_documents
 LICENSE
 README.md

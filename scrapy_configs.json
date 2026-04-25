@@ -1,0 +1,70 @@
+[
+{
+  "_id": "toronto",
+  "start_urls": [
+    "https://www.toronto.ca/legdocs/bylaws/lawmcode.htm?1776982861241"
+  ],
+  "allowed_domains": [
+    "toronto.ca"
+  ],
+  "layers": 1,
+  "get_pdfs": true,
+  "layer_filter": {
+    "regex": "\\.pdf"
+  }
+},
+{
+  "_id": "calgary",
+  "start_urls": [
+    "https://www.calgary.ca/bylaws/city-bylaw-library.html"
+  ],
+  "allowed_domains": [
+    "calgary.ca"
+  ],
+  "layers": 1,
+  "get_pdfs": true,
+  "layer_filter": {
+    "regex": "=Download"
+  }
+},
+{
+  "_id": "ottawa",
+  "start_urls": [
+    "https://ottawa.ca/en/living-ottawa/laws-licences-and-permits/laws/laws-z"
+  ],
+  "allowed_domains": [
+    "ottawa.ca"
+  ],
+  "layers": 1,
+  "get_pdfs": false,
+  "layer_filter": {
+    "regex": "laws-z"
+  },
+  "name_filter": {
+    "xpath": "//*[@class=\"page-title\"]/text()",
+    "regex": "(.*)\\("
+  },
+  "number_filter": {
+    "xpath": "//*[@class=\"page-title\"]/text()",
+    "regex": "By-law No. \\d+-(\\d+)"
+  },
+  "year_filter": {
+    "xpath": "//*[@class=\"page-title\"]/text()",
+    "regex": "By-law No. (\\d+)-\\d+"
+  }
+},
+{
+  "_id": "edmonton",
+  "start_urls": [
+    "https://www.edmonton.ca/city_government/bylaws/bylaws-by-number"
+  ],
+  "allowed_domains": [
+    "edmonton.ca"
+  ],
+  "layers": 1,
+  "get_pdfs": true,
+  "layer_filter": {
+    "regex": "\\.pdf"
+  }
+}
+]

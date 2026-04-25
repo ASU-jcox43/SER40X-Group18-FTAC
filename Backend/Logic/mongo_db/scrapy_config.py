@@ -33,8 +33,13 @@ def get_config_list(num_results:int = 1) -> list[dict]:
     return list(SCRAPY_CONFIG_COLLECTION.find(limit=num_results).to_list())
 
 # Method to return scrapy config based on city
-def get_config(municipality: str) -> dict:
-    return dict(SCRAPY_CONFIG_COLLECTION.find_one(filter={"_id": municipality}))
+def get_config(municipality: str):
+    cursor = SCRAPY_CONFIG_COLLECTION.find_one(filter={"_id": municipality})
+    
+    if cursor == None:
+        return None
+    
+    return dict(cursor)
 
 def get_config_list_with_id(num_results:int = 1) -> list[dict]:
     return SCRAPY_CONFIG_COLLECTION.find({}).to_list()
