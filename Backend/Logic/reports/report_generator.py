@@ -2,7 +2,6 @@ from pathlib import Path
 from Backend.Logic.mongo_db.extraction_collection import getAllExtractions
 from Backend.Logic.mongo_db.scoring_collection import getSummary
 
-# TODO: replace with MongoDB code
 # OUTPUT = Path("Backend/Logic/reports/generated_reports")
 BASE_DIR = Path(__file__).resolve().parent
 OUTPUT = BASE_DIR / "generated_reports"
