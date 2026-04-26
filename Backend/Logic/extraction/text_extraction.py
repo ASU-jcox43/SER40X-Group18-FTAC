@@ -20,16 +20,12 @@ Dependencies:
 from os.path import join, abspath, dirname, realpath
 from os import listdir
 from PyPDF2 import PdfReader
-from Backend.Logic.mongo_db.extraction_collection import upsertExtraction
-from Backend.Logic.extraction.extraction_util import cleanText, extractKeywords
-from Backend.Logic.mongo_db.scrapy_config import get_config_list_with_id
-import spacy
 import re
 import requests
 from bs4 import BeautifulSoup
-from PyPDF2 import PdfReader
 from Backend.Logic.mongo_db.extraction_collection import upsertExtraction
 from Backend.Logic.extraction.extraction_util import cleanText, extractKeywords, splitSentences, computeConfidence, extractMeaning
+from Backend.Logic.mongo_db.scrapy_config import get_config_list_with_id
 
 
 # KEYWORD DEFINITIONS
