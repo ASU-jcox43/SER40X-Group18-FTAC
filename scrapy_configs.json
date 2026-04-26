@@ -1,70 +1,322 @@
 [
-{
-  "_id": "toronto",
-  "start_urls": [
-    "https://www.toronto.ca/legdocs/bylaws/lawmcode.htm?1776982861241"
-  ],
-  "allowed_domains": [
-    "toronto.ca"
-  ],
-  "layers": 1,
-  "get_pdfs": true,
-  "layer_filter": {
-    "regex": "\\.pdf"
-  }
-},
-{
-  "_id": "calgary",
-  "start_urls": [
-    "https://www.calgary.ca/bylaws/city-bylaw-library.html"
-  ],
-  "allowed_domains": [
-    "calgary.ca"
-  ],
-  "layers": 1,
-  "get_pdfs": true,
-  "layer_filter": {
-    "regex": "=Download"
-  }
-},
-{
-  "_id": "ottawa",
-  "start_urls": [
-    "https://ottawa.ca/en/living-ottawa/laws-licences-and-permits/laws/laws-z"
-  ],
-  "allowed_domains": [
-    "ottawa.ca"
-  ],
-  "layers": 1,
-  "get_pdfs": false,
-  "layer_filter": {
-    "regex": "laws-z"
+  {
+    "_id": "toronto",
+    "start_urls": [
+      "https://www.toronto.ca/legdocs/bylaws/lawmcode.htm?1776982861241"
+    ],
+    "allowed_domains": [
+      "toronto.ca"
+    ],
+    "layers": 1,
+    "get_pdfs": true,
+    "layer_filter": {
+      "regex": "\\.pdf"
+    }
   },
-  "name_filter": {
-    "xpath": "//*[@class=\"page-title\"]/text()",
-    "regex": "(.*)\\("
+  {
+    "_id": "calgary",
+    "start_urls": [
+      "https://www.calgary.ca/bylaws/city-bylaw-library.html"
+    ],
+    "allowed_domains": [
+      "calgary.ca"
+    ],
+    "layers": 1,
+    "get_pdfs": true,
+    "layer_filter": {
+      "regex": "=Download"
+    }
   },
-  "number_filter": {
-    "xpath": "//*[@class=\"page-title\"]/text()",
-    "regex": "By-law No. \\d+-(\\d+)"
+  {
+    "_id": "ottawa",
+    "start_urls": [
+      "https://ottawa.ca/en/living-ottawa/laws-licences-and-permits/laws/laws-z"
+    ],
+    "allowed_domains": [
+      "ottawa.ca"
+    ],
+    "layers": 1,
+    "get_pdfs": false,
+    "layer_filter": {
+      "regex": "laws-z"
+    },
+    "name_filter": {
+      "xpath": "//*[@class=\"page-title\"]/text()",
+      "regex": "(.*)\\("
+    },
+    "number_filter": {
+      "xpath": "//*[@class=\"page-title\"]/text()",
+      "regex": "By-law No. \\d+-(\\d+)"
+    },
+    "year_filter": {
+      "xpath": "//*[@class=\"page-title\"]/text()",
+      "regex": "By-law No. (\\d+)-\\d+"
+    }
   },
-  "year_filter": {
-    "xpath": "//*[@class=\"page-title\"]/text()",
-    "regex": "By-law No. (\\d+)-\\d+"
+  {
+    "_id": "edmonton",
+    "start_urls": [
+      "https://www.edmonton.ca/city_government/bylaws/bylaws-by-number"
+    ],
+    "allowed_domains": [
+      "edmonton.ca"
+    ],
+    "layers": 1,
+    "get_pdfs": true,
+    "layer_filter": {
+      "regex": "\\.pdf"
+    }
+  },
+  {
+    "_id": "winnipeg",
+    "start_urls": [
+      "https://dmis.winnipeg.ca/ByLaws?Classification=MajorByLaws&Status=Active&ViewAll=True"
+    ],
+    "allowed_domains": [
+      "winnipeg.ca", "dmis.winnipeg.ca"
+    ],
+    "layers": 1,
+    "get_pdfs": true,
+    "layer_filter": {
+      "regex": "\/ViewBylaw\\?"
+    },
+    "name_filter": {
+      "xpath": "//*[@class=\"col-9\"]/text()"
+    },
+    "year_filter": {
+      "xpath": "//h1[@class=\"h6 mb-2\"]/text()",
+      "regex": "By-law No. \\d+\/(\\d+)"
+    },
+    "number_filter": {
+      "xpath": "//h1[@class=\"h6 mb-2\"]/text()",
+      "regex": "By-law No. (\\d+)\/\\d+"
+    }
+  },
+  {
+    "_id": "mississauga",
+    "layers": 2,
+    "get_pdfs": true,
+    "layer_filter": {
+      "regex": "publication|uploads"
+    },
+    "name_filter": {
+      "xpath": "//h1[not(@*)]/text()"
+    },
+    "number_filter": {
+      "regex": "(\\d\\d\\d\\d) \\d\\d\\d\\d",
+      "xpath": "//a[@class='heading-link h6']/text()"
+    },
+    "year_filter": {
+      "regex": "\\d\\d\\d\\d (\\d\\d\\d\\d)",
+      "xpath": "//a[@class='heading-link h6']/text()"
+    },
+    "start_urls": [
+      "https://www.mississauga.ca/council/by-laws/"
+    ],
+    "allowed_domains": [
+      "mississauga.ca"
+    ]
+  },
+  {
+    "_id": "brampton",
+    "layers": 1,
+    "get_pdfs": true,
+    "layer_filter": {
+      "regex": "\\.pdf"
+    },
+    "next_page_filter": {
+      "regex": "ArchiveYear=\\d\\d\\d\\d"
+    },
+    "start_urls": [
+      "https://www.brampton.ca/EN/City-Hall/Bylaws/Pages/Archive.aspx"
+    ],
+    "allowed_domains": [
+      "brampton.ca"
+    ]
+  },
+  {
+    "_id": "hamilton",
+    "layers": 1,
+    "get_pdfs": true,
+    "layer_filter": {
+      "regex": "\\.pdf"
+    },
+    "next_page_filter": {
+      "regex": "page=\\d"
+    },
+    "start_urls": [
+      "https://www.hamilton.ca/city-council/by-laws-enforcement/search-by-laws"
+    ],
+    "allowed_domains": [
+      "hamilton.ca"
+    ]
+  },
+  {
+    "_id": "surrey",
+    "layers": 1,
+    "get_pdfs": true,
+    "layer_filter": {
+      "regex": "\\.pdf"
+    },
+    "next_page_filter": {
+      "regex": "page=\\d"
+    },
+    "start_urls": [
+      "https://www.surrey.ca/city-government/bylaws"
+    ],
+    "allowed_domains": [
+      "surrey.ca"
+    ]
+  },
+  {
+    "_id": "halifax",
+    "layers": 2,
+    "get_pdfs": true,
+    "start_urls": [
+      "https://www.halifax.ca/city-hall/legislation-by-laws"
+    ],
+    "layer_filter": {
+      "regex": "\\/by-law-a-|\\.pdf"
+    },
+    "name_filter": {
+      "xpath": "//article//p",
+      "regex": "Number: (\\w*)"
+    },
+    "number_filter": {
+      "xpath": "//article//p",
+      "regex": "Name: (\\.*)"
+    },
+    "next_page_filter": {
+      "regex": "page=\\d"
+    }
+  },
+  {
+    "_id": "laval",
+    "layers": 1,
+    "get_pdfs": true,
+    "start_urls": [
+      "https://www.laval.ca/reglements-permis/index-reglements/"
+    ],
+    "next_page_filter": {
+      "regex": "\\[page\\]=\\d"
+    },
+    "layer_filter": {
+      "regex": "\\.pdf"
+    }
+  },
+  {
+    "_id": "london",
+    "start_urls": [
+      "https://london.ca/by-laws"
+    ],
+    "allowed_domains": [
+      "london.ca"
+    ],
+    "layers": 1,
+    "get_pdfs": false,
+    "layer_filter": {
+      "regex": "by-laws\/.*"
+    },
+    "name_filter": {
+      "xpath": "//h1/span/text()",
+      "regex": "(.*) By-law"
+    },
+    "number_filter": {
+      "xpath": "//div[@class=\"field field--name-field-by-law-number field--type-string field--label-above\"]/div[@class=\"field__label\"]/text()"
+    },
+    "year_filter": {
+      "xpath": "//tbody/tr[1]/td[2]//text()",
+      "regex": "\\d, (\\d\\d\\d\\d)"
+    }
+  },
+  {
+    "_id": "markham",
+    "layers": 1,
+    "get_pdfs": true,
+    "start_urls": [
+      "https://www.markham.ca/about-city-markham/city-hall/bylaws"
+    ],
+    "allowed_domains": [
+      "markham.ca"
+    ],
+    "layer_filter": {
+      "regex": "\\.pdf"
+    }
+  },
+  {
+    "_id": "vaughan",
+    "layers": 1,
+    "get_pdfs": true,
+    "start_urls": [
+      "https://www.vaughan.ca/residential/by-laws-and-enforcement/by-law-library"
+    ],
+    "allowed_domains": [
+      "vaughan.ca"
+    ],
+    "layer_filter": {
+      "regex": "\\.pdf"
+    }
+  },
+  {
+    "_id": "gatineau",
+    "layers": 1,
+    "get_pdfs": true,
+    "start_urls": [
+      "https://www.gatineau.ca/portail/default.aspx?p=guichet_municipal/reglements_municipaux&ref=sous-navigation"
+    ],
+    "allowed_domains": [
+      "gatineau.ca"
+    ],
+    "layer_filter": {
+      "regex": "\\.pdf"
+    }
+  },
+  {
+    "_id": "saskatoon",
+    "start_url": "https://www.saskatoon.ca/city-hall/city-bylaws-policies/city-bylaws",
+    "layers": 2,
+    "get_pdfs": true,
+    "allowed_domains": [
+      "saskatoon.ca"
+    ],
+    "layer_filter": {
+      "regex": "\\.pdf"
+    },
+    "next_page_filter": {
+      "regex": "page="
+    },
+    "start_urls": [
+      "https://www.saskatoon.ca/city-hall/city-bylaws-policies/city-bylaws"
+    ]
+  },
+  {
+    "_id": "regina",
+    "start_url": "https://www.regina.ca/bylaws-permits-licences/bylaws/",
+    "layers": 2,
+    "get_pdfs": true,
+    "allowed_domains": [
+      "www.regina.ca",
+      "openregina.ca"
+    ],
+    "layer_filter": {
+      "regex": "bylaws\\/|resource|\\.pdf"
+    },
+    "next_page_filter": {
+      "xpath": "//a[@aria-label=\"Next\"]/@href"
+    },
+    "name_filter": {
+      "xpath": "//div[@class=\"article__title\"]/h1/text()"
+    },
+    "number_filter": {
+      "xpath": "//div[@class=\"article__meta-text\"]/span/text()",
+      "regex": "\\d\\d\\d\\d-(\\d+)"
+    },
+    "year_filter": {
+      "xpath": "//div[@class=\"article__meta-text\"]/span/text()",
+      "regex": "(\\d\\d\\d\\d)-\\d"
+    },
+    "start_urls": [
+      "https://www.regina.ca/bylaws-permits-licences/bylaws/"
+    ]
   }
-},
-{
-  "_id": "edmonton",
-  "start_urls": [
-    "https://www.edmonton.ca/city_government/bylaws/bylaws-by-number"
-  ],
-  "allowed_domains": [
-    "edmonton.ca"
-  ],
-  "layers": 1,
-  "get_pdfs": true,
-  "layer_filter": {
-    "regex": "\\.pdf"
-  }
-}
 ]
