@@ -19,7 +19,7 @@ Dependencies:
 
 from os.path import join, abspath, dirname, realpath
 from os import listdir
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 import re
 import requests
 from bs4 import BeautifulSoup
