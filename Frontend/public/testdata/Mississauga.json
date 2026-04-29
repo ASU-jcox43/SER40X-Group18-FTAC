@@ -1,0 +1,92 @@
+{
+    "name": "Mississauga Foodies",
+    "fb_type": "food truck",
+    "city": "Mississauga",
+    "province": "Ontario",
+    "population": 720000,
+    "avgAge": 37.5,
+    "ethnicityComposition": {
+        "White": 40.0,
+        "South Asian": 25.0,
+        "Black": 10.0,
+        "Chinese": 8.0,
+        "Filipino": 4.0,
+        "Latin American": 3.0,
+        "Arab": 2.0,
+        "Other": 8.0
+    },
+    "houseSize": 2.7,
+    "educationLevel": {
+        "High School": 88.0,
+        "College": 50.0
+    },
+    "income": 80000,
+    "min_wage": 16.55,
+    "comm_tax_rates": 0.025,
+    "region": "Central Canada",
+    "popSqMile": 4900,
+    "areaSqMiles": 292.4,
+    "lat": 43.589,
+    "long": -79.644,
+    "adjMunicipalities": ["Toronto", "Brampton", "Oakville", "Vaughan"],
+    
+    "friendlinessScore": [
+        {
+            "Friendliness Score": "85.24",
+            "Friendliness Index": "Very friendly"
+        }
+    ],
+
+    "friendlinessScoreBreakdown": [
+        {
+            "Foundational": {
+                "Points Awarded": "8",
+                "Points Available": "10",
+                "Percentage": "80%",
+                "Friendliness Index": "Very friendly"
+            },
+            "Licensing Requirements": {
+                "Points Awarded": "9",
+                "Points Available": "10",
+                "Percentage": "90%",
+                "Friendliness Index": "Very friendly"
+            },
+            "Operations & Restrictions": {
+                "Points Awarded": "30",
+                "Points Available": "35",
+                "Percentage": "86%",
+                "Friendliness Index": "Very friendly"
+            }
+        }
+    ],
+
+    "contacts": [
+        {
+            "Department": "City of Mississauga Licensing & Permits Office",
+            "Address": "300 City Centre Drive, Mississauga, ON L5B 3C1",
+            "Fax": "n/a",
+            "Phone": "905-615-4311",
+            "Email": "licensing@mississauga.ca",
+            "Website": "https://www.mississauga.ca/services-and-programs/business/licensing/",
+            "Hours": "Monday to Friday, 8:30 a.m. to 4:30 p.m."
+        },
+        {
+            "Department": "Mississauga Public Health Food Safety",
+            "Address": "1389 Cawthra Road, Mississauga, ON L5G 4K6",
+            "Fax": "n/a",
+            "Phone": "905-615-4311",
+            "Email": "publichealth@mississauga.ca",
+            "Website": "https://www.mississauga.ca/services-and-programs/health-wellness/food-safety/",
+            "Hours": "Monday to Friday, 8:30 a.m. to 4:30 p.m."
+        },
+        {
+            "Department": "Mississauga Parking & Transportation Permits",
+            "Address": "300 City Centre Drive, Mississauga, ON L5B 3C1",
+            "Fax": "n/a",
+            "Phone": "905-615-4311",
+            "Email": "parking@mississauga.ca",
+            "Website": "https://www.mississauga.ca/services-and-programs/parking/",
+            "Hours": "Monday to Friday, 8:30 a.m. to 4:30 p.m."
+        }
+    ]
+}

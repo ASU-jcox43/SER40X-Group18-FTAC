@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bylaw Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="assets/ftacLogo.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <header>
+        <nav class="header-nav">
+            <img src="assets/ftacLogo.png" alt="FTAC Logo" class="nav-logo">
+
+            <a href="#" onclick="showPanel('about')">About</a>
+            <a href="#" class="active-nav" onclick="showPanel('dashboard')">Dashboard</a>
+            <a href="generate_report.html" data-external>Reports</a>
+            <a href="#" onclick="showPanel('ai')">AI Analysis</a>
+            <a href="upload.html" data-external>Files</a>
+            <a href="scrapy_config.html" data-external>Scraping</a>
+        </nav>
+    </header>
+
+    <!-- Dashboard Page -->
+    <div id="dashboardPage" class="page active">
+
+        <!-- Left Filter Panel -->
+        <aside id="filterPanel">
+            <div class="panel-header">
+                <span>FILTERS</span>
+            </div>
+
+            <div class="filter-item">
+                <label for="businessType">Business Type</label>
+                <div class="checkbox-scroll">
+                    <div class="checkbox-group" id="businessType">
+                        <label><input type="checkbox" value="ALL"> ALL</label>
+                        <label><input type="checkbox" value="Food Truck"> Food Truck</label>
+                        <label><input type="checkbox" value="Cottage Food"> Cottage Food</label>
+                        <label><input type="checkbox" value="Catering"> Catering</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-item">
+                <label>Province</label>
+                <div class="checkbox-scroll">
+                    <div class="checkbox-group" id="province">
+                        <label><input type="checkbox" value="ALL"> ALL</label>
+                        <label><input type="checkbox" value="ON"> ON</label>
+                        <label><input type="checkbox" value="AB"> AB</label>
+                        <label><input type="checkbox" value="BC"> BC</label>
+                        <label><input type="checkbox" value="MB"> MB</label>
+                        <label><input type="checkbox" value="NB"> NB</label>
+                        <label><input type="checkbox" value="NL"> NL</label>
+                        <label><input type="checkbox" value="NS"> NS</label>
+                        <label><input type="checkbox" value="PE"> PE</label>
+                        <label><input type="checkbox" value="QC"> QC</label>
+                        <label><input type="checkbox" value="SK"> SK</label>
+                        <label><input type="checkbox" value="YT"> YT</label>
+                        <label><input type="checkbox" value="NT"> NT</label>
+                        <label><input type="checkbox" value="NU"> NU</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-item">
+                <label for="minScore">Minimum Score: <span id="minScoreValue">50</span></label>
+                <input type="range" id="minScore" min="0" max="100" value="50"
+                    oninput="document.getElementById('minScoreValue').innerText = this.value">
+            </div>
+
+            <div>
+                <button class="apply-filters" onclick="applyFilters()">Apply Filters</button>
+            </div>
+        </aside>
+
+        <!-- Middle Results Panel -->
+        <main id="resultsPanel">
+            <div class="panel-header">
+                <span>MUNICIPALITY RESULTS</span>
+            </div>
+
+            <div class="results-controls">
+                <label for="sortOrder">Sort by Score:</label>
+                <select name="sortOrder" id="sortOrder">
+                    <option value="">None</option>
+                    <option value="high-to-low">High to Low</option>
+                    <option value="low-to-high">Low to High</option>
+                </select>
+            </div>
+
+            <div class="table-scroll">
+                <table id="jurisdictionTable">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Municipality</th>
+                            <th>Score</th>
+                            <th>Business Type</th>
+                        </tr>
+                    </thead>
+                    <tbody id="jurisdictionBody"></tbody>
+                </table>
+            </div>
+        </main>
+
+        <!-- Right Details Panel (kept for future use, hidden by default) -->
+        <aside id="detailsPanel" class="hidden">
+            <div class="panel-header">
+                <span>DETAILS</span>
+                <button class="panel-toggle" onclick="toggleDetailsPanel()">
+                    <span class="arrow">▾</span>
+                </button>
+            </div>
+
+            <div class="panel-content">
+                <div class="detail-section">
+                    <h3>
+                        <span id="municipalityName"></span>,
+                        <span id="municipalityProvince"></span>
+                    </h3>
+                </div>
+
+                <div class="detail-section">
+                    <button class="collapse-toggle" onclick="toggleSection(this)">
+                        Summary <span class="arrow">▾</span>
+                    </button>
+                    <div class="collapse-content">
+                        <p id="aiSummaryContent"></p>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <button class="collapse-toggle" onclick="toggleSection(this)">
+                        Key Requirements <span class="arrow">▾</span>
+                    </button>
+                    <div class="collapse-content">
+                        <ul id="requirementsList"></ul>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <button class="collapse-toggle" onclick="toggleSection(this)">
+                        Score Breakdown <span class="arrow">▾</span>
+                    </button>
+                    <div class="collapse-content">
+                        <ul id="scoreBreakdownList"></ul>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- AI Analysis Modal -->
+    <div id="aiAnalysisOverlay" class="ai-overlay hidden">
+        <div class="ai-modal">
+            <div class="ai-modal-header">
+                <div class="ai-modal-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 16v-4M12 8h.01"></path>
+                    </svg>
+                    <span>AI Analysis — <span id="aiPanelMunicipalityName">Select a municipality</span></span>
+                </div>
+                <button class="ai-close-btn" onclick="closeAIPanel()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="ai-modal-body">
+                <!-- Left column: municipality snapshot -->
+                <div class="ai-col ai-col-left">
+                    <div class="ai-section">
+                        <h4 class="ai-section-title">Municipality Snapshot</h4>
+                        <div class="ai-snapshot-grid">
+                            <div class="ai-snapshot-item">
+                                <span class="ai-snapshot-label">Score</span>
+                                <span class="ai-snapshot-value" id="aiSnapScore">—</span>
+                            </div>
+                            <div class="ai-snapshot-item">
+                                <span class="ai-snapshot-label">Index</span>
+                                <span class="ai-snapshot-value" id="aiSnapIndex">—</span>
+                            </div>
+                            <div class="ai-snapshot-item">
+                                <span class="ai-snapshot-label">Population</span>
+                                <span class="ai-snapshot-value" id="aiSnapPop">—</span>
+                            </div>
+                            <div class="ai-snapshot-item">
+                                <span class="ai-snapshot-label">Median Income</span>
+                                <span class="ai-snapshot-value" id="aiSnapIncome">—</span>
+                            </div>
+                            <div class="ai-snapshot-item">
+                                <span class="ai-snapshot-label">Min. Wage</span>
+                                <span class="ai-snapshot-value" id="aiSnapWage">—</span>
+                            </div>
+                            <div class="ai-snapshot-item">
+                                <span class="ai-snapshot-label">Business Type</span>
+                                <span class="ai-snapshot-value" id="aiSnapBizType">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ai-section">
+                        <h4 class="ai-section-title">Score Breakdown</h4>
+                        <div id="aiBreakdownList" class="ai-breakdown-list"></div>
+                    </div>
+                </div>
+
+                <!-- Right column: AI analysis content -->
+                <div class="ai-col ai-col-right">
+                    <div class="ai-section">
+                        <h4 class="ai-section-title">AI Summary</h4>
+                        <div class="ai-analysis-box" id="aiAnalysisContent">
+                            <p class="ai-placeholder">Select a municipality from the dashboard to generate an AI analysis.</p>
+                        </div>
+                    </div>
+
+                    <div class="ai-section">
+                        <h4 class="ai-section-title">Key Contacts</h4>
+                        <div id="aiContactsList" class="ai-contacts-list">
+                            <p class="ai-placeholder">No contacts loaded.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+{
+    "name": "Food Truck Co",
+    "fb_type": "food truck",
+    "city": "Edmonton",
+    "province": "Alberta",
+    "population": 1010000,
+    "avgAge": 38.7,
+    "ethnicityComposition": {
+        "White": 62.0,
+        "South Asian": 10.0,
+        "Chinese": 6.0,
+        "Black": 5.0,
+        "Filipino": 4.0,
+        "Indigenous": 6.0,
+        "Arab": 3.0,
+        "Other": 4.0
+    },
+    "houseSize": 2.6,
+    "educationLevel": {
+        "High School": 91.0,
+        "College": 47.0
+    },
+    "income": 101000,
+    "min_wage": 15.00,
+    "comm_tax_rates": 0.0243,
+    "region": "Western Canada",
+    "popSqMile": 3200,
+    "areaSqMiles": 313.7,
+    "lat": 53.5461,
+    "long": -113.4938,
+    "adjMunicipalities": ["St. Albert", "Sherwood Park", "Spruce Grove"],
+    "friendlinessScore": {
+        "Score": 84.10,
+        "Friendliness Index": "Very friendly"
+    },
+
+    "friendlinessScoreBreakdown": {
+        "Foundational": {
+            "Points Awarded": 8,
+            "Points Available": 10,
+            "Percentage": "80%",
+            "Friendliness Index": "Very friendly"
+        },
+        "Licensing Requirements": {
+            "Points Awarded": 9,
+            "Points Available": 10,
+            "Percentage": "90%",
+            "Friendliness Index": "Very friendly"
+        },
+        "Operations & Restrictions": {
+            "Points Awarded": 28,
+            "Points Available": 35,
+            "Percentage": "80%",
+            "Friendliness Index": "Very friendly"
+        }
+    },
+
+    "contacts": [
+        {
+            "Department": "Edmonton Business Licensing",
+            "Address": "2nd Floor, 10111 104 Ave NW, Edmonton, AB T5J 0J4",
+            "Fax": "n/a",
+            "Phone": "780-442-5054",
+            "Email": "businesslicensing@edmonton.ca",
+            "Website": "https://www.edmonton.ca/business",
+            "Hours": "Monday to Friday: 8:00 AM to 4:30 PM"
+        },
+        {
+            "Department": "Alberta Health Services – Food Safety",
+            "Address": "10030 107 St NW, Edmonton, AB T5J 3E4",
+            "Fax": "n/a",
+            "Phone": "780-735-1800",
+            "Email": "environmentalhealth@ahs.ca",
+            "Website": "https://www.albertahealthservices.ca",
+            "Hours": "Monday to Friday: 8:00 AM to 4:30 PM"
+        }
+    ]
+}

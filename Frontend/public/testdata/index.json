@@ -1,0 +1,14 @@
+{
+    "municipalities": [
+        "Toronto.json",
+        "Vancouver.json",
+        "Calgary.json",
+        "Brampton.json",
+        "Ottawa.json",
+        "Hamilton.json",
+        "Mississauga.json",
+        "Edmonton.json",
+        "Winnipeg.json",
+        "Halifax.json"
+    ]
+}

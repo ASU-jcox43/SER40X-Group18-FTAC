@@ -16,6 +16,18 @@ services:
         - action: sync
           path: ./Backend
           target: /app/Backend
+  frontend:
+    container_name: ftac-frontend
+    image: node:20
+    working_dir: /app/Frontend
+    command: sh -c "npm install && npm start"
+    ports:
+      - 3000:3000
+    volumes:
+      - ./Frontend:/app/Frontend
+      - frontend-node-modules:/app/Frontend/node_modules
+    depends_on:
+      - backend
   nginx:
     container_name: nginx
     image: nginx:latest
@@ -45,6 +57,8 @@ services:
 volumes:
   scrapy-output:
     name: "scrapy-output"
+  frontend-node-modules:
+    name: "frontend-node-modules"
   mongodata:
     name: "mongodata"
     driver: local

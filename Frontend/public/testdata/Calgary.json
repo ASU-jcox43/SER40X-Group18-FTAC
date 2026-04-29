@@ -1,0 +1,69 @@
+{
+    "name": "Food Truck Co",
+    "fb_type": "food truck",
+    "city": "Calgary",
+    "province": "Alberta",
+    "population": 1380000,
+    "avgAge": 38.2,
+    "ethnicityComposition": {
+        "White": 60.0,
+        "South Asian": 11.0,
+        "Chinese": 7.0,
+        "Filipino": 5.0,
+        "Black": 4.0,
+        "Arab": 2.0,
+        "Latin American": 2.0,
+        "Other": 9.0
+    },
+    "houseSize": 2.7,
+    "educationLevel": {
+        "High School": 92.0,
+        "College": 49.0
+    },
+    "income": 112000,
+    "min_wage": 15.00,
+    "comm_tax_rates": 0.0241,
+    "region": "Western Canada",
+    "popSqMile": 3900,
+    "areaSqMiles": 318.7,
+    "lat": 51.0447,
+    "long": -114.0719,
+    "adjMunicipalities": ["Airdrie", "Cochrane", "Chestermere"],
+    "friendlinessScore": {
+        "Score": 79.50,
+        "Friendliness Index": "Friendly"
+    },
+
+    "friendlinessScoreBreakdown": {
+        "Foundational": {
+            "Points Awarded": 7,
+            "Points Available": 10,
+            "Percentage": "70%",
+            "Friendliness Index": "Friendly"
+        },
+        "Licensing Requirements": {
+            "Points Awarded": 8,
+            "Points Available": 10,
+            "Percentage": "80%",
+            "Friendliness Index": "Very friendly"
+        },
+        "Operations & Restrictions": {
+            "Points Awarded": 26,
+            "Points Available": 35,
+            "Percentage": "74%",
+            "Friendliness Index": "Friendly"
+        }
+    },
+
+    "contacts": [
+        {
+            "Department": "Calgary Business Licensing",
+            "Address": "800 Macleod Trail SE, Calgary, AB T2G 2M3",
+            "Fax": "n/a",
+            "Phone": "403-268-5311",
+            "Email": "businesslicensing@calgary.ca",
+            "Website": "https://www.calgary.ca",
+            "Hours": "Monday to Friday: 8:00 AM to 4:30 PM"
+        }
+    ]
+}
