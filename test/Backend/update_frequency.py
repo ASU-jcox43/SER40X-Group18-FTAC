@@ -6,7 +6,8 @@ APP_URL = 'http://localhost:8000'
 COLLECTION = pymongo.MongoClient("mongodb://localhost:27016/").get_database("CapstoneDB")["scrapy_config"]
 
 class UpdateFrequencyTest(unittest.TestCase):
-    def test_update_frequency(self, n=150):
+    def test_update_frequency(self, n=6000):
+        print(f'n={n}')
         responses: list[requests.Response] = []
         condition = {'_id': {'$regex': r'update_freq_test\d'}}
         COLLECTION.delete_many(condition)
@@ -27,7 +28,7 @@ class UpdateFrequencyTest(unittest.TestCase):
         for c in configs:
             self.assertEqual(len(c['update_at']), 2)
             for i in [0,1]:
-                self.assertGreaterEqual(c['update_at'][i], 0)
+                self.assertGreaterEqual(c['update_at'][i], 1)
                 self.assertLessEqual(c['update_at'][i], 365)
 
         COLLECTION.delete_many(condition)
