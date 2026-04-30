@@ -2,6 +2,11 @@ import os
 from openai import OpenAI
 import json
 
+# This file is not planned on being used anymore, but I kept it because I wanted to test OpenAI vs Anthropic at one
+# point, and it has the old rubric I used before getting the official one.
+# It uses the OpenAI API to use the rubric to analyze using each question, then creates a response in a JSON formatted
+# string of text.
+
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 MODEL = "gpt-4.1-mini"
 RUBRIC_JSON = [
