@@ -5,13 +5,10 @@
 **/*.pyc
 
 .vscode
-**/analysis_ready
 **/visualizeTest
-**/profiles
-**/friendliness_summary.json
-**/classifications.json
 **/generated_reports
 **/.venv
 **/test_documents
 /FTAC_Prompt.txt
 **/Downloaded_Analyses
+**/.env

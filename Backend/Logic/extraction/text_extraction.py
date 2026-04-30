@@ -3,14 +3,21 @@ from os import listdir
 from PyPDF2 import PdfReader
 from Backend.Logic.mongo_db.extraction_collection import upsertExtraction
 from Backend.Logic.extraction.extraction_util import cleanText, extractKeywords
+from Backend.Logic.mongo_db.scrapy_config import get_config_list_with_id
 import spacy
 import re
+import requests
+from bs4 import BeautifulSoup
 
 nlp = spacy.load("en_core_web_sm")
 
 # Define your keyword categories and terms
 # Category: Terms []
 KEYWORDS = {
+    "fire safety core": ["fire code", "propane", "suppression", "sprinkler", "extinguisher", "flammable", "hazard"],
+    "food safety core": ["food safety", "public health", "sanitation", "temperature", "haccp", "health officer"],
+    "zoning core": ["zoning", "zone", "land use", "site plan", "occupancy", "setback", "district"],
+    "legal structure": ["section", "enforcement", "compliance", "ammend", "repeal", "supersede"],
     "webpage": [".gov", ".ca", "municipality", "city of", "regional district"],  # covered
     "checklist": ["checklist", "requirements list", "required documents"],  # covered
     "guide to license": ["guide", "how to apply", "licensing process", "application process"],  # covered
@@ -1084,6 +1091,50 @@ def extractPDF(filename):
     upsertExtraction(pdfJSON)
     print("Extracted pdf file")
 
+def extractURL(url: str):
+    # Fetch the page
+    response = requests.get(url, timeout=10, headers={
+        "User-Agent": "Mozilla/5.0"  # avoids being blocked by some sites
+    })
+    response.raise_for_status()
+
+    # Parse and strip HTML tags
+    soup = BeautifulSoup(response.text, "html.parser")
+
+    # Remove nav, footer, scripts — you only want body content
+    for tag in soup(["script", "style", "nav", "footer", "header"]):
+        tag.decompose()
+
+    rawText = soup.get_text(separator="\n")
+
+    if not rawText.strip():
+        print(f"[Warning] No text extracted from {url}")
+        return
+
+    cleaned = cleanText(rawText)
+    sentences = split_sentences(cleaned)
+    results = {}
+
+    for category, terms in KEYWORDS.items():
+        matches = []
+        for sentence in sentences:
+            hits = extractKeywords(sentence.text, terms)
+            if hits:
+                re_data = {}
+                # --- paste your full regex block here (same as in extractPDF) ---
+                entry = {"sentence": sentence.text, "hits": hits}
+                if re_data:
+                    entry["regex"] = re_data
+                matches.append(entry)
+        if matches:
+            results[category] = matches
+    urlJSON = {
+        "file": url,
+        "keyword_contexts": results,
+    }
+
+    upsertExtraction(urlJSON)
+    print(f"Extracted URL: {url}")
 
 def extract():
     print(dirname(realpath(__file__)))
@@ -1093,6 +1144,14 @@ def extract():
             extractTXT(file_name)
         elif file_name.lower().endswith(".pdf"):
             extractPDF(file_name)
+            
+    # Step 1 — scrape and extract all URLs from config
+    configList = get_config_list_with_id()
+    for config in configList:
+        start_urls = config.get("start_urls", [])
+        url = start_urls[0] if start_urls else None
+        if url:
+            extractURL(url)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,66 @@
+{
+    "name": "Food Truck Co",
+    "fb_type": "food truck",
+    "city": "Hamilton",
+    "province": "Ontario",
+    "population": 569000,
+    "avgAge": 41.8,
+    "ethnicityComposition": {
+        "White": 75.0,
+        "Black": 5.0,
+        "South Asian": 4.0,
+        "Indigenous": 4.0,
+        "Chinese": 3.0,
+        "Arab": 2.0,
+        "Other": 7.0
+    },
+    "houseSize": 2.4,
+    "educationLevel": {
+        "High School": 88.0,
+        "College": 43.0
+    },
+    "income": 83000,
+    "min_wage": 16.55,
+    "comm_tax_rates": 0.0305,
+    "region": "Central Canada",
+    "popSqMile": 4800,
+    "areaSqMiles": 113.2,
+    "lat": 43.2557,
+    "long": -79.8711,
+    "adjMunicipalities": ["Burlington", "Brantford", "Stoney Creek"],
+    "friendlinessScore": {
+        "Score": 78.90,
+        "Friendliness Index": "Friendly"
+    },
+    "friendlinessScoreBreakdown": {
+        "Foundational": {
+            "Points Awarded": 7,
+            "Points Available": 10,
+            "Percentage": "70%",
+            "Friendliness Index": "Friendly"
+        },
+        "Licensing Requirements": {
+            "Points Awarded": 6,
+            "Points Available": 10,
+            "Percentage": "60%",
+            "Friendliness Index": "Average"
+        },
+        "Operations & Restrictions": {
+            "Points Awarded": 28,
+            "Points Available": 35,
+            "Percentage": "80%",
+            "Friendliness Index": "Very friendly"
+        }
+    },
+    "contacts": [
+        {
+            "Department": "Hamilton Licensing & Permits",
+            "Address": "71 Main St W, Hamilton, ON L8P 4Y5",
+            "Fax": "n/a",
+            "Phone": "905-546-2782",
+            "Email": "licensing@hamilton.ca",
+            "Website": "https://www.hamilton.ca",
+            "Hours": "Monday to Friday: 8:30 AM to 4:30 PM"
+        }
+    ]
+}
